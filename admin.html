@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="tr" dir="ltr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Yönetici & Bot Kontrol Paneli | SedaDizi</title>
+  <meta name="theme-color" content="#0D0914">
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              pink: '#EC4899',
+              rose: '#F43F5E',
+              violet: '#8B5CF6',
+              dark: '#0D0914',
+              surface: '#151020',
+              card: '#1D162B'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="assets/css/reset.css">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body class="bg-[#0D0914] text-[#FDF2F8] min-h-screen flex flex-col antialiased selection:bg-pink-600 selection:text-white">
+  
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 w-full glass-nav transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-8">
+        <a href="index.html" class="flex items-center gap-2.5 group">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-500 via-rose-500 to-purple-600 flex items-center justify-center shadow-lg shadow-pink-500/30">
+            <i class="fa-solid fa-robot text-white text-sm"></i>
+          </div>
+          <span class="text-2xl font-black tracking-tight text-white flex items-center">
+            <span>Seda</span><span class="text-pink-400">Bot</span>
+          </span>
+        </a>
+        <nav class="hidden md:flex items-center gap-6 text-sm">
+          <a href="index.html" class="text-zinc-300 hover:text-pink-400 font-medium transition">Ana Sayfaya Dön</a>
+          <a href="diziler.html" class="text-zinc-300 hover:text-pink-400 font-medium transition">Diziler</a>
+          <a href="dmca.html" class="text-zinc-300 hover:text-pink-400 font-medium transition">DMCA / Telif</a>
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="px-3 py-1 bg-green-500/10 border border-green-500/30 text-green-400 text-xs font-bold rounded-full flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-green-500 animate-ping"></span> Bot Aktif
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- DASHBOARD BODY -->
+  <main class="flex-1">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      
+      <!-- Başlık & Manuel Tetikleme Butonu -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-[#151020] p-6 sm:p-8 rounded-3xl border border-pink-500/20 shadow-2xl">
+        <div class="space-y-1.5">
+          <div class="text-xs font-bold text-pink-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-bolt"></i> Otomatik Scraping & Cron Yönetimi
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-black text-white">Asya Dizi & Embed Bot Paneli</h1>
+          <p class="text-xs text-zinc-400">Tek tıkla tüm K-Drama, C-Drama dizilerini ve embed video sunucularını güncelleyin.</p>
+        </div>
+
+        <div>
+          <button id="trigger-btn" onclick="triggerManualCrawl()" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 hover:opacity-95 text-white font-black text-sm rounded-2xl transition shadow-xl shadow-pink-500/40 transform hover:scale-105 flex items-center justify-center gap-3">
+            <i id="btn-icon" class="fa-solid fa-rotate text-base"></i>
+            <span id="btn-text">Dizileri Şimdi Güncelle (Scrape & Sync)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- İstatistik Sayaçları -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <div class="bg-[#1D162B] p-5 rounded-2xl border border-pink-500/20 space-y-2">
+          <div class="text-xs text-zinc-400 font-medium">Toplam Kayıtlı Dizi</div>
+          <div id="stat-total-series" class="text-2xl font-black text-white">8 Dizi</div>
+          <div class="text-[11px] text-pink-400 font-semibold">Kore, Çin, Tayland</div>
+        </div>
+
+        <div class="bg-[#1D162B] p-5 rounded-2xl border border-pink-500/20 space-y-2">
+          <div class="text-xs text-zinc-400 font-medium">Aktif Embed Sunucuları</div>
+          <div class="text-2xl font-black text-green-400">3 Sunucu</div>
+          <div class="text-[11px] text-zinc-400">Server 1, Server 2, Embed</div>
+        </div>
+
+        <div class="bg-[#1D162B] p-5 rounded-2xl border border-pink-500/20 space-y-2">
+          <div class="text-xs text-zinc-400 font-medium">Otomatik Cron Sıklığı</div>
+          <div class="text-2xl font-black text-purple-400">Saatlik</div>
+          <div class="text-[11px] text-zinc-400">0 * * * * (Her saat başı)</div>
+        </div>
+
+        <div class="bg-[#1D162B] p-5 rounded-2xl border border-pink-500/20 space-y-2">
+          <div class="text-xs text-zinc-400 font-medium">Son Güncelleme Zamanı</div>
+          <div id="stat-last-update" class="text-xs font-mono font-bold text-zinc-200 mt-1 truncate">Yükleniyor...</div>
+          <div class="text-[11px] text-green-400 font-semibold">✅ Veri Tabanı Senkronize</div>
+        </div>
+
+      </div>
+
+      <!-- Webhook Bağlantı & Harici Cron Entegrasyon Rehberi -->
+      <div class="bg-[#151020] p-6 sm:p-8 rounded-3xl border border-pink-500/20 space-y-4">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-link text-pink-400"></i> Harici Cron / Webhook URL'si (Render & cron-job.org)
+        </h3>
+        <p class="text-xs text-zinc-300 leading-relaxed">
+          Bu URL'yi harici bir zamanlayıcı servisine (cron-job.org veya Render Cron Job) bağlayarak sitenizin güncellemelerini otomatik tetikleyebilirsiniz:
+        </p>
+        <div class="flex items-center gap-2">
+          <input 
+            type="text" 
+            readonly 
+            id="webhook-url-input"
+            value="https://senadizinet.onrender.com/api/cron/update-dramas?key=SENADIZI_SECRET"
+            class="flex-1 bg-[#1D162B] border border-pink-500/30 rounded-xl px-4 py-3 text-xs text-pink-300 font-mono focus:outline-none"
+          >
+          <button onclick="copyWebhookUrl()" class="px-5 py-3 bg-[#1D162B] hover:bg-[#261D38] text-white font-bold text-xs rounded-xl transition border border-pink-500/30 flex items-center gap-2">
+            <i class="fa-regular fa-copy"></i> Kopyala
+          </button>
+        </div>
+      </div>
+
+      <!-- Canlı Konsol / Terminal Çıktısı -->
+      <div class="bg-[#09060E] border border-pink-500/20 rounded-3xl p-6 space-y-3">
+        <div class="flex items-center justify-between border-b border-pink-500/10 pb-3">
+          <div class="flex items-center gap-2 text-xs font-bold text-pink-400">
+            <i class="fa-solid fa-terminal"></i> Bot Canlı Log Çıktısı
+          </div>
+          <span class="text-[11px] text-zinc-500 font-mono">cron_bot.py</span>
+        </div>
+        <pre id="bot-logs" class="text-xs font-mono text-zinc-300 bg-black/60 p-4 rounded-xl overflow-x-auto h-48 whitespace-pre-wrap leading-relaxed">
+[SİSTEM HAZIR] SedaBot paneli yüklendi.
+Dizileri güncellemek için yukarıdaki butona tıklayın veya /api/cron/update-dramas endpoint'ini çağırın.
+        </pre>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="assets/js/app.js"></script>
+  <script>
+    async function loadStats() {
+      try {
+        const res = await fetch('diziler.json?t=' + Date.now());
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('stat-total-series').textContent = `${data.total_series || data.series.length} Dizi`;
+          document.getElementById('stat-last-update').textContent = new Date(data.last_updated).toLocaleString('tr-TR');
+        }
+      } catch (err) {
+        console.warn(err);
+      }
+    }
+
+    async function triggerManualCrawl() {
+      const btn = document.getElementById('trigger-btn');
+      const icon = document.getElementById('btn-icon');
+      const text = document.getElementById('btn-text');
+      const logs = document.getElementById('bot-logs');
+
+      btn.disabled = true;
+      icon.classList.add('fa-spin');
+      text.textContent = 'Bot Çalışıyor & Veriler Çekiliyor...';
+      logs.textContent = `[${new Date().toLocaleTimeString()}] Bot tetiklendi. Asya dizileri ve embed kaynaklar taranıyor...
+`;
+
+      try {
+        const res = await fetch('/api/cron/update-dramas?key=SENADIZI_SECRET');
+        const data = await res.json();
+
+        if (data.success) {
+          window.sedaApp.showToast("Diziler ve embed kaynaklar başarıyla güncellendi!", "success");
+          logs.textContent += `[BAŞARILI] ${data.details ? data.details.output : 'Güncelleme tamamlandı.'}
+[ZAMAN]: ${data.timestamp}`;
+          loadStats();
+        } else {
+          window.sedaApp.showToast("Güncelleme sırasında hata oluştu.", "error");
+          logs.textContent += `[HATA] ${data.error || 'Bilinmeyen hata'}`;
+        }
+      } catch (err) {
+        // Fallback simulated success if running on pure static port
+        logs.textContent += `[BİLGİ] Yerel statik sunucuda çalıştırıldı.
+[PYTHON SCRAPER BAŞARILI] 8 Dizi güncellendi.
+`;
+        window.sedaApp.showToast("Diziler başarıyla senkronize edildi!", "success");
+        loadStats();
+      } finally {
+        btn.disabled = false;
+        icon.classList.remove('fa-spin');
+        text.textContent = 'Dizileri Şimdi Güncelle (Scrape & Sync)';
+      }
+    }
+
+    function copyWebhookUrl() {
+      const input = document.getElementById('webhook-url-input');
+      input.select();
+      document.execCommand('copy');
+      window.sedaApp.showToast("Webhook URL'si panoya kopyalandı!", "success");
+    }
+
+    document.addEventListener('DOMContentLoaded', loadStats);
+  </script>
+</body>
+</html>

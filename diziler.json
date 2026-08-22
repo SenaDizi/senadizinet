@@ -1,7 +1,8 @@
 {
-  "last_updated": "2026-08-22T22:50:00.000Z",
+  "last_updated": "2026-08-22T21:37:44.345724+00:00",
   "source": "https://dramafilix.cc/tr",
-  "platform_name": "SedaDizi Asya – Asya & Kore Dizi Platformu",
+  "platform_name": "SedaDizi (senadizi.com) - Asya & Kore Dizi Platformu",
+  "dmca_notice": "No video files are hosted on our servers. All videos are embedded from third-party sources.",
   "total_series": 8,
   "series": [
     {
@@ -55,7 +56,7 @@
           "servers": {
             "server1": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
             "server2": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-            "server3": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+            "server3": "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
           }
         },
         {
@@ -66,7 +67,7 @@
           "servers": {
             "server1": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
             "server2": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-            "server3": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+            "server3": "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
           }
         },
         {
@@ -77,7 +78,7 @@
           "servers": {
             "server1": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
             "server2": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-            "server3": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+            "server3": "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
           }
         },
         {
@@ -88,7 +89,7 @@
           "servers": {
             "server1": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
             "server2": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-            "server3": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+            "server3": "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
           }
         },
         {
@@ -99,7 +100,7 @@
           "servers": {
             "server1": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
             "server2": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4",
-            "server3": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+            "server3": "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
           }
         },
         {
@@ -110,7 +111,7 @@
           "servers": {
             "server1": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4",
             "server2": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-            "server3": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+            "server3": "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
           }
         }
       ]
@@ -150,11 +151,6 @@
           "name": "Kim Ji-won",
           "role": "Hong Hae-in",
           "img": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80"
-        },
-        {
-          "name": "Park Sung-hoon",
-          "role": "Yoon Eun-sung",
-          "img": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80"
         }
       ],
       "episodes": [
@@ -165,7 +161,8 @@
           "release_date": "Yayında",
           "servers": {
             "server1": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-            "server2": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+            "server2": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+            "server3": "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
           }
         },
         {
@@ -175,7 +172,8 @@
           "release_date": "Yayında",
           "servers": {
             "server1": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-            "server2": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+            "server2": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+            "server3": "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
           }
         }
       ]
@@ -223,7 +221,9 @@
           "duration": "45 dk",
           "release_date": "Yayında",
           "servers": {
-            "server1": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+            "server1": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+            "server2": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+            "server3": "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
           }
         }
       ]
@@ -252,7 +252,7 @@
       "current_episode": 30,
       "poster": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&q=80",
       "backdrop": "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1920&q=80",
-      "desc": "Tarihte ve haritalarda var olmayan kurgusal Daeho ülkesinde, beden değiştiren tehlikeli büyü 'Ruhların Simyası' yüzünden kaderleri birbirine bağlanan büyücülerin epik mücadelesi.",
+      "desc": "Tarihte ve haritalarda var olmayan kurgusal Daeho ülkesinde, beden değiştiren tehlikeli büyü yüzünden kaderleri birbirine bağlanan genç büyücülerin destansı aşk ve intikam öyküsü.",
       "cast": [
         {
           "name": "Lee Jae-wook",
@@ -272,7 +272,9 @@
           "duration": "75 dk",
           "release_date": "Yayında",
           "servers": {
-            "server1": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+            "server1": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+            "server2": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+            "server3": "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
           }
         }
       ]
@@ -301,7 +303,7 @@
       "current_episode": 16,
       "poster": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&q=80",
       "backdrop": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=1920&q=80",
-      "desc": "Seçkin bir özel okula bursla kabul edilen mütevazı bir kız olan Gorya'nın, okulun en zengin ve popüler dört erkeğinden oluşan F4 grubunun zorbalığına karşı başlattığı cesur direniş.",
+      "desc": "Seçkin bir özel okula bursla kabul edilen Gorya'nın, okulun en zengin dört erkeğinden oluşan F4 grubunun zorbalığına karşı başlattığı cesur direniş.",
       "cast": [
         {
           "name": "Bright Vachirawit",
@@ -312,11 +314,6 @@
           "name": "Tu Tontawan",
           "role": "Gorya",
           "img": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&q=80"
-        },
-        {
-          "name": "Win Metawin",
-          "role": "Kavin",
-          "img": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80"
         }
       ],
       "episodes": [
@@ -326,7 +323,9 @@
           "duration": "60 dk",
           "release_date": "Yayında",
           "servers": {
-            "server1": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+            "server1": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+            "server2": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+            "server3": "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
           }
         }
       ]
@@ -355,17 +354,12 @@
       "current_episode": 16,
       "poster": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&q=80",
       "backdrop": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1920&q=80",
-      "desc": "İşitme engelli bir ailenin tek duyan çocuğu olan müzik dehası Eun Gyeol, gizemli bir müzik dükkanı aracılığıyla 1995 yılına zamanda yolculuk yapar ve lise çağındaki babasıyla birlikte bir müzik grubu kurar.",
+      "desc": "İşitme engelli bir ailenin tek duyan çocuğu olan müzik dehası Eun Gyeol, zamanda yolculuk yaparak 1995 yılına döner ve genç yaştaki babasıyla bir grup kurar.",
       "cast": [
         {
           "name": "Ryeoun",
           "role": "Ha Eun-gyeol",
           "img": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80"
-        },
-        {
-          "name": "Choi Hyun-wook",
-          "role": "Ha Yi-chan",
-          "img": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80"
         }
       ],
       "episodes": [
@@ -375,7 +369,9 @@
           "duration": "65 dk",
           "release_date": "Yayında",
           "servers": {
-            "server1": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+            "server1": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+            "server2": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+            "server3": "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
           }
         }
       ]
@@ -403,17 +399,12 @@
       "current_episode": 36,
       "poster": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&q=80",
       "backdrop": "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1920&q=80",
-      "desc": "Alt kademe bir çiçek perisi olan Xiao Lanhua'nın, kadim iblis lordu Dongfang Qingcang'ın kulesine kazara hapsolarak onunla ruh bağı kurmasıyla başlayan büyüleyici mitolojik aşk.",
+      "desc": "Alt kademe bir çiçek perisi olan Xiao Lanhua ile kadim iblis lordu Dongfang Qingcang arasındaki büyüleyici mitolojik aşk.",
       "cast": [
         {
           "name": "Dylan Wang",
           "role": "Dongfang Qingcang",
           "img": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80"
-        },
-        {
-          "name": "Esther Yu",
-          "role": "Xiao Lanhua",
-          "img": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80"
         }
       ],
       "episodes": [
@@ -423,7 +414,9 @@
           "duration": "45 dk",
           "release_date": "Yayında",
           "servers": {
-            "server1": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+            "server1": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+            "server2": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+            "server3": "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
           }
         }
       ]
@@ -452,22 +445,12 @@
       "current_episode": 4,
       "poster": "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600&q=80",
       "backdrop": "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1920&q=80",
-      "desc": "Hyosan Lisesi zombi salgınından kurtulan gençler ve yarı-zombi mutantlar, Seul şehrine yayılan yeni mutant virüs dalgasına karşı son insanlık kalesini savunmak zorundadır.",
+      "desc": "Hyosan Lisesi zombi salgınından kurtulan gençler, Seul şehrine yayılan yeni mutant virüs dalgasına karşı son insanlık kalesini savunmak zorundadır.",
       "cast": [
         {
           "name": "Park Ji-hu",
           "role": "Nam On-jo",
           "img": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80"
-        },
-        {
-          "name": "Yoon Chan-young",
-          "role": "Lee Cheong-san",
-          "img": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80"
-        },
-        {
-          "name": "Cho Yi-hyun",
-          "role": "Choi Nam-ra",
-          "img": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&q=80"
         }
       ],
       "episodes": [
@@ -477,7 +460,9 @@
           "duration": "55 dk",
           "release_date": "Bugün",
           "servers": {
-            "server1": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+            "server1": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+            "server2": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+            "server3": "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
           }
         }
       ]
