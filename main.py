@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-SedaDizi (senadizi.com) - FastAPI Universal Backend Server
-Direct HTML and Static File Routing (No 404 for /admin.html, /dmca.html, etc.)
+SedaDizi (senadizi.com) - FastAPI Backend Server
 """
 
 import os
@@ -9,7 +8,7 @@ import json
 import subprocess
 from datetime import datetime, timezone
 from fastapi import FastAPI, Query, Header, HTTPException, Request
-from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -23,7 +22,6 @@ app = FastAPI(
     version="2.0.0"
 )
 
-# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -32,59 +30,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 1. API: Canlı Dizi Verisi
-@app.get("/api/diziler")
-def get_diziler():
-    if os.path.exists(DIZILER_JSON_PATH):
-        try:
-            with open(DIZILER_JSON_PATH, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            return {"success": True, "data": data}
-        except Exception as e:
-            return JSONResponse(status_code=500, content={"success": False, "error": str(e)})
-    return JSONResponse(status_code=404, content={"success": False, "error": "diziler.json bulunamadı"})
-
-# 2. API: Güvenli Webhook / Cron Tetikleyici
-@app.api_route("/api/cron/update-dramas", methods=["GET", "POST"])
-@app.api_route("/api/cron", methods=["GET", "POST"])
-def trigger_cron(
-    key: str = Query(None),
-    token: str = Query(None),
-    x_cron_key: str = Header(None)
-):
-    provided_key = key or token or x_cron_key
-    if provided_key != CRON_SECRET and provided_key != "sena_secret_cron_token_2026":
-        raise HTTPException(
-            status_code=401,
-            detail="Geçersiz gizli anahtar! (?key=SENADIZI_SECRET kullanınız)"
-        )
-
-    bot_path = os.path.join(BASE_DIR, "cron_bot.py")
-    try:
-        process = subprocess.run(
-            ["python", bot_path],
-            capture_output=True,
-            text=True,
-            cwd=BASE_DIR,
-            timeout=60
-        )
-        return {
-            "success": process.returncode == 0,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "message": "Asya dizileri ve embed kaynaklar güncellendi.",
-            "details": {"output": process.stdout.strip(), "error": process.stderr.strip()}
-        }
-    except Exception as e:
-        return JSONResponse(
-            status_code=500,
-            content={"success": False, "error": f"Bot çalıştırma hatası: {str(e)}"}
-        )
-
-# 3. Doğrudan Belirlenen HTML Rotaları (Explicit Direct HTML Routes)
+# 1. ÖNCELİKLİ DOĞRUDAN HTML ROTALARI (TOP-PRIORITY DIRECT ROUTES)
 @app.get("/admin.html", response_class=FileResponse)
 @app.get("/admin", response_class=FileResponse)
 def serve_admin():
-    return FileResponse(os.path.join(BASE_DIR, "admin.html"), media_type="text/html")
+    file_path = os.path.join(BASE_DIR, "admin.html")
+    if os.path.exists(file_path):
+        return FileResponse(file_path, media_type="text/html")
+    raise HTTPException(status_code=404, detail="admin.html not found")
 
 @app.get("/dmca.html", response_class=FileResponse)
 @app.get("/dmca", response_class=FileResponse)
@@ -121,45 +74,75 @@ def serve_giris():
 def serve_kayit():
     return FileResponse(os.path.join(BASE_DIR, "kayit.html"), media_type="text/html")
 
-@app.get("/diziler.json")
-def serve_diziler_json():
-    return FileResponse(os.path.join(BASE_DIR, "diziler.json"), media_type="application/json")
+# 2. CANLI DİZİ VERİSİ REST API
+@app.get("/api/diziler")
+def get_diziler():
+    if os.path.exists(DIZILER_JSON_PATH):
+        try:
+            with open(DIZILER_JSON_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            return {"success": True, "data": data}
+        except Exception as e:
+            return JSONResponse(status_code=500, content={"success": False, "error": str(e)})
+    return JSONResponse(status_code=404, content={"success": False, "error": "diziler.json bulunamadı"})
 
-@app.get("/manifest.json")
-def serve_manifest():
-    return FileResponse(os.path.join(BASE_DIR, "manifest.json"), media_type="application/json")
+# 3. GÜVENLİ CRON / WEBHOOK ENDPOINT'İ (/api/cron/update-dramas ve /api/cron)
+@app.api_route("/api/cron/update-dramas", methods=["GET", "POST"])
+@app.api_route("/api/cron", methods=["GET", "POST"])
+def trigger_cron(
+    key: str = Query(None),
+    token: str = Query(None),
+    x_cron_key: str = Header(None)
+):
+    provided_key = key or token or x_cron_key
+    if provided_key != CRON_SECRET and provided_key != "sena_secret_cron_token_2026":
+        raise HTTPException(
+            status_code=401,
+            detail="Geçersiz gizli anahtar! (?key=SENADIZI_SECRET kullanınız)"
+        )
 
-@app.get("/robots.txt")
-def serve_robots():
-    return FileResponse(os.path.join(BASE_DIR, "robots.txt"), media_type="text/plain")
+    bot_path = os.path.join(BASE_DIR, "cron_bot.py")
+    try:
+        process = subprocess.run(
+            ["python", bot_path],
+            capture_output=True,
+            text=True,
+            cwd=BASE_DIR,
+            timeout=60
+        )
+        return {
+            "success": process.returncode == 0,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "message": "Asya dizileri ve embed kaynaklar güncellendi.",
+            "details": {"output": process.stdout.strip(), "error": process.stderr.strip()}
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": f"Bot çalıştırma hatası: {str(e)}"}
+        )
 
-@app.get("/sitemap.xml")
-def serve_sitemap():
-    return FileResponse(os.path.join(BASE_DIR, "sitemap.xml"), media_type="application/xml")
-
-# 4. Statik Varlıklar (Assets) Klasörü
+# 4. STATİK ASSETS KLASÖRÜ
 assets_dir = os.path.join(BASE_DIR, "assets")
 if os.path.exists(assets_dir):
     app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
-# 5. Dinamik Genel Rota (Fallback for any root file or index.html)
+# 5. KÖK DİZİN STATİK DOSYA VE SPA YÖNLENDİRMESİ
+@app.get("/")
+def serve_index():
+    return FileResponse(os.path.join(BASE_DIR, "index.html"), media_type="text/html")
+
 @app.get("/{file_name:path}")
-def serve_static_or_spa(file_name: str):
-    if not file_name or file_name == "/":
-        return FileResponse(os.path.join(BASE_DIR, "index.html"), media_type="text/html")
-    
-    # 1. Dosya birebir varsa
+def serve_fallback(file_name: str):
     direct_path = os.path.join(BASE_DIR, file_name)
     if os.path.isfile(direct_path):
         media = "text/html" if file_name.endswith(".html") else None
         return FileResponse(direct_path, media_type=media)
     
-    # 2. .html uzantısı eklenince varsa
     html_path = os.path.join(BASE_DIR, f"{file_name}.html")
     if os.path.isfile(html_path):
         return FileResponse(html_path, media_type="text/html")
     
-    # 3. SPA Varsayılanı
     return FileResponse(os.path.join(BASE_DIR, "index.html"), media_type="text/html")
 
 if __name__ == "__main__":
