@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="tr" dir="ltr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>SedaDizi – Kore & Asya Dizileri İzle (Full HD Türkçe Altyazı)</title>
+  <meta name="description" content="SedaDizi ile en popüler K-Drama, Çin ve Tayland dizilerini kesintisiz, Full HD ve Türkçe altyazılı olarak izleyin.">
+  <meta name="theme-color" content="#0D0914">
+  <meta name="robots" content="index, follow">
+
+  <!-- OpenGraph -->
+  <meta property="og:site_name" content="SedaDizi">
+  <meta property="og:title" content="SedaDizi – Kore & Asya Dizileri İzle (Full HD Türkçe Altyazı)">
+  <meta property="og:description" content="SedaDizi ile en popüler K-Drama, Çin ve Tayland dizilerini kesintisiz, Full HD ve Türkçe altyazılı olarak izleyin.">
+  <meta property="og:type" content="video.tv_show">
+  <meta property="og:url" content="https://senadizi.com/">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1200&q=80">
+
+  <!-- Fonts & CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Google Fonts: Outfit & Tajawal -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <!-- FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              pink: '#EC4899',
+              rose: '#F43F5E',
+              violet: '#8B5CF6',
+              purple: '#A855F7',
+              dark: '#0D0914',
+              surface: '#151020',
+              card: '#1D162B'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom CSS Suite -->
+  <link rel="stylesheet" href="assets/css/reset.css">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body class="bg-[#0D0914] text-[#FDF2F8] min-h-screen flex flex-col antialiased selection:bg-pink-600 selection:text-white">
+
+  <!-- HEADER / NAVBAR -->
+  <header class="sticky top-0 z-40 w-full glass-nav transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Sol: Logo & Menü -->
+      <div class="flex items-center gap-8">
+        <a href="index.html" class="flex items-center gap-2.5 group">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-500 via-rose-500 to-purple-600 flex items-center justify-center shadow-lg shadow-pink-500/30 group-hover:scale-105 transition-transform">
+            <i class="fa-solid fa-play text-white text-sm ml-0.5"></i>
+          </div>
+          <span class="text-2xl font-black tracking-tight text-white flex items-center">
+            <span>Seda</span><span class="text-pink-400">Dizi</span>
+          </span>
+        </a>
+
+        <!-- Masaüstü Navigasyon -->
+        <nav class="hidden md:flex items-center gap-6 text-sm">
+          <a href="index.html" class="text-pink-400 font-bold">Ana Sayfa</a>
+          <a href="diziler.html?country=kore" class="text-zinc-300 hover:text-pink-400 font-medium transition flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-pink-500"></span> K-Drama
+          </a>
+          <a href="diziler.html?country=cin" class="text-zinc-300 hover:text-pink-400 font-medium transition">C-Drama</a>
+          <a href="diziler.html?country=tayland" class="text-zinc-300 hover:text-pink-400 font-medium transition">Thai Drama</a>
+          <a href="diziler.html" class="text-zinc-300 hover:text-pink-400 font-medium transition">Tüm Diziler</a>
+          <a href="abonelik.html" class="text-zinc-300 hover:text-pink-400 font-medium transition text-amber-400 font-semibold flex items-center gap-1">
+            <i class="fa-solid fa-crown text-xs"></i> VIP
+          </a>
+        </nav>
+      </div>
+
+      <!-- Sağ: Canlı Arama, Dil & Giriş -->
+      <div class="flex items-center gap-3">
+        
+        <!-- Dil Seçici -->
+        <div class="lang-selector-mount"></div>
+
+        <!-- Canlı Arama Girişi -->
+        <div id="search-container" class="relative hidden sm:block w-48 md:w-64">
+          <div class="relative flex items-center">
+            <input 
+              type="text" 
+              placeholder="Asya dizisi veya oyuncu ara..." 
+              oninput="handleHeaderSearch(this)"
+              class="w-full bg-[#151020] border border-pink-500/20 text-xs rounded-full pl-9 pr-4 py-2 text-white placeholder-zinc-400 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition"
+            >
+            <i class="fa-solid fa-magnifying-glass absolute left-3 text-xs text-pink-400"></i>
+          </div>
+          <div id="search-dropdown" class="hidden absolute top-full mt-2 w-72 md:w-84 right-0 bg-[#151020] border border-pink-500/30 rounded-2xl shadow-2xl overflow-hidden z-50"></div>
+        </div>
+
+        <!-- Giriş & VIP Butonları -->
+        <div class="flex items-center gap-2">
+          <a href="giris.html" class="text-xs font-semibold px-3 py-2 text-zinc-300 hover:text-pink-400 transition">Giriş</a>
+          <a href="kayit.html" class="text-xs font-bold px-4 py-2 bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 hover:opacity-90 text-white rounded-xl transition shadow-lg shadow-pink-500/30">Kayıt Ol</a>
+        </div>
+
+        <!-- Mobil Menü Hamburger -->
+        <button onclick="toggleMobileMenu()" class="md:hidden p-2 text-zinc-300 hover:text-pink-400">
+          <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Mobil Açılır Drawer -->
+    <div id="mobile-drawer" class="hidden md:hidden bg-[#151020] border-b border-pink-500/20 px-4 py-4 space-y-3">
+      <div class="relative">
+        <input 
+          type="text" 
+          placeholder="K-Drama veya C-Drama ara..." 
+          oninput="handleHeaderSearch(this)" 
+          class="w-full bg-[#1D162B] border border-pink-500/20 text-sm rounded-xl pl-9 pr-4 py-2.5 text-white"
+        >
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3.5 text-pink-400 text-xs"></i>
+      </div>
+      <div class="grid grid-cols-2 gap-2 pt-2 text-sm font-medium">
+        <a href="index.html" class="p-2.5 rounded-xl bg-[#1D162B] text-white">Ana Sayfa</a>
+        <a href="diziler.html?country=kore" class="p-2.5 rounded-xl bg-[#1D162B] text-pink-400">🇰🇷 K-Drama</a>
+        <a href="diziler.html?country=cin" class="p-2.5 rounded-xl bg-[#1D162B] text-white">🇨🇳 C-Drama</a>
+        <a href="diziler.html?country=tayland" class="p-2.5 rounded-xl bg-[#1D162B] text-white">🇹🇭 Thai Drama</a>
+        <a href="diziler.html" class="p-2.5 rounded-xl bg-[#1D162B] text-white">Tüm Diziler</a>
+        <a href="abonelik.html" class="p-2.5 rounded-xl bg-amber-950/40 text-amber-400 font-bold">⭐ VIP Üyelik</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1">
+    
+    <!-- HERO SİNEMATİK CAROUSEL (SEDADIZI PINK & VIOLET) -->
+    <div class="relative w-full h-[65vh] md:h-[78vh] overflow-hidden bg-[#0A070F]">
+      <div id="hero-slider" class="relative w-full h-full">
+        
+        <!-- Slide 1: Squid Game 2 -->
+        <div class="hero-slide absolute inset-0 transition-opacity duration-1000 ease-in-out opacity-100 z-10" data-index="0">
+          <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1920&q=80" fetchpriority="high" class="w-full h-full object-cover object-center opacity-80" alt="Squid Game 2">
+          <div class="absolute inset-0 hero-gradient"></div>
+          <div class="absolute bottom-10 md:bottom-16 left-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-20">
+            <div class="max-w-2xl space-y-4">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="badge-country">🇰🇷 K-DRAMA</span>
+                <span class="badge-sub"><i class="fa-solid fa-closed-captioning mr-1"></i> TR ALTYAZI & DUBLAJ</span>
+                <span class="badge-rating">⭐ 9.4 MyDramaList</span>
+                <span class="text-xs text-pink-200 font-medium">2026 • 6 Bölüm</span>
+              </div>
+              <h1 class="text-3xl sm:text-4xl md:text-6xl font-black text-white tracking-tight drop-shadow-2xl">
+                Squid Game 2
+              </h1>
+              <div class="text-xs text-pink-300 font-medium">오징어 게임 시즌2 • Gerilim, Hayatta Kalma, Aksiyon</div>
+              <p class="text-xs sm:text-sm text-zinc-300 line-clamp-3 leading-relaxed drop-shadow">
+                Ölümcül oyunları arkasında bırakan Seong Gi-hun, sistemin arkasındaki gizemli organizasyonu çökertmek ve intikamını almak için daha tehlikeli ve zekice tasarlanmış yeni bir arenaya geri dönüyor.
+              </p>
+              <div class="flex items-center gap-3 pt-3">
+                <a href="izle.html?slug=squid-game-2&s=1&ep=1" class="flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 hover:opacity-90 text-white font-bold text-sm md:text-base rounded-2xl transition shadow-xl shadow-pink-500/40 transform hover:scale-105">
+                  <i class="fa-solid fa-play"></i> Hemen İzle (S1 B1)
+                </a>
+                <a href="dizi-detay.html?slug=squid-game-2" class="flex items-center gap-2 px-5 py-3.5 bg-[#1D162B]/90 hover:bg-[#261D38] text-white font-semibold text-sm rounded-2xl transition border border-pink-500/20 backdrop-blur-sm">
+                  <i class="fa-solid fa-circle-info"></i> Dizi Detayları
+                </a>
+                <button onclick="toggleFavorite(1, this)" class="w-12 h-12 flex items-center justify-center bg-[#1D162B]/90 hover:bg-[#261D38] text-white rounded-2xl transition border border-pink-500/20" title="Listeme Ekle">
+                  <i class="fa-regular fa-heart text-base text-pink-400"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 2: Queen of Tears -->
+        <div class="hero-slide absolute inset-0 transition-opacity duration-1000 ease-in-out opacity-0 z-0" data-index="1">
+          <img src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=1920&q=80" loading="lazy" class="w-full h-full object-cover object-center opacity-80" alt="Queen of Tears">
+          <div class="absolute inset-0 hero-gradient"></div>
+          <div class="absolute bottom-10 md:bottom-16 left-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-20">
+            <div class="max-w-2xl space-y-4">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="badge-country">🇰🇷 K-DRAMA</span>
+                <span class="badge-sub"><i class="fa-solid fa-closed-captioning mr-1"></i> TR ALTYAZI & DUBLAJ</span>
+                <span class="badge-rating">⭐ 9.2 MyDramaList</span>
+                <span class="text-xs text-pink-200 font-medium">2024 • 16 Bölüm (Final)</span>
+              </div>
+              <h1 class="text-3xl sm:text-4xl md:text-6xl font-black text-white tracking-tight drop-shadow-2xl">
+                Queen of Tears
+              </h1>
+              <div class="text-xs text-pink-300 font-medium">눈물의 여왕 • Romantik, Komedi, Drama</div>
+              <p class="text-xs sm:text-sm text-zinc-300 line-clamp-3 leading-relaxed drop-shadow">
+                Kore'nin en büyük holdinginin soğuk ve kararlı varisi Hong Hae-in ile hukuk direktörü olan eşi Baek Hyun-woo'nun evlilik krizini mucizevi bir aşkla yeniden inşa etme öyküsü.
+              </p>
+              <div class="flex items-center gap-3 pt-3">
+                <a href="izle.html?slug=queen-of-tears&s=1&ep=1" class="flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 hover:opacity-90 text-white font-bold text-sm md:text-base rounded-2xl transition shadow-xl shadow-pink-500/40 transform hover:scale-105">
+                  <i class="fa-solid fa-play"></i> Hemen İzle
+                </a>
+                <a href="dizi-detay.html?slug=queen-of-tears" class="flex items-center gap-2 px-5 py-3.5 bg-[#1D162B]/90 hover:bg-[#261D38] text-white font-semibold text-sm rounded-2xl transition border border-pink-500/20 backdrop-blur-sm">
+                  <i class="fa-solid fa-circle-info"></i> Dizi Detayları
+                </a>
+                <button onclick="toggleFavorite(2, this)" class="w-12 h-12 flex items-center justify-center bg-[#1D162B]/90 hover:bg-[#261D38] text-white rounded-2xl transition border border-pink-500/20">
+                  <i class="fa-regular fa-heart text-base text-pink-400"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 3: Hidden Love -->
+        <div class="hero-slide absolute inset-0 transition-opacity duration-1000 ease-in-out opacity-0 z-0" data-index="2">
+          <img src="https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1920&q=80" loading="lazy" class="w-full h-full object-cover object-center opacity-80" alt="Hidden Love">
+          <div class="absolute inset-0 hero-gradient"></div>
+          <div class="absolute bottom-10 md:bottom-16 left-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-20">
+            <div class="max-w-2xl space-y-4">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="badge-country">🇨🇳 C-DRAMA</span>
+                <span class="badge-sub"><i class="fa-solid fa-closed-captioning mr-1"></i> TR ALTYAZI</span>
+                <span class="badge-rating">⭐ 9.1 MyDramaList</span>
+                <span class="text-xs text-pink-200 font-medium">2023 • 25 Bölüm (Tamamlandı)</span>
+              </div>
+              <h1 class="text-3xl sm:text-4xl md:text-6xl font-black text-white tracking-tight drop-shadow-2xl">
+                Hidden Love (Gizli Aşk)
+              </h1>
+              <div class="text-xs text-pink-300 font-medium">偷偷藏不住 • Romantik, Gençlik</div>
+              <p class="text-xs sm:text-sm text-zinc-300 line-clamp-3 leading-relaxed drop-shadow">
+                Sang Zhi'nin lise yıllarında ağabeyinin üniversite arkadaşı Duan Jiaxu'ya platonik olarak başlayan hisleri, yıllar sonra tatlı ve samimi bir aşka dönüşür.
+              </p>
+              <div class="flex items-center gap-3 pt-3">
+                <a href="izle.html?slug=hidden-love&s=1&ep=1" class="flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 hover:opacity-90 text-white font-bold text-sm md:text-base rounded-2xl transition shadow-xl shadow-pink-500/40 transform hover:scale-105">
+                  <i class="fa-solid fa-play"></i> Hemen İzle
+                </a>
+                <a href="dizi-detay.html?slug=hidden-love" class="flex items-center gap-2 px-5 py-3.5 bg-[#1D162B]/90 hover:bg-[#261D38] text-white font-semibold text-sm rounded-2xl transition border border-pink-500/20 backdrop-blur-sm">
+                  <i class="fa-solid fa-circle-info"></i> Dizi Detayları
+                </a>
+                <button onclick="toggleFavorite(3, this)" class="w-12 h-12 flex items-center justify-center bg-[#1D162B]/90 hover:bg-[#261D38] text-white rounded-2xl transition border border-pink-500/20">
+                  <i class="fa-regular fa-heart text-base text-pink-400"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Slider Noktaları -->
+      <div class="absolute bottom-4 right-8 z-30 flex items-center gap-2">
+        <button onclick="goToSlide(0)" class="slide-dot w-8 h-2.5 rounded-full transition-all bg-pink-500"></button>
+        <button onclick="goToSlide(1)" class="slide-dot w-3 h-2.5 rounded-full transition-all bg-white/40 hover:bg-white/70"></button>
+        <button onclick="goToSlide(2)" class="slide-dot w-3 h-2.5 rounded-full transition-all bg-white/40 hover:bg-white/70"></button>
+      </div>
+    </div>
+
+    <!-- VİTRİNLER (HORIZONTAL SCROLL) -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-14">
+
+      <!-- A. SON EKLENEN ASYA DİZİ BÖLÜMLERİ -->
+      <section>
+        <div class="flex items-center justify-between mb-5">
+          <div class="flex items-center gap-3">
+            <div class="w-2.5 h-6 bg-gradient-to-b from-pink-500 to-purple-600 rounded-full shadow-lg shadow-pink-500/30"></div>
+            <h2 class="text-xl md:text-2xl font-black text-white">Son Eklenen Bölümler</h2>
+          </div>
+          <span class="text-xs text-pink-400 font-semibold flex items-center gap-1"><i class="fa-solid fa-bolt"></i> Güncel Yayınlar</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          <a href="izle.html?slug=squid-game-2&s=1&ep=6" class="group block bg-[#1D162B] border border-pink-500/20 rounded-2xl overflow-hidden hover:border-pink-500/60 transition shadow-lg hover:shadow-pink-500/10">
+            <div class="aspect-video w-full relative overflow-hidden bg-zinc-900">
+              <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600&q=80" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Squid Game 2" loading="lazy">
+              <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent"></div>
+              <div class="absolute top-2 left-2 badge-country text-[10px]">K-DRAMA</div>
+              <div class="absolute bottom-2 left-2 badge-sub text-[10px]">S1 B6: FİNAL</div>
+              <div class="absolute bottom-2 right-2 text-[11px] text-zinc-300 bg-black/70 px-2 py-0.5 rounded-md">Bugün</div>
+            </div>
+            <div class="p-3">
+              <div class="text-xs text-pink-400 font-semibold truncate">Squid Game 2</div>
+              <h4 class="text-sm font-bold text-white truncate mt-0.5">6. Bölüm: Sezon Finali</h4>
+            </div>
+          </a>
+
+          <a href="izle.html?slug=all-of-us-are-dead-2&s=1&ep=4" class="group block bg-[#1D162B] border border-pink-500/20 rounded-2xl overflow-hidden hover:border-pink-500/60 transition shadow-lg hover:shadow-pink-500/10">
+            <div class="aspect-video w-full relative overflow-hidden bg-zinc-900">
+              <img src="https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600&q=80" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="All of Us Are Dead 2" loading="lazy">
+              <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent"></div>
+              <div class="absolute top-2 left-2 badge-country text-[10px]">K-DRAMA</div>
+              <div class="absolute bottom-2 left-2 badge-sub text-[10px]">S1 B4</div>
+              <div class="absolute bottom-2 right-2 text-[11px] text-zinc-300 bg-black/70 px-2 py-0.5 rounded-md">Dün</div>
+            </div>
+            <div class="p-3">
+              <div class="text-xs text-pink-400 font-semibold truncate">All of Us Are Dead 2</div>
+              <h4 class="text-sm font-bold text-white truncate mt-0.5">4. Bölüm: Zombi Kuşatması</h4>
+            </div>
+          </a>
+
+          <a href="izle.html?slug=queen-of-tears&s=1&ep=16" class="group block bg-[#1D162B] border border-pink-500/20 rounded-2xl overflow-hidden hover:border-pink-500/60 transition shadow-lg hover:shadow-pink-500/10">
+            <div class="aspect-video w-full relative overflow-hidden bg-zinc-900">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&q=80" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Queen of Tears" loading="lazy">
+              <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent"></div>
+              <div class="absolute top-2 left-2 badge-country text-[10px]">K-DRAMA</div>
+              <div class="absolute bottom-2 left-2 badge-sub text-[10px]">16. BÖLÜM (FİNAL)</div>
+              <div class="absolute bottom-2 right-2 text-[11px] text-zinc-300 bg-black/70 px-2 py-0.5 rounded-md">Tamamlandı</div>
+            </div>
+            <div class="p-3">
+              <div class="text-xs text-pink-400 font-semibold truncate">Queen of Tears</div>
+              <h4 class="text-sm font-bold text-white truncate mt-0.5">16. Bölüm: Sonsuz Aşk</h4>
+            </div>
+          </a>
+
+          <a href="izle.html?slug=hidden-love&s=1&ep=25" class="group block bg-[#1D162B] border border-pink-500/20 rounded-2xl overflow-hidden hover:border-pink-500/60 transition shadow-lg hover:shadow-pink-500/10">
+            <div class="aspect-video w-full relative overflow-hidden bg-zinc-900">
+              <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&q=80" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Hidden Love" loading="lazy">
+              <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent"></div>
+              <div class="absolute top-2 left-2 badge-country text-[10px]">C-DRAMA</div>
+              <div class="absolute bottom-2 left-2 badge-sub text-[10px]">25. BÖLÜM (FİNAL)</div>
+              <div class="absolute bottom-2 right-2 text-[11px] text-zinc-300 bg-black/70 px-2 py-0.5 rounded-md">Tamamlandı</div>
+            </div>
+            <div class="p-3">
+              <div class="text-xs text-pink-400 font-semibold truncate">Hidden Love</div>
+              <h4 class="text-sm font-bold text-white truncate mt-0.5">25. Bölüm: Mutlu Son</h4>
+            </div>
+          </a>
+
+        </div>
+      </section>
+
+      <!-- B. TREND ASYA DİZİLERİ (HORIZONTAL SCROLL) -->
+      <section>
+        <div class="flex items-center justify-between mb-5">
+          <div class="flex items-center gap-3">
+            <div class="w-2.5 h-6 bg-gradient-to-b from-pink-500 to-purple-600 rounded-full shadow-lg shadow-pink-500/30"></div>
+            <h2 class="text-xl md:text-2xl font-black text-white">Trend Asya Dizileri</h2>
+          </div>
+          <a href="diziler.html?sort=popular" class="text-xs md:text-sm font-semibold text-pink-400 hover:text-pink-300 flex items-center gap-1 transition">
+            Tümünü Gör <i class="fa-solid fa-chevron-right text-xs"></i>
+          </a>
+        </div>
+
+        <div id="trend-showcase" class="flex gap-4 overflow-x-auto hide-scrollbar pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
+          <!-- Populated dynamically -->
+        </div>
+      </section>
+
+      <!-- C. KORE DİZİLERİ (K-DRAMA) -->
+      <section>
+        <div class="flex items-center justify-between mb-5">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">🇰🇷</span>
+            <h2 class="text-xl md:text-2xl font-black text-white">Kore Dizileri (K-Drama)</h2>
+          </div>
+          <a href="diziler.html?country=kore" class="text-xs md:text-sm font-semibold text-pink-400 hover:text-pink-300 flex items-center gap-1 transition">
+            Tüm K-Dramalar <i class="fa-solid fa-chevron-right text-xs"></i>
+          </a>
+        </div>
+
+        <div id="kdrama-showcase" class="flex gap-4 overflow-x-auto hide-scrollbar pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
+          <!-- Populated dynamically -->
+        </div>
+      </section>
+
+      <!-- D. ÇİN & TAYLAND DİZİLERİ -->
+      <section>
+        <div class="flex items-center justify-between mb-5">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">🇨🇳 🇹🇭</span>
+            <h2 class="text-xl md:text-2xl font-black text-white">Çin & Tayland Dizileri</h2>
+          </div>
+          <a href="diziler.html?country=cin" class="text-xs md:text-sm font-semibold text-pink-400 hover:text-pink-300 flex items-center gap-1 transition">
+            Daha Fazla <i class="fa-solid fa-chevron-right text-xs"></i>
+          </a>
+        </div>
+
+        <div id="cdrama-showcase" class="flex gap-4 overflow-x-auto hide-scrollbar pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
+          <!-- Populated dynamically -->
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.hero-slide');
+    const dots = document.querySelectorAll('.slide-dot');
+    let sliderInterval;
+
+    function showSlide(index) {
+      if (!slides.length) return;
+      slides.forEach((s, i) => {
+        if (i === index) {
+          s.classList.remove('opacity-0', 'z-0');
+          s.classList.add('opacity-100', 'z-10');
+        } else {
+          s.classList.remove('opacity-100', 'z-10');
+          s.classList.add('opacity-0', 'z-0');
+        }
+      });
+      dots.forEach((d, i) => {
+        if (i === index) {
+          d.classList.add('bg-pink-500', 'w-8');
+          d.classList.remove('bg-white/40', 'w-3');
+        } else {
+          d.classList.remove('bg-pink-500', 'w-8');
+          d.classList.add('bg-white/40', 'w-3');
+        }
+      });
+      currentSlide = index;
+    }
+
+    function nextSlide() {
+      let next = (currentSlide + 1) % slides.length;
+      showSlide(next);
+    }
+
+    function goToSlide(index) {
+      clearInterval(sliderInterval);
+      showSlide(index);
+      startSlider();
+    }
+
+    function startSlider() {
+      if (slides.length > 1) {
+        sliderInterval = setInterval(nextSlide, 7000);
+      }
+    }
+
+    function renderShowcases(list) {
+      if (!list || list.length === 0) return;
+
+      const createCard = (item) => `
+        <div class="min-w-[160px] sm:min-w-[195px] max-w-[195px] flex-shrink-0">
+          <a href="dizi-detay.html?slug=${item.slug}" class="drama-card group block">
+            <div class="aspect-[2/3] w-full relative overflow-hidden bg-zinc-900">
+              <img src="${item.poster}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="${item.title}" loading="lazy">
+              
+              <div class="absolute top-2 left-2 badge-country">${item.category_badge || 'ASYA'}</div>
+              <div class="absolute top-2 right-2 badge-rating">⭐ ${item.rating}</div>
+              <div class="absolute bottom-2 left-2 badge-sub text-[9px]">${item.translation}</div>
+
+              <div class="play-overlay absolute inset-0 bg-black/60 opacity-0 transition-opacity flex items-center justify-center">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-500 via-rose-500 to-purple-600 text-white flex items-center justify-center shadow-xl transform group-hover:scale-110 transition">
+                  <i class="fa-solid fa-play ml-0.5"></i>
+                </div>
+              </div>
+            </div>
+            <div class="p-3">
+              <h3 class="text-xs sm:text-sm font-bold text-white truncate group-hover:text-pink-400 transition">${item.title}</h3>
+              <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-1">
+                <span>${item.year}</span>
+                <span class="text-pink-300 font-medium">${item.total_episodes} Bölüm</span>
+              </div>
+            </div>
+          </a>
+        </div>
+      `;
+
+      const trendEl = document.getElementById('trend-showcase');
+      if (trendEl) trendEl.innerHTML = list.map(createCard).join('');
+
+      const kdramaEl = document.getElementById('kdrama-showcase');
+      if (kdramaEl) {
+        const kdramas = list.filter(s => s.country === 'Kore');
+        kdramaEl.innerHTML = kdramas.map(createCard).join('');
+      }
+
+      const cdramaEl = document.getElementById('cdrama-showcase');
+      if (cdramaEl) {
+        const asianOthers = list.filter(s => s.country === 'Çin' || s.country === 'Tayland');
+        cdramaEl.innerHTML = asianOthers.map(createCard).join('');
+      }
+    }
+
+    window.addEventListener('seda:seriesLoaded', (e) => renderShowcases(e.detail));
+    document.addEventListener('DOMContentLoaded', () => {
+      startSlider();
+      if (window.SEDA_SERIES_DATABASE && window.SEDA_SERIES_DATABASE.length > 0) {
+        renderShowcases(window.SEDA_SERIES_DATABASE);
+      }
+    });
+  </script>
+
+  <!-- MOBİL ALT MENÜ -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 mobile-nav-bottom flex items-center justify-around py-2 bg-[#100C1A]/95 border-t border-pink-500/20">
+    <a href="index.html" class="flex flex-col items-center gap-1 text-[11px] text-pink-400 font-bold">
+      <i class="fa-solid fa-house text-base"></i>
+      <span>Ana Sayfa</span>
+    </a>
+    <a href="diziler.html?country=kore" class="flex flex-col items-center gap-1 text-[11px] text-zinc-400 hover:text-pink-400">
+      <i class="fa-solid fa-heart text-base"></i>
+      <span>K-Drama</span>
+    </a>
+    <a href="diziler.html" class="flex flex-col items-center gap-1 text-[11px] text-zinc-400 hover:text-pink-400">
+      <i class="fa-solid fa-film text-base"></i>
+      <span>Katalog</span>
+    </a>
+    <a href="abonelik.html" class="flex flex-col items-center gap-1 text-[11px] text-amber-400">
+      <i class="fa-solid fa-crown text-base"></i>
+      <span>VIP</span>
+    </a>
+    <a href="giris.html" class="flex flex-col items-center gap-1 text-[11px] text-zinc-400 hover:text-pink-400">
+      <i class="fa-solid fa-user text-base"></i>
+      <span>Profil</span>
+    </a>
+  </nav>
+
+  <!-- GLOBAL FOOTER -->
+  <footer class="bg-[#09060E] border-t border-pink-500/10 text-zinc-400 text-xs py-14 px-4 sm:px-6 lg:px-8 mt-20">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+      <div>
+        <div class="text-xl font-black text-white flex items-center gap-2 mb-4">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center">
+            <i class="fa-solid fa-play text-white text-[11px] ml-0.5"></i>
+          </div>
+          <span>Seda<span class="text-pink-400">Dizi</span></span>
+        </div>
+        <p class="text-zinc-400 text-xs leading-relaxed">
+          Türkiye'nin pembe & sinematik Asya ve Kore dizileri izleme platformu. Full HD Türkçe Altyazı ve Dublaj seçenekleriyle kesintisiz dizi keyfi.
+        </p>
+      </div>
+
+      <div>
+        <h4 class="font-bold text-white mb-3 text-sm">Popüler Kategoriler</h4>
+        <ul class="space-y-2.5">
+          <li><a href="diziler.html?country=kore" class="hover:text-pink-400 transition">Kore Dizileri (K-Drama)</a></li>
+          <li><a href="diziler.html?country=cin" class="hover:text-pink-400 transition">Çin Dizileri (C-Drama)</a></li>
+          <li><a href="diziler.html?country=tayland" class="hover:text-pink-400 transition">Tayland Dizileri (Thai Drama)</a></li>
+          <li><a href="diziler.html?genre=romantik" class="hover:text-pink-400 transition">Romantik Asya Dizileri</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="font-bold text-white mb-3 text-sm">Kurumsal & Destek</h4>
+        <ul class="space-y-2.5">
+          <li><a href="#" class="hover:text-pink-400 transition">Hakkımızda</a></li>
+          <li><a href="#" class="hover:text-pink-400 transition">İletişim & Dizi İstek</a></li>
+          <li><a href="#" class="hover:text-pink-400 transition">Gizlilik ve Çerez Politikası</a></li>
+          <li><a href="dmca.html" class="hover:text-pink-400 transition text-pink-400 font-bold flex items-center gap-1"><i class="fa-solid fa-shield-halved text-xs"></i> DMCA & Telif Kalkanı</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="font-bold text-white mb-3 text-sm">Bizi Takip Edin</h4>
+        <div class="flex items-center gap-3 mb-4">
+          <a href="#" class="w-9 h-9 rounded-xl bg-[#1D162B] flex items-center justify-center hover:bg-pink-600 hover:text-white transition"><i class="fa-brands fa-telegram"></i></a>
+          <a href="#" class="w-9 h-9 rounded-xl bg-[#1D162B] flex items-center justify-center hover:bg-rose-600 hover:text-white transition"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" class="w-9 h-9 rounded-xl bg-[#1D162B] flex items-center justify-center hover:bg-purple-600 hover:text-white transition"><i class="fa-brands fa-x-twitter"></i></a>
+        </div>
+        <div class="text-[11px] text-zinc-500 leading-relaxed">
+          © 2026 SedaDizi. Tüm hakları saklıdır. Platform tanıtım ve dizi severler için derlenmiştir.
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="assets/js/i18n.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="tr" dir="ltr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Dizi İzle – Multi-Server Sinematik Oynatıcı | SedaDizi</title>
+  <meta name="description" content="SedaDizi ile Full HD, alternatif sunucular ve pembe sinema temasıyla Asya dizisi izleyin.">
+  <meta name="theme-color" content="#0D0914">
+  <meta name="robots" content="index, follow">
+
+  <!-- OpenGraph -->
+  <meta property="og:site_name" content="SedaDizi">
+  <meta property="og:title" content="Dizi İzle – Multi-Server Sinematik Oynatıcı | SedaDizi">
+  <meta property="og:description" content="SedaDizi ile Full HD, alternatif sunucular ve pembe sinema temasıyla Asya dizisi izleyin.">
+  <meta property="og:type" content="video.tv_show">
+  <meta property="og:url" content="https://senadizi.com/">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1200&q=80">
+
+  <!-- Fonts & CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Google Fonts: Outfit & Tajawal -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <!-- FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              pink: '#EC4899',
+              rose: '#F43F5E',
+              violet: '#8B5CF6',
+              purple: '#A855F7',
+              dark: '#0D0914',
+              surface: '#151020',
+              card: '#1D162B'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom CSS Suite -->
+  <link rel="stylesheet" href="assets/css/reset.css">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body class="bg-[#0D0914] text-[#FDF2F8] min-h-screen flex flex-col antialiased selection:bg-pink-600 selection:text-white">
+
+  <!-- HEADER / NAVBAR -->
+  <header class="sticky top-0 z-40 w-full glass-nav transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Sol: Logo & Menü -->
+      <div class="flex items-center gap-8">
+        <a href="index.html" class="flex items-center gap-2.5 group">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-500 via-rose-500 to-purple-600 flex items-center justify-center shadow-lg shadow-pink-500/30 group-hover:scale-105 transition-transform">
+            <i class="fa-solid fa-play text-white text-sm ml-0.5"></i>
+          </div>
+          <span class="text-2xl font-black tracking-tight text-white flex items-center">
+            <span>Seda</span><span class="text-pink-400">Dizi</span>
+          </span>
+        </a>
+
+        <!-- Masaüstü Navigasyon -->
+        <nav class="hidden md:flex items-center gap-6 text-sm">
+          <a href="index.html" class="text-zinc-300 hover:text-pink-400 font-medium transition">Ana Sayfa</a>
+          <a href="diziler.html?country=kore" class="text-zinc-300 hover:text-pink-400 font-medium transition flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-pink-500"></span> K-Drama
+          </a>
+          <a href="diziler.html?country=cin" class="text-zinc-300 hover:text-pink-400 font-medium transition">C-Drama</a>
+          <a href="diziler.html?country=tayland" class="text-zinc-300 hover:text-pink-400 font-medium transition">Thai Drama</a>
+          <a href="diziler.html" class="text-pink-400 font-bold">Tüm Diziler</a>
+          <a href="abonelik.html" class="text-zinc-300 hover:text-pink-400 font-medium transition text-amber-400 font-semibold flex items-center gap-1">
+            <i class="fa-solid fa-crown text-xs"></i> VIP
+          </a>
+        </nav>
+      </div>
+
+      <!-- Sağ: Canlı Arama, Dil & Giriş -->
+      <div class="flex items-center gap-3">
+        
+        <!-- Dil Seçici -->
+        <div class="lang-selector-mount"></div>
+
+        <!-- Canlı Arama Girişi -->
+        <div id="search-container" class="relative hidden sm:block w-48 md:w-64">
+          <div class="relative flex items-center">
+            <input 
+              type="text" 
+              placeholder="Asya dizisi veya oyuncu ara..." 
+              oninput="handleHeaderSearch(this)"
+              class="w-full bg-[#151020] border border-pink-500/20 text-xs rounded-full pl-9 pr-4 py-2 text-white placeholder-zinc-400 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition"
+            >
+            <i class="fa-solid fa-magnifying-glass absolute left-3 text-xs text-pink-400"></i>
+          </div>
+          <div id="search-dropdown" class="hidden absolute top-full mt-2 w-72 md:w-84 right-0 bg-[#151020] border border-pink-500/30 rounded-2xl shadow-2xl overflow-hidden z-50"></div>
+        </div>
+
+        <!-- Giriş & VIP Butonları -->
+        <div class="flex items-center gap-2">
+          <a href="giris.html" class="text-xs font-semibold px-3 py-2 text-zinc-300 hover:text-pink-400 transition">Giriş</a>
+          <a href="kayit.html" class="text-xs font-bold px-4 py-2 bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 hover:opacity-90 text-white rounded-xl transition shadow-lg shadow-pink-500/30">Kayıt Ol</a>
+        </div>
+
+        <!-- Mobil Menü Hamburger -->
+        <button onclick="toggleMobileMenu()" class="md:hidden p-2 text-zinc-300 hover:text-pink-400">
+          <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Mobil Açılır Drawer -->
+    <div id="mobile-drawer" class="hidden md:hidden bg-[#151020] border-b border-pink-500/20 px-4 py-4 space-y-3">
+      <div class="relative">
+        <input 
+          type="text" 
+          placeholder="K-Drama veya C-Drama ara..." 
+          oninput="handleHeaderSearch(this)" 
+          class="w-full bg-[#1D162B] border border-pink-500/20 text-sm rounded-xl pl-9 pr-4 py-2.5 text-white"
+        >
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3.5 text-pink-400 text-xs"></i>
+      </div>
+      <div class="grid grid-cols-2 gap-2 pt-2 text-sm font-medium">
+        <a href="index.html" class="p-2.5 rounded-xl bg-[#1D162B] text-white">Ana Sayfa</a>
+        <a href="diziler.html?country=kore" class="p-2.5 rounded-xl bg-[#1D162B] text-pink-400">🇰🇷 K-Drama</a>
+        <a href="diziler.html?country=cin" class="p-2.5 rounded-xl bg-[#1D162B] text-white">🇨🇳 C-Drama</a>
+        <a href="diziler.html?country=tayland" class="p-2.5 rounded-xl bg-[#1D162B] text-white">🇹🇭 Thai Drama</a>
+        <a href="diziler.html" class="p-2.5 rounded-xl bg-[#1D162B] text-white">Tüm Diziler</a>
+        <a href="abonelik.html" class="p-2.5 rounded-xl bg-amber-950/40 text-amber-400 font-bold">⭐ VIP Üyelik</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      
+      <!-- Üst Bar & Sunucu Seçicileri -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#151020] p-4 rounded-2xl border border-pink-500/20">
+        <div>
+          <div class="text-xs text-zinc-400 flex items-center gap-2">
+            <a id="player-series-link" href="dizi-detay.html" class="text-pink-400 font-bold hover:underline">Squid Game 2</a>
+            <span>/</span>
+            <span id="player-episode-badge" class="text-white font-medium">1. Sezon 1. Bölüm</span>
+          </div>
+          <h1 id="player-title" class="text-lg md:text-xl font-black text-white mt-1">1. Bölüm: Kırmızı Işık, Yeşil Işık 2.0</h1>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-xs text-zinc-400 font-semibold mr-1"><i class="fa-solid fa-server mr-1"></i> Sunucu:</span>
+          <button onclick="switchPlayerServer('server1', this)" class="server-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-pink-600 text-white border border-pink-500 transition shadow-lg shadow-pink-600/30">
+            Server 1 (Hızlı HD)
+          </button>
+          <button onclick="switchPlayerServer('server2', this)" class="server-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#1D162B] text-zinc-300 border border-zinc-700 hover:text-pink-400 transition">
+            Server 2 (VIP Hızlı)
+          </button>
+          <button onclick="switchPlayerServer('server3', this)" class="server-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#1D162B] text-zinc-300 border border-zinc-700 hover:text-pink-400 transition">
+            Server 3 (Embed)
+          </button>
+        </div>
+      </div>
+
+      <!-- VİDEO OYNATICI KONTEYNERİ -->
+      <div class="player-container relative w-full aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl border border-pink-500/20 cinema-glow group">
+        
+        <video 
+          id="sedadizi-player" 
+          class="w-full h-full object-contain cursor-pointer" 
+          playsinline 
+          webkit-playsinline 
+          x5-playsinline 
+          preload="metadata"
+          poster="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1920&q=80"
+        >
+          <source id="video-source" src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+          Tarayıcınız HTML5 video oynatmayı desteklemiyor.
+        </video>
+
+        <!-- Oynatıcı Kontrolleri Overlay -->
+        <div id="player-controls" class="absolute inset-0 bg-gradient-to-t from-black/95 via-transparent to-black/60 flex flex-col justify-between p-4 md:p-6 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+          
+          <div class="flex items-center justify-between text-white pointer-events-auto">
+            <div class="text-sm font-bold drop-shadow flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-pink-500 animate-pulse"></span>
+              <span id="player-overlay-title">Squid Game 2 – S1 B1</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="theater-btn" class="px-3 py-1 bg-black/60 hover:bg-black/90 text-zinc-300 text-xs rounded-xl border border-white/10 transition" title="Sinema Modu (Işıkları Kapat)">
+                <i class="fa-regular fa-lightbulb"></i>
+              </button>
+              <div class="text-xs text-pink-300 bg-pink-950/70 px-2.5 py-1 rounded-xl border border-pink-800/50">1080p Full HD</div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-center pointer-events-auto">
+            <button id="center-play-btn" class="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gradient-to-tr from-pink-500 via-rose-500 to-purple-600 text-white flex items-center justify-center text-xl md:text-2xl hover:scale-110 transition shadow-2xl cursor-pointer">
+              <i class="fa-solid fa-play ml-1"></i>
+            </button>
+          </div>
+
+          <div class="space-y-3 pointer-events-auto">
+            <input id="seek-bar" type="range" min="0" max="100" value="0" step="0.1" class="cinema-slider w-full">
+
+            <div class="flex items-center justify-between text-white text-xs">
+              
+              <div class="flex items-center gap-4">
+                <button id="play-btn" class="hover:text-pink-400 transition text-base">
+                  <i class="fa-solid fa-play"></i>
+                </button>
+
+                <div class="flex items-center gap-2">
+                  <button id="volume-btn" class="hover:text-pink-400 transition text-sm">
+                    <i class="fa-solid fa-volume-high"></i>
+                  </button>
+                  <input id="volume-bar" type="range" min="0" max="1" step="0.05" value="1" class="cinema-slider w-16 hidden sm:block">
+                </div>
+
+                <span id="time-display" class="font-mono text-zinc-300 text-xs">00:00 / 00:00</span>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <select id="speed-select" class="bg-[#1D162B] text-white text-xs rounded-xl px-2.5 py-1 border border-pink-500/20">
+                  <option value="0.75">0.75x</option>
+                  <option value="1" selected>1.0x</option>
+                  <option value="1.25">1.25x</option>
+                  <option value="1.5">1.5x</option>
+                  <option value="2.0x">2.0x</option>
+                </select>
+
+                <a id="next-episode-cta" href="#" class="hover:text-pink-400 transition text-sm" title="Sonraki Bölüm">
+                  <i class="fa-solid fa-forward-step"></i>
+                </a>
+
+                <button id="fullscreen-btn" class="hover:text-pink-400 transition text-base" title="Tam Ekran">
+                  <i class="fa-solid fa-expand"></i>
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Bilgi & Yan Bölüm Listesi -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        
+        <div class="lg:col-span-2 space-y-4 bg-[#151020] p-6 rounded-3xl border border-pink-500/20">
+          <div class="flex items-center justify-between">
+            <h2 id="current-ep-title" class="text-xl font-bold text-white">1. Bölüm Detayları</h2>
+            <button onclick="toggleFavorite(1, this)" class="px-4 py-2 rounded-xl bg-[#1D162B] hover:bg-[#261D38] text-xs font-semibold text-zinc-300 border border-pink-500/20">
+              <i class="fa-regular fa-heart mr-1 text-pink-400"></i> Favori
+            </button>
+          </div>
+          <p id="current-ep-desc" class="text-sm text-zinc-300 leading-relaxed">
+            Seong Gi-hun, intikam planlarını devreye sokarak ölümcül arenanın yeni katılımcıları arasında yerini alır.
+          </p>
+        </div>
+
+        <div class="bg-[#151020] p-5 rounded-3xl border border-pink-500/20 space-y-3">
+          <h3 class="text-sm font-bold text-white border-b border-pink-500/20 pb-3 flex items-center justify-between">
+            <span class="flex items-center gap-2"><i class="fa-solid fa-list-ul text-pink-400"></i> Bölümler</span>
+            <span id="player-sidebar-count" class="text-xs text-zinc-400">6 Bölüm</span>
+          </h3>
+
+          <div id="player-episodes-list" class="space-y-2 max-h-96 overflow-y-auto pr-1">
+            <!-- Sidebar episodes -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <script src="assets/js/player.js"></script>
+  <script>
+    let currentSeries = null;
+    let currentEpNum = 1;
+
+    function switchPlayerServer(serverKey, btn) {
+      if (!currentSeries || !window.sedaPlayerInstance) return;
+      const episode = (currentSeries.episodes || []).find(e => e.episode_number === currentEpNum) || currentSeries.episodes[0];
+      const serverUrl = (episode.servers && episode.servers[serverKey]) 
+        ? episode.servers[serverKey] 
+        : 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+
+      window.sedaPlayerInstance.switchServer(serverKey, serverUrl, btn);
+    }
+
+    function initPlayerPage() {
+      const params = new URLSearchParams(window.location.search);
+      const slug = params.get('slug') || 'squid-game-2';
+      currentEpNum = parseInt(params.get('ep')) || 1;
+
+      const list = window.SEDA_SERIES_DATABASE || [];
+      currentSeries = list.find(s => s.slug === slug) || list[0];
+
+      if (currentSeries) {
+        document.getElementById('player-series-link').textContent = currentSeries.title;
+        document.getElementById('player-series-link').href = `dizi-detay.html?slug=${currentSeries.slug}`;
+        document.getElementById('player-episode-badge').textContent = `1. Sezon ${currentEpNum}. Bölüm`;
+        
+        const ep = (currentSeries.episodes || []).find(e => e.episode_number === currentEpNum) || currentSeries.episodes[0];
+        if (ep) {
+          document.getElementById('player-title').textContent = `${ep.episode_number}. Bölüm: ${ep.title}`;
+          document.getElementById('player-overlay-title').textContent = `${currentSeries.title} – S1 B${ep.episode_number}`;
+          document.getElementById('current-ep-title').textContent = `${ep.episode_number}. Bölüm: ${ep.title}`;
+        }
+
+        const nextEp = (currentSeries.episodes || []).find(e => e.episode_number === (currentEpNum + 1));
+        const nextBtn = document.getElementById('next-episode-cta');
+        if (nextEp) {
+          nextBtn.href = `izle.html?slug=${currentSeries.slug}&s=1&ep=${nextEp.episode_number}`;
+          nextBtn.classList.remove('hidden');
+        } else {
+          nextBtn.classList.add('hidden');
+        }
+
+        const sidebar = document.getElementById('player-episodes-list');
+        sidebar.innerHTML = (currentSeries.episodes || []).map(e => `
+          <a href="izle.html?slug=${currentSeries.slug}&s=1&ep=${e.episode_number}" class="flex items-center gap-3 p-2.5 rounded-2xl transition ${e.episode_number === currentEpNum ? 'bg-pink-600/20 border border-pink-500/50 text-white' : 'hover:bg-[#1D162B] text-zinc-300'}">
+            <div class="w-14 aspect-video bg-zinc-900 rounded-lg overflow-hidden flex-shrink-0 relative">
+              <img src="${currentSeries.poster}" class="w-full h-full object-cover" alt="${e.title}">
+              ${e.episode_number === currentEpNum ? '<div class="absolute inset-0 bg-pink-600/60 flex items-center justify-center"><i class="fa-solid fa-volume-high text-white text-xs"></i></div>' : ''}
+            </div>
+            <div class="flex-1 min-w-0 text-xs">
+              <div class="font-bold truncate">${e.episode_number}. ${e.title}</div>
+              <div class="text-zinc-400 text-[11px]">${e.duration || '50 dk'}</div>
+            </div>
+          </a>
+        `).join('');
+
+        window.sedaPlayerInstance = new SedaDiziPlayer({
+          videoId: 'sedadizi-player',
+          seriesSlug: currentSeries.slug,
+          episodeId: currentEpNum
+        });
+      }
+    }
+
+    window.addEventListener('seda:seriesLoaded', () => initPlayerPage());
+    document.addEventListener('DOMContentLoaded', initPlayerPage);
+  </script>
+
+  <!-- MOBİL ALT MENÜ -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 mobile-nav-bottom flex items-center justify-around py-2 bg-[#100C1A]/95 border-t border-pink-500/20">
+    <a href="index.html" class="flex flex-col items-center gap-1 text-[11px] text-pink-400 font-bold">
+      <i class="fa-solid fa-house text-base"></i>
+      <span>Ana Sayfa</span>
+    </a>
+    <a href="diziler.html?country=kore" class="flex flex-col items-center gap-1 text-[11px] text-zinc-400 hover:text-pink-400">
+      <i class="fa-solid fa-heart text-base"></i>
+      <span>K-Drama</span>
+    </a>
+    <a href="diziler.html" class="flex flex-col items-center gap-1 text-[11px] text-zinc-400 hover:text-pink-400">
+      <i class="fa-solid fa-film text-base"></i>
+      <span>Katalog</span>
+    </a>
+    <a href="abonelik.html" class="flex flex-col items-center gap-1 text-[11px] text-amber-400">
+      <i class="fa-solid fa-crown text-base"></i>
+      <span>VIP</span>
+    </a>
+    <a href="giris.html" class="flex flex-col items-center gap-1 text-[11px] text-zinc-400 hover:text-pink-400">
+      <i class="fa-solid fa-user text-base"></i>
+      <span>Profil</span>
+    </a>
+  </nav>
+
+  <!-- GLOBAL FOOTER -->
+  <footer class="bg-[#09060E] border-t border-pink-500/10 text-zinc-400 text-xs py-14 px-4 sm:px-6 lg:px-8 mt-20">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+      <div>
+        <div class="text-xl font-black text-white flex items-center gap-2 mb-4">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center">
+            <i class="fa-solid fa-play text-white text-[11px] ml-0.5"></i>
+          </div>
+          <span>Seda<span class="text-pink-400">Dizi</span></span>
+        </div>
+        <p class="text-zinc-400 text-xs leading-relaxed">
+          Türkiye'nin pembe & sinematik Asya ve Kore dizileri izleme platformu. Full HD Türkçe Altyazı ve Dublaj seçenekleriyle kesintisiz dizi keyfi.
+        </p>
+      </div>
+
+      <div>
+        <h4 class="font-bold text-white mb-3 text-sm">Popüler Kategoriler</h4>
+        <ul class="space-y-2.5">
+          <li><a href="diziler.html?country=kore" class="hover:text-pink-400 transition">Kore Dizileri (K-Drama)</a></li>
+          <li><a href="diziler.html?country=cin" class="hover:text-pink-400 transition">Çin Dizileri (C-Drama)</a></li>
+          <li><a href="diziler.html?country=tayland" class="hover:text-pink-400 transition">Tayland Dizileri (Thai Drama)</a></li>
+          <li><a href="diziler.html?genre=romantik" class="hover:text-pink-400 transition">Romantik Asya Dizileri</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="font-bold text-white mb-3 text-sm">Kurumsal & Destek</h4>
+        <ul class="space-y-2.5">
+          <li><a href="#" class="hover:text-pink-400 transition">Hakkımızda</a></li>
+          <li><a href="#" class="hover:text-pink-400 transition">İletişim & Dizi İstek</a></li>
+          <li><a href="#" class="hover:text-pink-400 transition">Gizlilik ve Çerez Politikası</a></li>
+          <li><a href="dmca.html" class="hover:text-pink-400 transition text-pink-400 font-bold flex items-center gap-1"><i class="fa-solid fa-shield-halved text-xs"></i> DMCA & Telif Kalkanı</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="font-bold text-white mb-3 text-sm">Bizi Takip Edin</h4>
+        <div class="flex items-center gap-3 mb-4">
+          <a href="#" class="w-9 h-9 rounded-xl bg-[#1D162B] flex items-center justify-center hover:bg-pink-600 hover:text-white transition"><i class="fa-brands fa-telegram"></i></a>
+          <a href="#" class="w-9 h-9 rounded-xl bg-[#1D162B] flex items-center justify-center hover:bg-rose-600 hover:text-white transition"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" class="w-9 h-9 rounded-xl bg-[#1D162B] flex items-center justify-center hover:bg-purple-600 hover:text-white transition"><i class="fa-brands fa-x-twitter"></i></a>
+        </div>
+        <div class="text-[11px] text-zinc-500 leading-relaxed">
+          © 2026 SedaDizi. Tüm hakları saklıdır. Platform tanıtım ve dizi severler için derlenmiştir.
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="assets/js/i18n.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

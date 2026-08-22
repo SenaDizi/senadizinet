@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="tr" dir="ltr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Kayıt Ol – SedaDizi</title>
+  <meta name="description" content="SedaDizi'ye ücretsiz kayıt olun ve binlerce K-Drama bölümüne anında erişin.">
+  <meta name="theme-color" content="#0D0914">
+  <meta name="robots" content="index, follow">
+
+  <!-- OpenGraph -->
+  <meta property="og:site_name" content="SedaDizi">
+  <meta property="og:title" content="Kayıt Ol – SedaDizi">
+  <meta property="og:description" content="SedaDizi'ye ücretsiz kayıt olun ve binlerce K-Drama bölümüne anında erişin.">
+  <meta property="og:type" content="video.tv_show">
+  <meta property="og:url" content="https://senadizi.com/">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1200&q=80">
+
+  <!-- Fonts & CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Google Fonts: Outfit & Tajawal -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <!-- FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              pink: '#EC4899',
+              rose: '#F43F5E',
+              violet: '#8B5CF6',
+              purple: '#A855F7',
+              dark: '#0D0914',
+              surface: '#151020',
+              card: '#1D162B'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom CSS Suite -->
+  <link rel="stylesheet" href="assets/css/reset.css">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body class="bg-[#0D0914] text-[#FDF2F8] min-h-screen flex flex-col antialiased selection:bg-pink-600 selection:text-white">
+
+  <!-- HEADER / NAVBAR -->
+  <header class="sticky top-0 z-40 w-full glass-nav transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Sol: Logo & Menü -->
+      <div class="flex items-center gap-8">
+        <a href="index.html" class="flex items-center gap-2.5 group">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-500 via-rose-500 to-purple-600 flex items-center justify-center shadow-lg shadow-pink-500/30 group-hover:scale-105 transition-transform">
+            <i class="fa-solid fa-play text-white text-sm ml-0.5"></i>
+          </div>
+          <span class="text-2xl font-black tracking-tight text-white flex items-center">
+            <span>Seda</span><span class="text-pink-400">Dizi</span>
+          </span>
+        </a>
+
+        <!-- Masaüstü Navigasyon -->
+        <nav class="hidden md:flex items-center gap-6 text-sm">
+          <a href="index.html" class="text-pink-400 font-bold">Ana Sayfa</a>
+          <a href="diziler.html?country=kore" class="text-zinc-300 hover:text-pink-400 font-medium transition flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-pink-500"></span> K-Drama
+          </a>
+          <a href="diziler.html?country=cin" class="text-zinc-300 hover:text-pink-400 font-medium transition">C-Drama</a>
+          <a href="diziler.html?country=tayland" class="text-zinc-300 hover:text-pink-400 font-medium transition">Thai Drama</a>
+          <a href="diziler.html" class="text-zinc-300 hover:text-pink-400 font-medium transition">Tüm Diziler</a>
+          <a href="abonelik.html" class="text-zinc-300 hover:text-pink-400 font-medium transition text-amber-400 font-semibold flex items-center gap-1">
+            <i class="fa-solid fa-crown text-xs"></i> VIP
+          </a>
+        </nav>
+      </div>
+
+      <!-- Sağ: Canlı Arama, Dil & Giriş -->
+      <div class="flex items-center gap-3">
+        
+        <!-- Dil Seçici -->
+        <div class="lang-selector-mount"></div>
+
+        <!-- Canlı Arama Girişi -->
+        <div id="search-container" class="relative hidden sm:block w-48 md:w-64">
+          <div class="relative flex items-center">
+            <input 
+              type="text" 
+              placeholder="Asya dizisi veya oyuncu ara..." 
+              oninput="handleHeaderSearch(this)"
+              class="w-full bg-[#151020] border border-pink-500/20 text-xs rounded-full pl-9 pr-4 py-2 text-white placeholder-zinc-400 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition"
+            >
+            <i class="fa-solid fa-magnifying-glass absolute left-3 text-xs text-pink-400"></i>
+          </div>
+          <div id="search-dropdown" class="hidden absolute top-full mt-2 w-72 md:w-84 right-0 bg-[#151020] border border-pink-500/30 rounded-2xl shadow-2xl overflow-hidden z-50"></div>
+        </div>
+
+        <!-- Giriş & VIP Butonları -->
+        <div class="flex items-center gap-2">
+          <a href="giris.html" class="text-xs font-semibold px-3 py-2 text-zinc-300 hover:text-pink-400 transition">Giriş</a>
+          <a href="kayit.html" class="text-xs font-bold px-4 py-2 bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 hover:opacity-90 text-white rounded-xl transition shadow-lg shadow-pink-500/30">Kayıt Ol</a>
+        </div>
+
+        <!-- Mobil Menü Hamburger -->
+        <button onclick="toggleMobileMenu()" class="md:hidden p-2 text-zinc-300 hover:text-pink-400">
+          <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Mobil Açılır Drawer -->
+    <div id="mobile-drawer" class="hidden md:hidden bg-[#151020] border-b border-pink-500/20 px-4 py-4 space-y-3">
+      <div class="relative">
+        <input 
+          type="text" 
+          placeholder="K-Drama veya C-Drama ara..." 
+          oninput="handleHeaderSearch(this)" 
+          class="w-full bg-[#1D162B] border border-pink-500/20 text-sm rounded-xl pl-9 pr-4 py-2.5 text-white"
+        >
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3.5 text-pink-400 text-xs"></i>
+      </div>
+      <div class="grid grid-cols-2 gap-2 pt-2 text-sm font-medium">
+        <a href="index.html" class="p-2.5 rounded-xl bg-[#1D162B] text-white">Ana Sayfa</a>
+        <a href="diziler.html?country=kore" class="p-2.5 rounded-xl bg-[#1D162B] text-pink-400">🇰🇷 K-Drama</a>
+        <a href="diziler.html?country=cin" class="p-2.5 rounded-xl bg-[#1D162B] text-white">🇨🇳 C-Drama</a>
+        <a href="diziler.html?country=tayland" class="p-2.5 rounded-xl bg-[#1D162B] text-white">🇹🇭 Thai Drama</a>
+        <a href="diziler.html" class="p-2.5 rounded-xl bg-[#1D162B] text-white">Tüm Diziler</a>
+        <a href="abonelik.html" class="p-2.5 rounded-xl bg-amber-950/40 text-amber-400 font-bold">⭐ VIP Üyelik</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1">
+    <div class="min-h-[75vh] flex items-center justify-center px-4 py-12">
+      <div class="w-full max-w-md bg-[#151020] border border-pink-500/20 rounded-3xl p-8 shadow-2xl space-y-6">
+        
+        <div class="text-center space-y-2">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center mx-auto shadow-lg shadow-pink-500/30">
+            <i class="fa-solid fa-user-plus text-white text-base"></i>
+          </div>
+          <h1 class="text-2xl font-black text-white">SedaDizi'ye Katılın</h1>
+          <p class="text-xs text-zinc-400">Asya ve Kore dizilerini yüksek kalitede izleyin.</p>
+        </div>
+
+        <form id="register-form" onsubmit="handleAuthRegister(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-zinc-300 mb-1.5">Kullanıcı Adı</label>
+            <input type="text" id="reg_username" placeholder="kullaniciadi" required class="w-full bg-[#1D162B] border border-pink-500/20 rounded-xl px-4 py-3 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-pink-500 transition">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-zinc-300 mb-1.5">E-Posta Adresi</label>
+            <input type="email" id="reg_email" placeholder="ornek@sedadizi.com" required class="w-full bg-[#1D162B] border border-pink-500/20 rounded-xl px-4 py-3 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-pink-500 transition">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-zinc-300 mb-1.5">Şifre</label>
+            <input type="password" id="reg_password" placeholder="En az 6 karakter" required class="w-full bg-[#1D162B] border border-pink-500/20 rounded-xl px-4 py-3 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-pink-500 transition">
+          </div>
+
+          <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 hover:opacity-90 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-pink-500/30">
+            Hesap Oluştur
+          </button>
+        </form>
+
+        <div class="text-center text-xs text-zinc-400">
+          Zaten hesabınız var mı? <a href="giris.html" class="text-pink-400 font-bold hover:underline">Giriş Yap</a>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function handleAuthRegister(e) {
+      e.preventDefault();
+      const token = 'seda_tok_' + Math.random().toString(36).substr(2) + Date.now();
+      localStorage.setItem('seda_token', token);
+      window.sedaApp.showToast('Hesabınız oluşturuldu! Yönlendiriliyorsunuz...', 'success');
+      setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+    }
+  </script>
+
+  <!-- MOBİL ALT MENÜ -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 mobile-nav-bottom flex items-center justify-around py-2 bg-[#100C1A]/95 border-t border-pink-500/20">
+    <a href="index.html" class="flex flex-col items-center gap-1 text-[11px] text-pink-400 font-bold">
+      <i class="fa-solid fa-house text-base"></i>
+      <span>Ana Sayfa</span>
+    </a>
+    <a href="diziler.html?country=kore" class="flex flex-col items-center gap-1 text-[11px] text-zinc-400 hover:text-pink-400">
+      <i class="fa-solid fa-heart text-base"></i>
+      <span>K-Drama</span>
+    </a>
+    <a href="diziler.html" class="flex flex-col items-center gap-1 text-[11px] text-zinc-400 hover:text-pink-400">
+      <i class="fa-solid fa-film text-base"></i>
+      <span>Katalog</span>
+    </a>
+    <a href="abonelik.html" class="flex flex-col items-center gap-1 text-[11px] text-amber-400">
+      <i class="fa-solid fa-crown text-base"></i>
+      <span>VIP</span>
+    </a>
+    <a href="giris.html" class="flex flex-col items-center gap-1 text-[11px] text-zinc-400 hover:text-pink-400">
+      <i class="fa-solid fa-user text-base"></i>
+      <span>Profil</span>
+    </a>
+  </nav>
+
+  <!-- GLOBAL FOOTER -->
+  <footer class="bg-[#09060E] border-t border-pink-500/10 text-zinc-400 text-xs py-14 px-4 sm:px-6 lg:px-8 mt-20">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+      <div>
+        <div class="text-xl font-black text-white flex items-center gap-2 mb-4">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center">
+            <i class="fa-solid fa-play text-white text-[11px] ml-0.5"></i>
+          </div>
+          <span>Seda<span class="text-pink-400">Dizi</span></span>
+        </div>
+        <p class="text-zinc-400 text-xs leading-relaxed">
+          Türkiye'nin pembe & sinematik Asya ve Kore dizileri izleme platformu. Full HD Türkçe Altyazı ve Dublaj seçenekleriyle kesintisiz dizi keyfi.
+        </p>
+      </div>
+
+      <div>
+        <h4 class="font-bold text-white mb-3 text-sm">Popüler Kategoriler</h4>
+        <ul class="space-y-2.5">
+          <li><a href="diziler.html?country=kore" class="hover:text-pink-400 transition">Kore Dizileri (K-Drama)</a></li>
+          <li><a href="diziler.html?country=cin" class="hover:text-pink-400 transition">Çin Dizileri (C-Drama)</a></li>
+          <li><a href="diziler.html?country=tayland" class="hover:text-pink-400 transition">Tayland Dizileri (Thai Drama)</a></li>
+          <li><a href="diziler.html?genre=romantik" class="hover:text-pink-400 transition">Romantik Asya Dizileri</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="font-bold text-white mb-3 text-sm">Kurumsal & Destek</h4>
+        <ul class="space-y-2.5">
+          <li><a href="#" class="hover:text-pink-400 transition">Hakkımızda</a></li>
+          <li><a href="#" class="hover:text-pink-400 transition">İletişim & Dizi İstek</a></li>
+          <li><a href="#" class="hover:text-pink-400 transition">Gizlilik ve Çerez Politikası</a></li>
+          <li><a href="dmca.html" class="hover:text-pink-400 transition text-pink-400 font-bold flex items-center gap-1"><i class="fa-solid fa-shield-halved text-xs"></i> DMCA & Telif Kalkanı</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="font-bold text-white mb-3 text-sm">Bizi Takip Edin</h4>
+        <div class="flex items-center gap-3 mb-4">
+          <a href="#" class="w-9 h-9 rounded-xl bg-[#1D162B] flex items-center justify-center hover:bg-pink-600 hover:text-white transition"><i class="fa-brands fa-telegram"></i></a>
+          <a href="#" class="w-9 h-9 rounded-xl bg-[#1D162B] flex items-center justify-center hover:bg-rose-600 hover:text-white transition"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" class="w-9 h-9 rounded-xl bg-[#1D162B] flex items-center justify-center hover:bg-purple-600 hover:text-white transition"><i class="fa-brands fa-x-twitter"></i></a>
+        </div>
+        <div class="text-[11px] text-zinc-500 leading-relaxed">
+          © 2026 SedaDizi. Tüm hakları saklıdır. Platform tanıtım ve dizi severler için derlenmiştir.
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="assets/js/i18n.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
