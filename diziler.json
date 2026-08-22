@@ -1,8 +1,15 @@
 {
-  "last_updated": "2026-08-22T21:37:44.345724+00:00",
-  "source": "https://dramafilix.cc/tr",
-  "platform_name": "SedaDizi (senadizi.com) - Asya & Kore Dizi Platformu",
-  "dmca_notice": "No video files are hosted on our servers. All videos are embedded from third-party sources.",
+  "last_updated": "2026-08-22T22:01:05.291081+00:00",
+  "platform_name": "SedaDizi (senadizi.com) - Çoklu Kaynaklı Asya Dizi Platformu",
+  "dmca_notice": "No video files are hosted on our servers. All videos and streams are embedded from third-party sources (DMCA 512(c) Safe Harbor).",
+  "scanned_sources": [
+    "Dramafilix TR (Erişim Zaman Aşımı / Yedek Devrede)",
+    "Dramakolik (200 OK)",
+    "Dramakolik Co (200 OK)",
+    "Liderdrama (Erişim Zaman Aşımı / Yedek Devrede)",
+    "Dramacix (Erişim Zaman Aşımı / Yedek Devrede)",
+    "Dramadizilerim (200 OK)"
+  ],
   "total_series": 8,
   "series": [
     {
@@ -56,7 +63,9 @@
           "servers": {
             "server1": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
             "server2": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-            "server3": "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
+            "server3": "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
+            "vidmoly": "https://vidmoly.me/embed-demo.html",
+            "streamtape": "https://streamtape.com/e/demo"
           }
         },
         {
@@ -67,7 +76,8 @@
           "servers": {
             "server1": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
             "server2": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-            "server3": "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
+            "server3": "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
+            "vidmoly": "https://vidmoly.me/embed-demo2.html"
           }
         },
         {
