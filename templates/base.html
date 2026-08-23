@@ -14,6 +14,10 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="canonical" href="{{ canonical_url or request.url }}">
 
+  <!-- Favicon & Touch Icon -->
+  <link rel="icon" type="image/png" href="/static/img/favicon.png">
+  <link rel="apple-touch-icon" href="/static/img/logo.png">
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -60,9 +64,7 @@
       <!-- Sol: Logo & Ana Menü -->
       <div class="flex items-center gap-8">
         <a href="/" class="flex items-center gap-2.5 group">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-violet-600 via-fuchsia-600 to-pink-500 flex items-center justify-center shadow-lg shadow-fuchsia-500/25 group-hover:scale-105 transition-transform">
-            <i class="fa-solid fa-play text-white text-sm ml-0.5"></i>
-          </div>
+          <img src="/static/img/logo.png" class="w-10 h-10 rounded-2xl object-cover shadow-lg shadow-pink-500/30 group-hover:scale-105 transition-transform border border-white/15" alt="SenaDizi">
           <span class="text-2xl font-black tracking-tight text-white flex items-center">
             <span>Sena</span><span class="text-gradient font-black">Dizi</span>
           </span>
@@ -243,9 +245,7 @@
     <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-10">
       <div class="space-y-4 col-span-2 sm:col-span-1">
         <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-violet-600 to-pink-500 flex items-center justify-center text-white text-xs">
-            <i class="fa-solid fa-play"></i>
-          </div>
+          <img src="/static/img/logo.png" class="w-8 h-8 rounded-xl object-cover shadow-md border border-white/10" alt="SenaDizi">
           <span class="text-xl font-black text-white">Sena<span class="text-gradient">Dizi</span></span>
         </div>
         <p class="text-zinc-400 text-xs leading-relaxed">
