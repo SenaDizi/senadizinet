@@ -57,13 +57,13 @@
 </head>
 <body class="bg-[#0A0A0F] text-white min-h-screen flex flex-col antialiased selection:bg-fuchsia-600 selection:text-white pb-20 md:pb-0">
 
-  <!-- 1. MOBİL ÇEKMECE MENÜ (TOP-LEVEL OVERLAY, Z-INDEX 9999) -->
-  <div id="mobile-drawer" class="fixed inset-0 z-[9999] pointer-events-none transition-all duration-300">
+  <!-- 1. MOBİL ÇEKMECE MENÜ (TOP-LEVEL OVERLAY, Z-INDEX 99999) -->
+  <div id="mobile-drawer" class="fixed inset-0 z-[99999] pointer-events-none transition-all duration-300">
     <!-- Karartma Arka Planı (Backdrop) -->
-    <div id="drawer-backdrop" class="absolute inset-0 bg-black/80 backdrop-blur-sm opacity-0 transition-opacity duration-300 pointer-events-auto cursor-pointer" onclick="toggleMobileMenu(false)"></div>
+    <div id="drawer-backdrop" class="absolute inset-0 bg-black/80 backdrop-blur-md opacity-0 transition-opacity duration-300 pointer-events-none cursor-pointer" onclick="toggleMobileMenu(false)"></div>
     
     <!-- Çekmece Paneli (Soldan Kayan Panel) -->
-    <div id="drawer-panel" class="relative w-72 sm:w-80 max-w-[85vw] bg-[#111115] border-r border-white/10 h-full overflow-y-auto p-5 space-y-6 flex flex-col justify-between shadow-2xl transform -translate-x-full transition-transform duration-300 ease-out pointer-events-auto">
+    <div id="drawer-panel" class="relative w-72 sm:w-80 max-w-[85vw] bg-[#111115] border-r border-white/10 h-full overflow-y-auto p-5 space-y-6 flex flex-col justify-between shadow-2xl transform -translate-x-full transition-transform duration-300 ease-out pointer-events-auto" style="transform: translateX(-100%);">
       
       <div class="space-y-5">
         <!-- Üst Başlık & Kapat Butonu -->
@@ -174,11 +174,18 @@
   <header class="sticky top-9 z-30 w-full glass-nav transition-all duration-300">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3 flex items-center justify-between gap-4">
       
-      <!-- Sol: Logo & Ana Menü -->
-      <div class="flex items-center gap-8">
+      <!-- Sol: Mobil Hamburger Menü Butonu & Logo & Ana Menü -->
+      <div class="flex items-center gap-3 sm:gap-6">
+        
+        <!-- MOBİL SOL ÜST HAMBURGER MENÜ BUTONU (ÜÇ ÇİZGİ) -->
+        <button id="hamburger-btn" onclick="toggleMobileMenu()" class="lg:hidden w-10 h-10 -ml-1 rounded-xl bg-white/5 hover:bg-white/10 active:scale-90 text-white flex items-center justify-center transition border border-white/10 shadow-md cursor-pointer flex-shrink-0" aria-label="Menüyü Aç">
+          <i class="fa-solid fa-bars text-lg text-white"></i>
+        </button>
+
+        <!-- Logo -->
         <a href="/" class="flex items-center gap-2.5 group">
-          <img src="/static/img/logo.png" class="w-10 h-10 rounded-2xl object-cover shadow-lg shadow-pink-500/30 group-hover:scale-105 transition-transform border border-white/15" alt="SenaDizi">
-          <span class="text-2xl font-black tracking-tight text-white flex items-center">
+          <img src="/static/img/logo.png" class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl object-cover shadow-lg shadow-pink-500/30 group-hover:scale-105 transition-transform border border-white/15" alt="SenaDizi">
+          <span class="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center">
             <span>Sena</span><span class="text-gradient font-black">Dizi</span>
           </span>
         </a>
@@ -286,11 +293,6 @@
             <a href="/kayit" class="text-xs font-extrabold px-4 py-2 rounded-xl btn-gradient transition shadow-lg">Kayıt Ol</a>
           </div>
         {% endif %}
-
-        <!-- Mobil Menü Hamburger Butonu -->
-        <button id="hamburger-btn" onclick="toggleMobileMenu()" class="lg:hidden p-2 text-zinc-300 hover:text-white transition" aria-label="Menü">
-          <i class="fa-solid fa-bars-staggered text-xl"></i>
-        </button>
 
       </div>
     </div>

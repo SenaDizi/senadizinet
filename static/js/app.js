@@ -140,28 +140,38 @@ function toggleMobileMenu(forceState) {
   const hamburgerBtn = document.getElementById('hamburger-btn');
   if (!drawer || !panel || !backdrop) return;
 
-  const isCurrentlyOpen = panel.classList.contains('translate-x-0');
+  const isCurrentlyOpen = panel.style.transform === 'translateX(0%)' || (!panel.classList.contains('-translate-x-full') && panel.classList.contains('translate-x-0'));
   const shouldOpen = forceState !== undefined ? forceState : !isCurrentlyOpen;
 
   if (shouldOpen) {
     drawer.classList.remove('pointer-events-none');
-    backdrop.classList.remove('opacity-0');
-    backdrop.classList.add('opacity-100');
+    drawer.classList.add('pointer-events-auto');
+    
+    backdrop.classList.remove('opacity-0', 'pointer-events-none');
+    backdrop.classList.add('opacity-100', 'pointer-events-auto');
+    
     panel.classList.remove('-translate-x-full');
     panel.classList.add('translate-x-0');
+    panel.style.transform = 'translateX(0%)';
+    
     document.body.style.overflow = 'hidden';
     if (hamburgerBtn) {
-      hamburgerBtn.innerHTML = '<i class="fa-solid fa-xmark text-xl text-fuchsia-400"></i>';
+      hamburgerBtn.innerHTML = '<i class="fa-solid fa-xmark text-lg text-fuchsia-400"></i>';
     }
   } else {
-    backdrop.classList.remove('opacity-100');
-    backdrop.classList.add('opacity-0');
+    backdrop.classList.remove('opacity-100', 'pointer-events-auto');
+    backdrop.classList.add('opacity-0', 'pointer-events-none');
+    
     panel.classList.remove('translate-x-0');
     panel.classList.add('-translate-x-full');
+    panel.style.transform = 'translateX(-100%)';
+    
+    drawer.classList.remove('pointer-events-auto');
     drawer.classList.add('pointer-events-none');
+    
     document.body.style.overflow = '';
     if (hamburgerBtn) {
-      hamburgerBtn.innerHTML = '<i class="fa-solid fa-bars-staggered text-xl text-zinc-300"></i>';
+      hamburgerBtn.innerHTML = '<i class="fa-solid fa-bars text-lg text-white"></i>';
     }
   }
 }
