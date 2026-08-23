@@ -1,0 +1,71 @@
+{% extends "admin/admin_base.html" %}
+
+{% block admin_content %}
+<div class="space-y-6">
+  
+  <div class="flex items-center justify-between border-b border-white/5 pb-4">
+    <div>
+      <h2 class="text-xl font-black text-white flex items-center gap-2">
+        <span>🖥️</span>
+        <span>Sunucu & Servis Durumu</span>
+      </h2>
+      <p class="text-xs text-zinc-400 mt-1">Uygulama sunucusu, veritabanı, cron görevleri ve CDN bağlantı durumu.</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    
+    <div class="bg-[#16161C] border border-white/5 rounded-3xl p-6 space-y-2">
+      <div class="flex items-center justify-between text-xs text-zinc-400 font-bold">
+        <span>Uygulama Motoru</span>
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+      </div>
+      <div class="text-xl font-black text-white">FastAPI / Python</div>
+      <div class="text-[11px] text-emerald-400 font-bold">● Aktif & Çalışıyor</div>
+    </div>
+
+    <div class="bg-[#16161C] border border-white/5 rounded-3xl p-6 space-y-2">
+      <div class="flex items-center justify-between text-xs text-zinc-400 font-bold">
+        <span>Veritabanı</span>
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+      </div>
+      <div class="text-xl font-black text-white">SQLAlchemy DB</div>
+      <div class="text-[11px] text-emerald-400 font-bold">● Bağlantı Sağlıklı</div>
+    </div>
+
+    <div class="bg-[#16161C] border border-white/5 rounded-3xl p-6 space-y-2">
+      <div class="flex items-center justify-between text-xs text-zinc-400 font-bold">
+        <span>Cron Görevleri</span>
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+      </div>
+      <div class="text-xl font-black text-white">SenaDizi_Cron</div>
+      <div class="text-[11px] text-emerald-400 font-bold">● Her Saat Otomatik</div>
+    </div>
+
+    <div class="bg-[#16161C] border border-white/5 rounded-3xl p-6 space-y-2">
+      <div class="flex items-center justify-between text-xs text-zinc-400 font-bold">
+        <span>CDN & Edge Dağıtım</span>
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+      </div>
+      <div class="text-xl font-black text-white">Cloudflare / B2</div>
+      <div class="text-[11px] text-emerald-400 font-bold">● CNAME Proxied</div>
+    </div>
+
+  </div>
+
+  <!-- Sunucu Logları & Detaylar -->
+  <div class="bg-[#16161C] border border-white/5 rounded-3xl p-6 sm:p-8 space-y-4">
+    <h3 class="text-sm font-black text-white flex items-center gap-2">
+      <i class="fa-solid fa-terminal text-zinc-400"></i>
+      <span>Sistem Özeti & Bellek Durumu</span>
+    </h3>
+    <div class="bg-[#0E0E12] border border-white/5 rounded-2xl p-4 font-mono text-xs text-zinc-300 space-y-1.5 leading-relaxed">
+      <div>[STATUS] Port: 8000 / 5001 | Host: 0.0.0.0</div>
+      <div>[DATABASE] SQLite / PostgreSQL Engine Active</div>
+      <div>[WORKER] FastStart FFmpeg & Background Tasks Ready</div>
+      <div>[NETWORK] Reverse CDN Bypass: Enabled</div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

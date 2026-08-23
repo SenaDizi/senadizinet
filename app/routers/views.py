@@ -520,6 +520,44 @@ def admin_subscriptions(request: Request, db: Session = Depends(get_db)):
     ctx["plans"] = plans
     return templates.TemplateResponse(request=request, name="admin/subscriptions.html", context=ctx)
 
+@router.get("/admin/analytics", response_class=HTMLResponse)
+def admin_analytics(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user_optional(request, db)
+    if not user or user.role != UserRole.ADMIN:
+        return Response(status_code=302, headers={"Location": "/giris?next=/admin/analytics"})
+
+    ctx = get_base_context(request, db, "İzlenme & Analiz – SenaDizi", user)
+    return templates.TemplateResponse(request=request, name="admin/analytics.html", context=ctx)
+
+@router.get("/admin/manual-import", response_class=HTMLResponse)
+def admin_manual_import(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user_optional(request, db)
+    if not user or user.role != UserRole.ADMIN:
+        return Response(status_code=302, headers={"Location": "/giris?next=/admin/manual-import"})
+
+    ctx = get_base_context(request, db, "Manuel İçe Aktar – SenaDizi", user)
+    all_series = db.query(Series).order_by(Series.title).all()
+    ctx["all_series"] = all_series
+    return templates.TemplateResponse(request=request, name="admin/manual_import.html", context=ctx)
+
+@router.get("/admin/server-status", response_class=HTMLResponse)
+def admin_server_status(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user_optional(request, db)
+    if not user or user.role != UserRole.ADMIN:
+        return Response(status_code=302, headers={"Location": "/giris?next=/admin/server-status"})
+
+    ctx = get_base_context(request, db, "Sunucu Durumu – SenaDizi", user)
+    return templates.TemplateResponse(request=request, name="admin/server_status.html", context=ctx)
+
+@router.get("/admin/announcements", response_class=HTMLResponse)
+def admin_announcements(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user_optional(request, db)
+    if not user or user.role != UserRole.ADMIN:
+        return Response(status_code=302, headers={"Location": "/giris?next=/admin/announcements"})
+
+    ctx = get_base_context(request, db, "Duyuru Yönetimi – SenaDizi", user)
+    return templates.TemplateResponse(request=request, name="admin/announcements.html", context=ctx)
+
 @router.get("/admin/settings", response_class=HTMLResponse)
 def admin_settings(request: Request, db: Session = Depends(get_db)):
     user = get_current_user_optional(request, db)

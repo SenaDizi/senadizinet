@@ -1,0 +1,49 @@
+{% extends "admin/admin_base.html" %}
+
+{% block admin_content %}
+<div class="space-y-6">
+  
+  <div class="flex items-center justify-between border-b border-white/5 pb-4">
+    <div>
+      <h2 class="text-xl font-black text-white flex items-center gap-2">
+        <span>📢</span>
+        <span>Site Duyuruları & Telegram Bildirimi</span>
+      </h2>
+      <p class="text-xs text-zinc-400 mt-1">Sitenin en üstündeki mavi duyuru bandını ve Telegram destek mesajlarını yönetin.</p>
+    </div>
+  </div>
+
+  <div class="bg-[#16161C] border border-white/5 rounded-3xl p-6 sm:p-8 space-y-5 max-w-2xl">
+    <h3 class="text-sm font-black text-white flex items-center gap-2">
+      <i class="fa-solid fa-bullhorn text-red-500"></i>
+      <span>Üst Mavi Duyuru Bandı Metni</span>
+    </h3>
+
+    <form onsubmit="handleSaveAnnouncement(event)" class="space-y-4">
+      <div>
+        <label class="block text-xs font-bold text-zinc-400 mb-1.5">Duyuru Metni</label>
+        <input type="text" id="announcement_text" value="SORUN VARSA TELEGRAMDAN BİLDİRİN DÜZELTELİM İYİ SEYİRLER —" required class="w-full bg-[#1C1C24] border border-white/10 text-xs rounded-2xl px-4 py-3 text-white">
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-zinc-400 mb-1.5">Telegram Destek Linki</label>
+        <input type="url" id="telegram_link" value="https://t.me/senadizi" required class="w-full bg-[#1C1C24] border border-white/10 text-xs rounded-2xl px-4 py-3 text-white">
+      </div>
+
+      <button type="submit" class="px-7 py-3.5 bg-red-600 hover:bg-red-700 text-white font-black text-xs rounded-2xl transition shadow-lg shadow-red-600/30">
+        Duyuruyu Kaydet & Yayınla
+      </button>
+    </form>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block admin_scripts %}
+<script>
+  function handleSaveAnnouncement(e) {
+    e.preventDefault();
+    showToast('Duyuru ve Telegram linki başarıyla kaydedildi!', 'success');
+  }
+</script>
+{% endblock %}

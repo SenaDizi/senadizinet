@@ -1,0 +1,129 @@
+{% extends "admin/admin_base.html" %}
+
+{% block admin_content %}
+<div class="space-y-6">
+  
+  <div class="flex items-center justify-between border-b border-white/5 pb-4">
+    <div>
+      <h2 class="text-xl font-black text-white flex items-center gap-2">
+        <span>📥</span>
+        <span>Manuel Dizi & Bölüm İçe Aktar</span>
+      </h2>
+      <p class="text-xs text-zinc-400 mt-1">Harici kaynaklardan, S3 / B2 CDN veya direkt video bağlantısı ile dizi ve bölümleri hızlıca ekleyin.</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    
+    <!-- Manuel Bölüm Ekleme Formu -->
+    <div class="bg-[#16161C] border border-white/5 rounded-3xl p-6 sm:p-8 space-y-5">
+      <h3 class="text-sm font-black text-white flex items-center gap-2">
+        <i class="fa-solid fa-cloud-arrow-up text-red-500"></i>
+        <span>Hızlı Video / CDN Bağlantısı Ekle</span>
+      </h3>
+
+      <form id="manual-import-form" onsubmit="handleManualImport(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-zinc-400 mb-1.5">Hedef Dizi</label>
+          <select id="import_series_id" required class="w-full bg-[#1C1C24] border border-white/10 text-xs rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-red-500">
+            <option value="">-- Dizi Seçin --</option>
+            {% for s in all_series %}
+              <option value="{{ s.id }}">{{ s.title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-zinc-400 mb-1.5">Sezon No</label>
+            <input type="number" id="import_season_num" value="1" min="1" required class="w-full bg-[#1C1C24] border border-white/10 text-xs rounded-2xl px-4 py-3 text-white">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-zinc-400 mb-1.5">Bölüm No</label>
+            <input type="number" id="import_episode_num" value="1" min="1" required class="w-full bg-[#1C1C24] border border-white/10 text-xs rounded-2xl px-4 py-3 text-white">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-zinc-400 mb-1.5">Bölüm Başlığı</label>
+          <input type="text" id="import_title" placeholder="1. Bölüm" required class="w-full bg-[#1C1C24] border border-white/10 text-xs rounded-2xl px-4 py-3 text-white placeholder-zinc-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-zinc-400 mb-1.5">Direkt Video / CDN URL (.mp4 / .m3u8)</label>
+          <input type="url" id="import_video_url" placeholder="https://cdn.senadizi.com/file/.../bolum1.mp4" required class="w-full bg-[#1C1C24] border border-white/10 text-xs rounded-2xl px-4 py-3 text-white placeholder-zinc-500 font-mono">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-zinc-400 mb-1.5">Altyazı URL (Opsiyonel .vtt / .srt)</label>
+          <input type="url" id="import_subtitle_url" placeholder="https://cdn.senadizi.com/subtitles/bolum1_tr.vtt" class="w-full bg-[#1C1C24] border border-white/10 text-xs rounded-2xl px-4 py-3 text-white placeholder-zinc-500 font-mono">
+        </div>
+
+        <button type="submit" class="w-full py-3.5 bg-red-600 hover:bg-red-700 text-white font-black text-xs rounded-2xl transition shadow-lg shadow-red-600/30">
+          İçe Aktar & Yayınla
+        </button>
+      </form>
+    </div>
+
+    <!-- Bilgi & CDN Rehberi -->
+    <div class="bg-[#16161C] border border-white/5 rounded-3xl p-6 sm:p-8 space-y-4">
+      <h3 class="text-sm font-black text-white flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-amber-400"></i>
+        <span>CDN & FastStart Entegrasyonu</span>
+      </h3>
+      <div class="text-xs text-zinc-400 space-y-3 leading-relaxed">
+        <p>
+          Eklediğiniz video bağlantıları doğrudan **Backblaze B2** veya **Cloudflare CDN** üzerinde barınıyorsa, sistem herhangi bir harici siteye istek atmadan videoyu doğrudan oynatıcıya teslim eder.
+        </p>
+        <div class="p-4 bg-[#1C1C24] rounded-2xl border border-white/5 space-y-2">
+          <div class="text-white font-bold text-xs flex items-center gap-2">
+            <i class="fa-solid fa-bolt text-amber-400"></i> Moov Atom (FastStart) Kontrolü
+          </div>
+          <p class="text-[11px] text-zinc-400">
+            MP4 videolarınızın başında moov atomu bulunuyorsa kullanıcılar videoyu beklemeden ilk saniyeden itibaren kesintisiz izleyebilir.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block admin_scripts %}
+<script>
+  async function handleManualImport(e) {
+    e.preventDefault();
+    const seriesId = document.getElementById('import_series_id').value;
+    const seasonNum = parseInt(document.getElementById('import_season_num').value);
+    const epNum = parseInt(document.getElementById('import_episode_num').value);
+    const title = document.getElementById('import_title').value;
+    const videoUrl = document.getElementById('import_video_url').value;
+
+    try {
+      const res = await fetch('/api/admin/episodes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          series_id: parseInt(seriesId),
+          season_number: seasonNum,
+          episode_number: epNum,
+          title: title,
+          video_url: videoUrl,
+          is_free: true
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast('Bölüm başarıyla eklendi ve yayına alındı!', 'success');
+        document.getElementById('manual-import-form').reset();
+      } else {
+        showToast(data.detail || 'Ekleme başarısız.', 'error');
+      }
+    } catch (err) {
+      showToast('Bağlantı hatası.', 'error');
+    }
+  }
+</script>
+{% endblock %}

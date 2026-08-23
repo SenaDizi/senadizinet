@@ -3,8 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ page_title }} – SenaDizi Yönetim Paneli</title>
+  <title>{{ page_title }} – SenaDizi Yönetim</title>
   
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="/static/img/favicon.png">
+
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -13,89 +17,182 @@
         extend: {
           colors: {
             brand: {
-              bg: '#0A0A0F',
-              surface: '#12121A',
-              card: '#181824',
-              cardHover: '#1F1F2E',
+              bg: '#0E0E12',
+              surface: '#16161C',
+              card: '#1C1C24',
+              red: '#E50914',
+              redHover: '#B81D24',
               border: 'rgba(255, 255, 255, 0.08)'
-            },
-            accent: {
-              violet: '#8B5CF6',
-              fuchsia: '#D946EF',
-              pink: '#EC4899'
             }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif']
           }
         }
       }
     }
   </script>
 
-  <link rel="icon" type="image/png" href="/static/img/favicon.png">
+  <!-- Google Fonts & FontAwesome 6 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="/static/css/custom.css">
+  
+  <style>
+    body {
+      background-color: #0E0E12;
+      color: #FFFFFF;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .admin-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #D1D5DB;
+      transition: all 0.2s ease;
+      border-left: 4px solid transparent;
+      border-radius: 0 10px 10px 0;
+    }
+    .admin-nav-item:hover {
+      background-color: rgba(255, 255, 255, 0.04);
+      color: #FFFFFF;
+    }
+    .admin-nav-active {
+      background: linear-gradient(90deg, rgba(229, 9, 20, 0.25) 0%, rgba(229, 9, 20, 0.05) 70%, transparent 100%);
+      color: #FFFFFF !important;
+      border-left-color: #E50914 !important;
+      font-weight: 700;
+    }
+    .admin-nav-pill {
+      background: #1C1C24;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+    }
+  </style>
 </head>
-<body class="bg-[#0A0A0F] text-white min-h-screen flex flex-col md:flex-row antialiased font-sans">
+<body class="min-h-screen flex flex-col md:flex-row antialiased">
 
-  <!-- SOL SIDEBAR NAVİGASYON -->
-  <aside class="w-full md:w-64 bg-[#12121A] border-r border-white/10 flex flex-col justify-between flex-shrink-0">
+  <!-- SOL SIDEBAR (DRAMAKOLIK ADM STİLİ) -->
+  <aside class="w-full md:w-72 bg-[#111115] border-r border-white/5 flex flex-col justify-between flex-shrink-0 min-h-screen">
     <div>
-      <!-- Admin Logo -->
-      <div class="h-20 flex items-center justify-between px-6 border-b border-white/10">
-        <a href="/admin" class="flex items-center gap-2.5">
-          <img src="/static/img/logo.png" class="w-9 h-9 rounded-xl object-cover shadow-lg shadow-pink-500/25 border border-white/10" alt="SenaAdmin">
-          <span class="text-xl font-black tracking-tight text-white flex items-center">
-            <span>Sena</span><span class="text-gradient">Admin</span>
-          </span>
-        </a>
+      
+      <!-- Admin Başlık / Logo -->
+      <div class="h-20 flex items-center gap-3 px-6 border-b border-white/5">
+        <img src="/static/img/logo.png" class="w-10 h-10 rounded-xl object-cover shadow-lg shadow-red-600/30 border border-white/10" alt="SenaDizi">
+        <div>
+          <div class="text-lg font-black tracking-tight text-white flex items-center gap-1">
+            <span>Sena</span><span class="text-red-500">Dizi</span>
+          </div>
+          <div class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Yönetim Paneli</div>
+        </div>
       </div>
 
-      <!-- Menü Öğeleri -->
-      <nav class="p-4 space-y-1.5 text-xs font-bold">
-        <a href="/admin" class="flex items-center gap-3 px-4 py-3 rounded-2xl transition {% if request.url.path == '/admin' %}btn-gradient text-white shadow-lg{% else %}text-zinc-400 hover:bg-white/5 hover:text-white{% endif %}">
-          <i class="fa-solid fa-chart-pie text-sm"></i> Dashboard
+      <!-- Menü Listesi (Birebir İkon ve Sıralama) -->
+      <nav class="py-4 space-y-1">
+        
+        <!-- 1. Dashboard -->
+        <a href="/admin" class="admin-nav-item {% if request.url.path == '/admin' %}admin-nav-active{% endif %}">
+          <span class="text-base">📊</span>
+          <span>Dashboard</span>
         </a>
-        <a href="/admin/series" class="flex items-center gap-3 px-4 py-3 rounded-2xl transition {% if request.url.path == '/admin/series' %}btn-gradient text-white shadow-lg{% else %}text-zinc-400 hover:bg-white/5 hover:text-white{% endif %}">
-          <i class="fa-solid fa-film text-sm"></i> Dizi Yönetimi
+
+        <!-- 2. Analiz -->
+        <a href="/admin/analytics" class="admin-nav-item {% if request.url.path == '/admin/analytics' %}admin-nav-active{% endif %}">
+          <span class="text-base">📈</span>
+          <span>Analiz</span>
         </a>
-        <a href="/admin/episodes" class="flex items-center gap-3 px-4 py-3 rounded-2xl transition {% if request.url.path == '/admin/episodes' %}btn-gradient text-white shadow-lg{% else %}text-zinc-400 hover:bg-white/5 hover:text-white{% endif %}">
-          <i class="fa-solid fa-layer-group text-sm"></i> Sezon & Bölümler
+
+        <!-- 3. Diziler -->
+        <a href="/admin/series" class="admin-nav-item {% if request.url.path in ['/admin/series', '/admin/episodes'] %}admin-nav-active{% endif %}">
+          <span class="text-base">🎬</span>
+          <span>Diziler</span>
         </a>
-        <a href="/admin/categories" class="flex items-center gap-3 px-4 py-3 rounded-2xl transition {% if request.url.path == '/admin/categories' %}btn-gradient text-white shadow-lg{% else %}text-zinc-400 hover:bg-white/5 hover:text-white{% endif %}">
-          <i class="fa-solid fa-shapes text-sm"></i> Kategoriler
+
+        <!-- 4. Manuel Çek -->
+        <a href="/admin/manual-import" class="admin-nav-item {% if request.url.path == '/admin/manual-import' %}admin-nav-active{% endif %}">
+          <span class="text-base">📥</span>
+          <span>Manuel Çek</span>
         </a>
-        <a href="/admin/users" class="flex items-center gap-3 px-4 py-3 rounded-2xl transition {% if request.url.path == '/admin/users' %}btn-gradient text-white shadow-lg{% else %}text-zinc-400 hover:bg-white/5 hover:text-white{% endif %}">
-          <i class="fa-solid fa-users text-sm"></i> Kullanıcılar
+
+        <!-- 5. Duyurular -->
+        <a href="/admin/announcements" class="admin-nav-item {% if request.url.path == '/admin/announcements' %}admin-nav-active{% endif %}">
+          <span class="text-base">📢</span>
+          <span>Duyurular</span>
         </a>
-        <a href="/admin/subscriptions" class="flex items-center gap-3 px-4 py-3 rounded-2xl transition {% if request.url.path == '/admin/subscriptions' %}btn-gradient text-white shadow-lg{% else %}text-zinc-400 hover:bg-white/5 hover:text-white{% endif %}">
-          <i class="fa-solid fa-crown text-sm"></i> VIP Paketler
+
+        <!-- 6. Üye Yönetimi -->
+        <a href="/admin/users" class="admin-nav-item {% if request.url.path == '/admin/users' %}admin-nav-active{% endif %}">
+          <span class="text-base">👥</span>
+          <span>Üye Yönetimi</span>
         </a>
-        <a href="/admin/settings" class="flex items-center gap-3 px-4 py-3 rounded-2xl transition {% if request.url.path == '/admin/settings' %}btn-gradient text-white shadow-lg{% else %}text-zinc-400 hover:bg-white/5 hover:text-white{% endif %}">
-          <i class="fa-solid fa-gear text-sm"></i> Site Ayarları
+
+        <!-- 7. VIP Keyler & Abonelikler -->
+        <a href="/admin/subscriptions" class="admin-nav-item {% if request.url.path == '/admin/subscriptions' %}admin-nav-active{% endif %}">
+          <span class="text-base">🔑</span>
+          <span>VIP Keyler</span>
         </a>
+
+        <!-- 8. Sunucu Durumu -->
+        <a href="/admin/server-status" class="admin-nav-item {% if request.url.path == '/admin/server-status' %}admin-nav-active{% endif %}">
+          <span class="text-base">🖥️</span>
+          <span>Sunucu Durumu</span>
+        </a>
+
+        <!-- 9. Ayarlar -->
+        <a href="/admin/settings" class="admin-nav-item {% if request.url.path == '/admin/settings' %}admin-nav-active{% endif %}">
+          <span class="text-base">⚙️</span>
+          <span>Ayarlar</span>
+        </a>
+
+        <!-- 10. Siteye Git -->
+        <a href="/" target="_blank" class="admin-nav-item text-emerald-400 hover:text-emerald-300">
+          <span class="text-base">🌍</span>
+          <span class="flex items-center gap-1">Siteye Git <i class="fa-solid fa-arrow-up-right-from-square text-[10px] ml-1"></i></span>
+        </a>
+
+        <!-- 11. Çıkış Yap -->
+        <button onclick="handleLogout()" class="w-full text-left admin-nav-item text-red-500 hover:text-red-400">
+          <span class="text-base">🚪</span>
+          <span>Çıkış Yap</span>
+        </button>
+
       </nav>
+
     </div>
 
-    <!-- Alt Kısım: Siteye Dön & Çıkış -->
-    <div class="p-4 border-t border-white/10 space-y-2">
-      <a href="/" target="_blank" class="flex items-center justify-between px-4 py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white text-xs font-bold transition">
-        <span>Siteyi Görüntüle</span>
-        <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-      </a>
-      <button onclick="handleLogout()" class="w-full flex items-center gap-2 px-4 py-3 rounded-2xl bg-red-950/40 hover:bg-red-900/60 text-red-400 text-xs font-bold transition">
-        <i class="fa-solid fa-arrow-right-from-bracket"></i> Çıkış Yap
-      </button>
+    <!-- Alt Bilgi / Admin Kartı -->
+    <div class="p-4 m-4 bg-[#181820] border border-white/5 rounded-2xl flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-red-600/20 text-red-500 border border-red-600/40 flex items-center justify-center font-black text-sm">
+        {{ (current_user.username[0] if current_user else 'A')|upper }}
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="text-xs font-bold text-white truncate">{{ current_user.full_name or current_user.username or 'Admin' }}</div>
+        <div class="text-[10px] text-amber-400 font-semibold flex items-center gap-1">
+          <i class="fa-solid fa-crown text-[9px]"></i> Sistem Yöneticisi
+        </div>
+      </div>
     </div>
+
   </aside>
 
   <!-- SAĞ İÇERİK ALANI -->
-  <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+  <main class="flex-1 flex flex-col min-w-0 overflow-y-auto bg-[#0E0E12]">
+    
     <!-- Üst Header Bar -->
-    <div class="h-20 bg-[#12121A] border-b border-white/10 flex items-center justify-between px-6">
-      <h1 class="text-base font-black text-white truncate">{{ page_title }}</h1>
-      
+    <div class="h-20 bg-[#111115] border-b border-white/5 flex items-center justify-between px-6 sm:px-8">
       <div class="flex items-center gap-3">
-        <span class="text-xs font-bold text-zinc-400 hidden sm:block">{{ current_user.full_name or current_user.username }}</span>
-        <img src="{{ current_user.avatar_url or '/static/img/default-avatar.png' }}" class="w-9 h-9 rounded-full object-cover border border-fuchsia-500" alt="Avatar">
+        <h1 class="text-lg font-black text-white tracking-tight">{{ page_title }}</h1>
+      </div>
+      
+      <div class="flex items-center gap-4">
+        <a href="/" target="_blank" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white text-xs font-bold transition flex items-center gap-1.5 border border-white/5">
+          <i class="fa-solid fa-globe text-emerald-400"></i>
+          <span>Siteyi Aç</span>
+        </a>
+        <img src="{{ current_user.avatar_url or '/static/img/default-avatar.png' }}" class="w-9 h-9 rounded-full object-cover border border-red-500 shadow-md" alt="Avatar">
       </div>
     </div>
 
@@ -103,8 +200,10 @@
     <div class="p-6 md:p-8 space-y-6">
       {% block admin_content %}{% endblock %}
     </div>
+
   </main>
 
+  <!-- Toast Container & JS -->
   <div id="toast-container"></div>
   <script src="/static/js/app.js"></script>
   {% block admin_scripts %}{% endblock %}

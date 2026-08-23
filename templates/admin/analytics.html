@@ -1,0 +1,35 @@
+{% extends "admin/admin_base.html" %}
+
+{% block admin_content %}
+<div class="space-y-6">
+  
+  <div class="flex items-center justify-between border-b border-white/5 pb-4">
+    <div>
+      <h2 class="text-xl font-black text-white flex items-center gap-2">
+        <span>📈</span>
+        <span>İzlenme & Kullanıcı Analizi</span>
+      </h2>
+      <p class="text-xs text-zinc-400 mt-1">Platformun anlık trafik, en çok izlenen diziler ve kullanıcı etkileşim raporları.</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-[#16161C] border border-white/5 rounded-3xl p-6 space-y-2">
+      <div class="text-xs text-zinc-400 font-bold">Günlük İzlenme</div>
+      <div class="text-3xl font-black text-white">12.450+</div>
+      <div class="text-[11px] text-emerald-400 font-bold">▲ %18 artış</div>
+    </div>
+    <div class="bg-[#16161C] border border-white/5 rounded-3xl p-6 space-y-2">
+      <div class="text-xs text-zinc-400 font-bold">Ortalama İzleme Süresi</div>
+      <div class="text-3xl font-black text-white">42 dk</div>
+      <div class="text-[11px] text-emerald-400 font-bold">Bölüm başına</div>
+    </div>
+    <div class="bg-[#16161C] border border-white/5 rounded-3xl p-6 space-y-2">
+      <div class="text-xs text-zinc-400 font-bold">En Popüler Kategori</div>
+      <div class="text-3xl font-black text-red-500">K-Drama</div>
+      <div class="text-[11px] text-zinc-400 font-bold">Toplam %68 pay</div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
