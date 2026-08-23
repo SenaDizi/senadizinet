@@ -1,6 +1,6 @@
 /**
- * SenaDizi – Modern Frontend Motoru (Dramaflix Stili)
- * Toast Bildirimleri, Canlı Arama, Favori Sistemi, Menü & Profil Etkileşimleri
+ * SenaDizi – Modern Frontend Motoru (Dramaflix & Dramakolik Stili)
+ * Toast Bildirimleri, Canlı Arama, Favori Sistemi, Mobil Çekmece & Profil Etkileşimleri
  */
 
 // Toast Bildirim Sistemi
@@ -132,17 +132,58 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// Mobil Hamburger Menü
-function toggleMobileMenu() {
-  const menu = document.getElementById('mobile-drawer');
-  if (!menu) return;
-  menu.classList.toggle('hidden');
+// Mobil Hamburger Çekmece Menü (Kusursuz Soldan Açılma ve Z-Index Kontrolü)
+function toggleMobileMenu(forceState) {
+  const drawer = document.getElementById('mobile-drawer');
+  const backdrop = document.getElementById('drawer-backdrop');
+  const panel = document.getElementById('drawer-panel');
+  const hamburgerBtn = document.getElementById('hamburger-btn');
+  if (!drawer || !panel || !backdrop) return;
+
+  const isCurrentlyOpen = panel.classList.contains('translate-x-0');
+  const shouldOpen = forceState !== undefined ? forceState : !isCurrentlyOpen;
+
+  if (shouldOpen) {
+    drawer.classList.remove('pointer-events-none');
+    backdrop.classList.remove('opacity-0');
+    backdrop.classList.add('opacity-100');
+    panel.classList.remove('-translate-x-full');
+    panel.classList.add('translate-x-0');
+    document.body.style.overflow = 'hidden';
+    if (hamburgerBtn) {
+      hamburgerBtn.innerHTML = '<i class="fa-solid fa-xmark text-xl text-fuchsia-400"></i>';
+    }
+  } else {
+    backdrop.classList.remove('opacity-100');
+    backdrop.classList.add('opacity-0');
+    panel.classList.remove('translate-x-0');
+    panel.classList.add('-translate-x-full');
+    drawer.classList.add('pointer-events-none');
+    document.body.style.overflow = '';
+    if (hamburgerBtn) {
+      hamburgerBtn.innerHTML = '<i class="fa-solid fa-bars-staggered text-xl text-zinc-300"></i>';
+    }
+  }
 }
 
+// ESC tuşu ile çekmeceyi kapat
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    toggleMobileMenu(false);
+    toggleUserMenu(false);
+  }
+});
+
 // Kullanıcı Profil Menüsü Dropdown
-function toggleUserMenu() {
+function toggleUserMenu(forceState) {
   const menu = document.getElementById('user-dropdown');
-  if (menu) menu.classList.toggle('hidden');
+  if (!menu) return;
+  if (forceState !== undefined) {
+    if (forceState) menu.classList.remove('hidden');
+    else menu.classList.add('hidden');
+  } else {
+    menu.classList.toggle('hidden');
+  }
 }
 
 // Dışarı tıklanınca profil menüsünü kapat
