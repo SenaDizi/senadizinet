@@ -1,91 +1,116 @@
 {% extends "admin/admin_base.html" %}
 
 {% block admin_content %}
-<div class="space-y-6">
+<div class="max-w-4xl space-y-8">
   
-  <div class="flex items-center justify-between border-b border-white/5 pb-4">
-    <div>
-      <h2 class="text-xl font-black text-white flex items-center gap-2">
-        <span>📥</span>
-        <span>Manuel Dizi & Bölüm İçe Aktar</span>
-      </h2>
-      <p class="text-xs text-zinc-400 mt-1">Harici kaynaklardan, S3 / B2 CDN veya direkt video bağlantısı ile dizi ve bölümleri hızlıca ekleyin.</p>
-    </div>
+  <!-- Sayfa Başlığı (Ekran Görüntüsündeki Stil) -->
+  <div>
+    <h1 class="text-3xl font-black text-white tracking-tight">Manuel Dizi Çekme</h1>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Ana Kart: URL ile Tek Dizi & Bölüm Ekle -->
+  <div class="bg-[#141418] border border-white/5 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl">
     
-    <!-- Manuel Bölüm Ekleme Formu -->
-    <div class="bg-[#16161C] border border-white/5 rounded-3xl p-6 sm:p-8 space-y-5">
-      <h3 class="text-sm font-black text-white flex items-center gap-2">
-        <i class="fa-solid fa-cloud-arrow-up text-red-500"></i>
-        <span>Hızlı Video / CDN Bağlantısı Ekle</span>
-      </h3>
+    <div class="space-y-2">
+      <div class="flex items-center gap-2 text-base font-black text-white">
+        <i class="fa-solid fa-link text-zinc-400"></i>
+        <span>URL ile Tek Dizi / Bölüm Ekle</span>
+      </div>
+      <p class="text-xs text-zinc-400 leading-relaxed">
+        Kendi bulut depolama veya CDN (<span class="text-zinc-300 font-mono">https://cdn.senadizi.com/...</span>, Backblaze B2, S3 veya doğrudan <span class="text-zinc-300 font-mono">.mp4 / .m3u8</span>) video bağlantısını yapıştırın. Dizi yoksa sisteme sıfırdan eklenir, varsa yeni sezon ve bölümleri otomatik güncellenir.
+      </p>
+    </div>
 
-      <form id="manual-import-form" onsubmit="handleManualImport(event)" class="space-y-4">
+    <form id="manual-import-form" onsubmit="handleManualImport(event)" class="space-y-4">
+      
+      <!-- Dizi Seçimi veya Yeni Dizi Adı -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="block text-xs font-bold text-zinc-400 mb-1.5">Hedef Dizi</label>
-          <select id="import_series_id" required class="w-full bg-[#1C1C24] border border-white/10 text-xs rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-red-500">
-            <option value="">-- Dizi Seçin --</option>
+          <label class="block text-xs font-bold text-zinc-400 mb-1.5">Mevcut Dizi Seçin</label>
+          <select id="import_series_id" onchange="toggleNewSeriesFields(this)" class="w-full bg-[#1C1C22] border border-white/10 text-xs rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-red-500">
+            <option value="NEW">+ Yeni Dizi Oluştur</option>
             {% for s in all_series %}
               <option value="{{ s.id }}">{{ s.title }}</option>
             {% endfor %}
           </select>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-bold text-zinc-400 mb-1.5">Sezon No</label>
-            <input type="number" id="import_season_num" value="1" min="1" required class="w-full bg-[#1C1C24] border border-white/10 text-xs rounded-2xl px-4 py-3 text-white">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-zinc-400 mb-1.5">Bölüm No</label>
-            <input type="number" id="import_episode_num" value="1" min="1" required class="w-full bg-[#1C1C24] border border-white/10 text-xs rounded-2xl px-4 py-3 text-white">
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-bold text-zinc-400 mb-1.5">Bölüm Başlığı</label>
-          <input type="text" id="import_title" placeholder="1. Bölüm" required class="w-full bg-[#1C1C24] border border-white/10 text-xs rounded-2xl px-4 py-3 text-white placeholder-zinc-500">
-        </div>
-
-        <div>
-          <label class="block text-xs font-bold text-zinc-400 mb-1.5">Direkt Video / CDN URL (.mp4 / .m3u8)</label>
-          <input type="url" id="import_video_url" placeholder="https://cdn.senadizi.com/file/.../bolum1.mp4" required class="w-full bg-[#1C1C24] border border-white/10 text-xs rounded-2xl px-4 py-3 text-white placeholder-zinc-500 font-mono">
-        </div>
-
-        <div>
-          <label class="block text-xs font-bold text-zinc-400 mb-1.5">Altyazı URL (Opsiyonel .vtt / .srt)</label>
-          <input type="url" id="import_subtitle_url" placeholder="https://cdn.senadizi.com/subtitles/bolum1_tr.vtt" class="w-full bg-[#1C1C24] border border-white/10 text-xs rounded-2xl px-4 py-3 text-white placeholder-zinc-500 font-mono">
-        </div>
-
-        <button type="submit" class="w-full py-3.5 bg-red-600 hover:bg-red-700 text-white font-black text-xs rounded-2xl transition shadow-lg shadow-red-600/30">
-          İçe Aktar & Yayınla
-        </button>
-      </form>
-    </div>
-
-    <!-- Bilgi & CDN Rehberi -->
-    <div class="bg-[#16161C] border border-white/5 rounded-3xl p-6 sm:p-8 space-y-4">
-      <h3 class="text-sm font-black text-white flex items-center gap-2">
-        <i class="fa-solid fa-circle-info text-amber-400"></i>
-        <span>CDN & FastStart Entegrasyonu</span>
-      </h3>
-      <div class="text-xs text-zinc-400 space-y-3 leading-relaxed">
-        <p>
-          Eklediğiniz video bağlantıları doğrudan **Backblaze B2** veya **Cloudflare CDN** üzerinde barınıyorsa, sistem herhangi bir harici siteye istek atmadan videoyu doğrudan oynatıcıya teslim eder.
-        </p>
-        <div class="p-4 bg-[#1C1C24] rounded-2xl border border-white/5 space-y-2">
-          <div class="text-white font-bold text-xs flex items-center gap-2">
-            <i class="fa-solid fa-bolt text-amber-400"></i> Moov Atom (FastStart) Kontrolü
-          </div>
-          <p class="text-[11px] text-zinc-400">
-            MP4 videolarınızın başında moov atomu bulunuyorsa kullanıcılar videoyu beklemeden ilk saniyeden itibaren kesintisiz izleyebilir.
-          </p>
+        <div id="new_series_title_container">
+          <label class="block text-xs font-bold text-zinc-400 mb-1.5">Dizi Adı (Yeni İse)</label>
+          <input type="text" id="new_series_title" placeholder="Örn: Siber Şafak 2088" class="w-full bg-[#1C1C22] border border-white/10 text-xs rounded-2xl px-4 py-3.5 text-white placeholder-zinc-500 focus:outline-none focus:border-red-500">
         </div>
       </div>
-    </div>
 
+      <!-- Kategori ve Afiş (Yeni Dizi İse) -->
+      <div id="new_series_details" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-bold text-zinc-400 mb-1.5">Afiş / Poster Görsel URL</label>
+          <input type="url" id="new_series_poster" placeholder="https://cdn.senadizi.com/posters/...jpg" class="w-full bg-[#1C1C22] border border-white/10 text-xs rounded-2xl px-4 py-3.5 text-white placeholder-zinc-500 focus:outline-none focus:border-red-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-zinc-400 mb-1.5">Tür / Kategori</label>
+          <select id="new_series_category" class="w-full bg-[#1C1C22] border border-white/10 text-xs rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-red-500">
+            <option value="k-drama">Kore Dizisi (K-Drama)</option>
+            <option value="c-drama">Çin Dizisi (C-Drama)</option>
+            <option value="romantik">Romantik</option>
+            <option value="fantastik">Tarihi & Fantastik</option>
+            <option value="aksiyon">Aksiyon & Macera</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Sezon ve Bölüm Numaraları -->
+      <div class="grid grid-cols-3 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-zinc-400 mb-1.5">Sezon No</label>
+          <input type="number" id="import_season_num" value="1" min="1" required class="w-full bg-[#1C1C22] border border-white/10 text-xs rounded-2xl px-4 py-3.5 text-white">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-zinc-400 mb-1.5">Bölüm No</label>
+          <input type="number" id="import_episode_num" value="1" min="1" required class="w-full bg-[#1C1C22] border border-white/10 text-xs rounded-2xl px-4 py-3.5 text-white">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-zinc-400 mb-1.5">Bölüm Başlığı</label>
+          <input type="text" id="import_title" placeholder="1. Bölüm" value="1. Bölüm" required class="w-full bg-[#1C1C22] border border-white/10 text-xs rounded-2xl px-4 py-3.5 text-white">
+        </div>
+      </div>
+
+      <!-- Video Bağlantısı Girişi (Ekran Görüntüsündeki Tarz) -->
+      <div class="space-y-1.5">
+        <label class="block text-xs font-bold text-zinc-400">Dizi Video Linki</label>
+        <input type="url" id="import_video_url" placeholder="Dizi linkini yapıştırın... (https://cdn.senadizi.com/...)" required class="w-full bg-[#1C1C22] border border-white/10 text-xs rounded-2xl px-4 py-3.5 text-white placeholder-zinc-500 focus:outline-none focus:border-red-500 font-mono">
+      </div>
+
+      <!-- Ekran Görüntüsündeki Beyaz "Çek" Butonu -->
+      <div class="pt-1">
+        <button type="submit" id="btn-submit-import" class="px-8 py-3 bg-white hover:bg-zinc-200 active:scale-95 text-black font-extrabold text-xs rounded-2xl transition shadow-lg flex items-center gap-2">
+          <span>Çek</span>
+          <i class="fa-solid fa-arrow-right text-[10px]"></i>
+        </button>
+      </div>
+
+      <!-- Opsiyonel Altyazı & Cookie Alanı -->
+      <div class="pt-4 border-t border-white/5 space-y-3">
+        <div class="text-[11px] font-bold text-zinc-400">
+          Altyazı Dosyası (Opsiyonel)
+        </div>
+        <input type="url" id="import_subtitle_url" placeholder="Örn: https://cdn.senadizi.com/subtitles/bolum1.vtt" class="w-full bg-[#1C1C22] border border-white/10 text-xs rounded-2xl px-4 py-3 text-white placeholder-zinc-600 font-mono">
+      </div>
+
+    </form>
+
+  </div>
+
+  <!-- Hızlı İpuçları -->
+  <div class="bg-[#141418] border border-white/5 rounded-3xl p-6 text-xs text-zinc-400 space-y-2">
+    <div class="text-white font-bold flex items-center gap-2">
+      <i class="fa-solid fa-bolt text-amber-400"></i>
+      <span>Doğrudan CDN & Moov Atom Desteği</span>
+    </div>
+    <p class="leading-relaxed">
+      Sisteme eklenen Cloudflare / Backblaze B2 video bağlantıları web video oynatıcıda FastStart (+moov atom) sayesinde gecikmesiz olarak ilk saniyeden başlar.
+    </p>
   </div>
 
 </div>
@@ -93,20 +118,69 @@
 
 {% block admin_scripts %}
 <script>
+  function toggleNewSeriesFields(select) {
+    const isNew = select.value === 'NEW';
+    document.getElementById('new_series_title_container').style.display = isNew ? 'block' : 'none';
+    document.getElementById('new_series_details').style.display = isNew ? 'grid' : 'none';
+  }
+
   async function handleManualImport(e) {
     e.preventDefault();
-    const seriesId = document.getElementById('import_series_id').value;
+    const btn = document.getElementById('btn-submit-import');
+    const seriesSelect = document.getElementById('import_series_id');
+    const isNew = seriesSelect.value === 'NEW';
     const seasonNum = parseInt(document.getElementById('import_season_num').value);
     const epNum = parseInt(document.getElementById('import_episode_num').value);
     const title = document.getElementById('import_title').value;
     const videoUrl = document.getElementById('import_video_url').value;
 
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> İşleniyor...';
+
     try {
-      const res = await fetch('/api/admin/episodes', {
+      let targetSeriesId = seriesSelect.value;
+
+      // Yeni dizi oluşturulacaksa önce dizi API'sine istek at
+      if (isNew) {
+        const seriesTitle = document.getElementById('new_series_title').value.trim();
+        const posterUrl = document.getElementById('new_series_poster').value.trim() || '/static/img/default-cover.jpg';
+        const categorySlug = document.getElementById('new_series_category').value;
+
+        if (!seriesTitle) {
+          showToast('Lütfen dizi adını girin.', 'error');
+          btn.disabled = false;
+          btn.innerHTML = '<span>Çek</span>';
+          return;
+        }
+
+        const seriesRes = await fetch('/api/admin/series', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: seriesTitle,
+            description: `${seriesTitle} Full HD Türkçe altyazılı izle.`,
+            poster_url: posterUrl,
+            category_slugs: [categorySlug],
+            is_published: true
+          })
+        });
+
+        const seriesData = await seriesRes.json();
+        if (!seriesRes.ok) {
+          showToast(seriesData.detail || 'Dizi oluşturulamadı.', 'error');
+          btn.disabled = false;
+          btn.innerHTML = '<span>Çek</span>';
+          return;
+        }
+        targetSeriesId = seriesData.series.id;
+      }
+
+      // Bölümü Ekle
+      const epRes = await fetch('/api/admin/episodes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          series_id: parseInt(seriesId),
+          series_id: parseInt(targetSeriesId),
           season_number: seasonNum,
           episode_number: epNum,
           title: title,
@@ -114,15 +188,21 @@
           is_free: true
         })
       });
-      const data = await res.json();
-      if (res.ok) {
-        showToast('Bölüm başarıyla eklendi ve yayına alındı!', 'success');
-        document.getElementById('manual-import-form').reset();
+
+      const epData = await epRes.json();
+      if (epRes.ok) {
+        showToast('Dizi ve bölüm başarıyla sisteme eklendi ve yayına alındı! 🎉', 'success');
+        document.getElementById('import_video_url').value = '';
+        document.getElementById('import_episode_num').value = epNum + 1;
+        document.getElementById('import_title').value = `${epNum + 1}. Bölüm`;
       } else {
-        showToast(data.detail || 'Ekleme başarısız.', 'error');
+        showToast(epData.detail || 'Bölüm eklenirken hata oluştu.', 'error');
       }
     } catch (err) {
-      showToast('Bağlantı hatası.', 'error');
+      showToast('Sunucu bağlantı hatası oluştu.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<span>Çek</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>';
     }
   }
 </script>
