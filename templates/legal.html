@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14 space-y-8">
+  
+  <div class="border-b border-white/10 pb-6">
+    <div class="flex items-center gap-3">
+      <div class="w-1.5 h-6 bg-gradient-to-b from-violet-500 to-pink-500 rounded-full shadow-lg shadow-pink-500/50"></div>
+      <h1 class="text-3xl font-black text-white tracking-tight">{{ legal_title }}</h1>
+    </div>
+    <div class="text-xs text-zinc-400 mt-2">Son Güncelleme: 2026</div>
+  </div>
+
+  <div class="bg-[#12121A] border border-white/10 rounded-3xl p-8 sm:p-12 text-zinc-300 text-sm leading-relaxed space-y-6 shadow-2xl">
+    {% if legal_type == 'about' %}
+      <h2 class="text-xl font-black text-white">SenaDizi Hakkında</h2>
+      <p>
+        SenaDizi, kullanıcılarına yüksek çözünürlüklü ve kesintisiz video deneyimi sunmak amacıyla geliştirilmiş modern bir Asya ve dünya dizileri dijital akış platformudur.
+      </p>
+      <p>
+        Platformumuz, lisanslı ve yetkili yapımları sinematik bir kullanıcı deneyimi ile izleyicilerle buluşturur.
+      </p>
+    {% elif legal_type == 'copyright' %}
+      <h2 class="text-xl font-black text-white">Telif Hakkı & Lisans Bildirimi</h2>
+      <p>
+        SenaDizi üzerinde yayınlanan tüm görsel, işitsel ve video materyaller ilgili hak sahiplerinin lisansı veya yetkisi dahilinde sunulmaktadır.
+      </p>
+      <p>
+        Platformumuzda yetkisiz içerik barındırılmamakta olup, telif hakkı ihlali bildirimleriniz için <strong class="text-fuchsia-400">destek@senadizi.com</strong> adresi üzerinden 7/24 bizimle iletişime geçebilirsiniz. İlgili bildirimler 24 saat içerisinde incelenerek gereği yapılmaktadır.
+      </p>
+    {% elif legal_type == 'privacy' %}
+      <h2 class="text-xl font-black text-white">Gizlilik Politikası</h2>
+      <p>
+        SenaDizi olarak kullanıcılarımızın kişisel verilerinin güvenliğine en üst düzeyde önem veriyoruz. Toplanan veriler yalnızca hizmet kalitesini artırmak ve izleme geçmişinizi saklamak amacıyla işlenir.
+      </p>
+    {% elif legal_type == 'terms' %}
+      <h2 class="text-xl font-black text-white">Kullanım Şartları</h2>
+      <p>
+        Platformu kullanarak bu şartları kabul etmiş sayılırsınız. Hesap bilgilerinizin güvenliği sizin sorumluluğunuzdadır.
+      </p>
+    {% elif legal_type == 'contact' %}
+      <h2 class="text-xl font-black text-white">İletişim</h2>
+      <p>Bize her türlü soru, öneri ve iş birliği talepleriniz için aşağıdaki iletişim kanallarından ulaşabilirsiniz:</p>
+      <ul class="space-y-3 text-white font-medium pt-2">
+        <li class="flex items-center gap-3"><i class="fa-solid fa-envelope text-fuchsia-400"></i> E-Posta: destek@senadizi.com</li>
+        <li class="flex items-center gap-3"><i class="fa-solid fa-location-dot text-fuchsia-400"></i> Adres: İstanbul, Türkiye</li>
+      </ul>
+    {% else %}
+      <h2 class="text-xl font-black text-white">KVKK Aydınlatma Metni</h2>
+      <p>6698 sayılı Kişisel Verilerin Korunması Kanunu uyarınca verileriniz güvence altındadır.</p>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

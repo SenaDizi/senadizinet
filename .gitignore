@@ -1,0 +1,50 @@
+# Python & Ortam Dosyaları
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Veritabanı ve Güvenlik (.env ve sqlite veritabanını dışarıda bırak)
+.env
+*.db
+*.sqlite3
+senadizinet.db
+
+# Loglar ve Geçici Dosyalar
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editör ve İşletim Sistemi
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Let's Encrypt ve SSL
+/etc/letsencrypt/
+*.pem
+*.key

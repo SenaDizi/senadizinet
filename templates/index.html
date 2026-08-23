@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- 1. HERO SİNEMATİK SLIDER (DRAMAFLIX VITRIN) -->
+<div class="relative w-full h-[72vh] md:h-[84vh] overflow-hidden bg-black">
+  <div id="hero-slider" class="relative w-full h-full">
+    {% for hero in hero_series %}
+      <div class="hero-slide absolute inset-0 transition-opacity duration-1000 ease-in-out {% if loop.first %}opacity-100 z-10{% else %}opacity-0 z-0{% endif %}" data-index="{{ loop.index0 }}">
+        
+        <!-- Arka Plan Görseli -->
+        <img src="{{ hero.banner_url or hero.poster_url }}" class="w-full h-full object-cover object-center transform scale-105 transition-transform duration-10000" alt="{{ hero.title }}">
+        
+        <!-- Karartma / Gradient Katmanı -->
+        <div class="absolute inset-0 hero-gradient"></div>
+
+        <!-- İçerik Detayları -->
+        <div class="absolute bottom-12 md:bottom-20 left-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-20">
+          <div class="max-w-2xl space-y-4">
+            
+            <!-- Rozetler -->
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <span class="px-3 py-1 text-xs font-black bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-full uppercase tracking-wider shadow-lg shadow-pink-500/25">
+                <i class="fa-solid fa-fire mr-1"></i> Trend Dizi
+              </span>
+              <span class="px-3 py-1 text-xs font-bold bg-[#181824]/90 text-amber-400 rounded-full border border-white/10 backdrop-blur-md">
+                ⭐ {{ hero.rating or "9.2" }} MDL Puanı
+              </span>
+              <span class="px-2.5 py-1 text-xs font-semibold glass-pill text-zinc-300 rounded-full">
+                4K Ultra HD
+              </span>
+              <span class="text-xs text-zinc-300 font-medium">
+                {{ hero.release_year or "2026" }} • {{ hero.country or "Güney Kore" }}
+              </span>
+            </div>
+
+            <!-- Başlık -->
+            <h1 class="text-3xl sm:text-4xl md:text-6xl font-black text-white tracking-tight drop-shadow-2xl">
+              {{ hero.title }}
+            </h1>
+
+            <!-- Açıklama -->
+            <p class="text-xs sm:text-sm md:text-base text-zinc-300 line-clamp-3 leading-relaxed drop-shadow">
+              {{ hero.description }}
+            </p>
+
+            <!-- Kategoriler -->
+            <div class="flex items-center gap-2 pt-1 flex-wrap">
+              {% for cat in hero.categories %}
+                <a href="/diziler?kategori={{ cat.slug }}" class="text-xs font-semibold text-zinc-300 hover:text-white glass-pill px-3 py-1 rounded-full hover:border-fuchsia-500/50 transition">
+                  # {{ cat.name }}
+                </a>
+              {% endfor %}
+            </div>
+
+            <!-- Aksiyon Butonları -->
+            <div class="flex items-center gap-3.5 pt-3">
+              {% if hero.seasons and hero.seasons[0].episodes %}
+                <a href="/dizi/{{ hero.slug }}/sezon-{{ hero.seasons[0].season_number }}/bolum-{{ hero.seasons[0].episodes[0].episode_number }}" class="flex items-center gap-2.5 px-7 py-3.5 rounded-2xl btn-gradient font-black text-sm md:text-base transition">
+                  <i class="fa-solid fa-play"></i> Hemen İzle
+                </a>
+              {% else %}
+                <a href="/dizi/{{ hero.slug }}" class="flex items-center gap-2.5 px-7 py-3.5 rounded-2xl btn-gradient font-black text-sm md:text-base transition">
+                  <i class="fa-solid fa-play"></i> Bölümleri Gör
+                </a>
+              {% endif %}
+              
+              <a href="/dizi/{{ hero.slug }}" class="flex items-center gap-2 px-5 py-3.5 bg-white/10 hover:bg-white/20 text-white font-bold text-sm md:text-base rounded-2xl transition border border-white/15 backdrop-blur-md">
+                <i class="fa-solid fa-circle-info"></i> Detaylar
+              </a>
+
+              <button onclick="toggleFavorite({{ hero.id }}, this)" class="w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white rounded-2xl transition border border-white/15 backdrop-blur-md hover:text-pink-400" title="Favorilere Ekle">
+                <i class="fa-regular fa-heart text-lg"></i>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Slider Noktaları (Indicators) -->
+  <div class="absolute bottom-6 right-8 z-30 flex items-center gap-2.5">
+    {% for hero in hero_series %}
+      <button onclick="goToSlide({{ loop.index0 }})" class="slide-dot h-2.5 rounded-full transition-all duration-300 {% if loop.first %}bg-gradient-to-r from-violet-500 to-pink-500 w-8 shadow-lg shadow-pink-500/50{% else %}bg-white/30 hover:bg-white/60 w-2.5{% endif %}" aria-label="Slayt {{ loop.index }}"></button>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- 2. ANA SAYFA İÇERİK BÖLÜMLERİ -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+
+  <!-- A. POPÜLER & TREND DİZİLER -->
+  <section>
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <div class="w-1.5 h-6 bg-gradient-to-b from-violet-500 via-fuchsia-500 to-pink-500 rounded-full shadow-lg shadow-pink-500/50"></div>
+        <h2 class="text-xl md:text-2xl font-black text-white tracking-tight">Popüler & Trend Asya Dizileri</h2>
+      </div>
+      <a href="/populer" class="text-xs md:text-sm font-bold text-fuchsia-400 hover:text-fuchsia-300 flex items-center gap-1 transition">
+        Tümünü Gör <i class="fa-solid fa-chevron-right text-xs"></i>
+      </a>
+    </div>
+
+    <div class="flex gap-5 overflow-x-auto hide-scrollbar pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
+      {% for dizi in popular_series %}
+        <div class="min-w-[170px] sm:min-w-[210px] max-w-[210px] flex-shrink-0">
+          <a href="/dizi/{{ dizi.slug }}" class="dizi-card group block rounded-2xl overflow-hidden bg-[#141420] border border-white/10">
+            <div class="aspect-[2/3] w-full relative overflow-hidden bg-zinc-900">
+              <img src="{{ dizi.poster_url }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="{{ dizi.title }}" loading="lazy">
+              
+              <!-- Play Hover Overlay -->
+              <div class="play-overlay absolute inset-0 bg-black/60 opacity-0 transition-opacity flex items-center justify-center">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-violet-600 to-pink-500 text-white flex items-center justify-center shadow-xl shadow-fuchsia-500/50 play-btn-glow">
+                  <i class="fa-solid fa-play ml-0.5 text-sm"></i>
+                </div>
+              </div>
+
+              <!-- Üst Rozetler -->
+              <div class="absolute top-2.5 left-2.5 px-2 py-0.5 glass-pill rounded-md text-[10px] font-black uppercase text-white">
+                HD
+              </div>
+              <div class="absolute top-2.5 right-2.5 px-2 py-0.5 bg-black/80 backdrop-blur-md rounded-md text-[11px] font-extrabold text-amber-400 border border-amber-400/30">
+                ⭐ {{ dizi.rating or "9.0" }}
+              </div>
+            </div>
+            
+            <div class="p-3.5">
+              <h3 class="text-sm font-bold text-white truncate group-hover:text-fuchsia-400 transition">{{ dizi.title }}</h3>
+              <div class="flex items-center justify-between text-xs text-zinc-400 mt-1">
+                <span>{{ dizi.release_year }}</span>
+                <span class="text-[11px] text-zinc-400">{{ dizi.country or "Asya" }}</span>
+              </div>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- B. YENİ EKLENEN DİZİLER (GRID) -->
+  <section>
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <div class="w-1.5 h-6 bg-gradient-to-b from-pink-500 to-violet-500 rounded-full shadow-lg shadow-pink-500/50"></div>
+        <h2 class="text-xl md:text-2xl font-black text-white tracking-tight">Yeni Eklenen Diziler</h2>
+      </div>
+      <a href="/yeni-eklenenler" class="text-xs md:text-sm font-bold text-fuchsia-400 hover:text-fuchsia-300 flex items-center gap-1 transition">
+        Tümünü Gör <i class="fa-solid fa-chevron-right text-xs"></i>
+      </a>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+      {% for dizi in new_series %}
+        <a href="/dizi/{{ dizi.slug }}" class="dizi-card group block rounded-2xl overflow-hidden bg-[#141420] border border-white/10">
+          <div class="aspect-[2/3] w-full relative overflow-hidden bg-zinc-900">
+            <img src="{{ dizi.poster_url }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="{{ dizi.title }}" loading="lazy">
+            <div class="play-overlay absolute inset-0 bg-black/60 opacity-0 transition-opacity flex items-center justify-center">
+              <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-violet-600 to-pink-500 text-white flex items-center justify-center shadow-lg play-btn-glow">
+                <i class="fa-solid fa-play ml-0.5 text-xs"></i>
+              </div>
+            </div>
+            <div class="absolute top-2.5 right-2.5 px-2 py-0.5 bg-black/80 backdrop-blur-md rounded-md text-[11px] font-extrabold text-amber-400 border border-amber-400/30">
+              ⭐ {{ dizi.rating or "8.8" }}
+            </div>
+          </div>
+          <div class="p-3.5">
+            <h3 class="text-sm font-bold text-white truncate group-hover:text-fuchsia-400 transition">{{ dizi.title }}</h3>
+            <div class="text-xs text-zinc-400 mt-1 truncate">
+              {{ dizi.categories|map(attribute='name')|join(', ') if dizi.categories else 'Dizi' }}
+            </div>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- C. SON EKLENEN BÖLÜMLER (YATAY KARTLAR) -->
+  {% if recent_episodes %}
+  <section>
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <div class="w-1.5 h-6 bg-gradient-to-b from-violet-500 to-fuchsia-500 rounded-full shadow-lg shadow-violet-500/50"></div>
+        <h2 class="text-xl md:text-2xl font-black text-white tracking-tight">Yeni Yayınlanan Bölümler</h2>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {% for ep in recent_episodes %}
+        {% if ep.season and ep.season.series %}
+          <a href="/dizi/{{ ep.season.series.slug }}/sezon-{{ ep.season.season_number }}/bolum-{{ ep.episode_number }}" class="group block bg-[#12121A] border border-white/10 rounded-2xl overflow-hidden hover:border-fuchsia-500/50 hover:shadow-xl hover:shadow-fuchsia-500/10 transition duration-300">
+            <div class="aspect-video w-full relative overflow-hidden bg-zinc-900">
+              <img src="{{ ep.thumbnail_url or ep.season.series.banner_url or ep.season.series.poster_url }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="{{ ep.title }}" loading="lazy">
+              <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent"></div>
+              <div class="absolute bottom-2.5 left-2.5 px-2.5 py-0.5 bg-gradient-to-r from-violet-600 to-pink-600 text-[10px] font-black uppercase text-white rounded-md shadow-md">
+                S{{ ep.season.season_number }} B{{ ep.episode_number }}
+              </div>
+              <div class="absolute bottom-2.5 right-2.5 text-[11px] text-zinc-300 bg-black/70 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/10 font-medium">
+                {{ ep.duration_minutes or 45 }} dk
+              </div>
+            </div>
+            <div class="p-3.5">
+              <div class="text-xs text-fuchsia-400 font-bold truncate">{{ ep.season.series.title }}</div>
+              <h4 class="text-sm font-semibold text-white truncate mt-0.5 group-hover:text-zinc-200">{{ ep.title }}</h4>
+            </div>
+          </a>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- D. KATEGORİ SIRALARI (K-DRAMA, ROMANTİK, FANTASTİK, AKSİYON VB.) -->
+  {% for cat_row in category_rows %}
+    <section>
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <div class="w-1.5 h-6 bg-gradient-to-b from-fuchsia-500 to-pink-500 rounded-full shadow-lg shadow-pink-500/50"></div>
+          <h2 class="text-xl md:text-2xl font-black text-white tracking-tight">{{ cat_row.category.name }}</h2>
+        </div>
+        <a href="/diziler?kategori={{ cat_row.category.slug }}" class="text-xs md:text-sm font-bold text-fuchsia-400 hover:text-fuchsia-300 flex items-center gap-1 transition">
+          Daha Fazla <i class="fa-solid fa-chevron-right text-xs"></i>
+        </a>
+      </div>
+
+      <div class="flex gap-5 overflow-x-auto hide-scrollbar pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
+        {% for dizi in cat_row.series %}
+          <div class="min-w-[160px] sm:min-w-[190px] max-w-[190px] flex-shrink-0">
+            <a href="/dizi/{{ dizi.slug }}" class="dizi-card group block rounded-2xl overflow-hidden bg-[#141420] border border-white/10">
+              <div class="aspect-[2/3] w-full relative overflow-hidden bg-zinc-900">
+                <img src="{{ dizi.poster_url }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="{{ dizi.title }}" loading="lazy">
+                <div class="absolute top-2.5 right-2.5 px-2 py-0.5 bg-black/80 backdrop-blur-md rounded-md text-[10px] font-black text-amber-400 border border-amber-400/30">
+                  ⭐ {{ dizi.rating or "9.1" }}
+                </div>
+              </div>
+              <div class="p-3">
+                <h3 class="text-xs sm:text-sm font-bold text-white truncate group-hover:text-fuchsia-400 transition">{{ dizi.title }}</h3>
+                <div class="text-[11px] text-zinc-400 mt-0.5">{{ dizi.release_year }}</div>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  {% endfor %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Hero Slider Otomatik Döndürme
+  let currentSlide = 0;
+  const slides = document.querySelectorAll('.hero-slide');
+  const dots = document.querySelectorAll('.slide-dot');
+  let sliderInterval;
+
+  function showSlide(index) {
+    if (!slides.length) return;
+    slides.forEach((s, i) => {
+      if (i === index) {
+        s.classList.remove('opacity-0', 'z-0');
+        s.classList.add('opacity-100', 'z-10');
+      } else {
+        s.classList.remove('opacity-100', 'z-10');
+        s.classList.add('opacity-0', 'z-0');
+      }
+    });
+
+    dots.forEach((d, i) => {
+      if (i === index) {
+        d.className = 'slide-dot h-2.5 rounded-full transition-all duration-300 bg-gradient-to-r from-violet-500 to-pink-500 w-8 shadow-lg shadow-pink-500/50';
+      } else {
+        d.className = 'slide-dot h-2.5 rounded-full transition-all duration-300 bg-white/30 hover:bg-white/60 w-2.5';
+      }
+    });
+    currentSlide = index;
+  }
+
+  function nextSlide() {
+    let next = (currentSlide + 1) % slides.length;
+    showSlide(next);
+  }
+
+  function goToSlide(index) {
+    clearInterval(sliderInterval);
+    showSlide(index);
+    startSlider();
+  }
+
+  function startSlider() {
+    if (slides.length > 1) {
+      sliderInterval = setInterval(nextSlide, 7000);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', startSlider);
+</script>
+{% endblock %}

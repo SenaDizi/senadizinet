@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
+  
+  <div class="border-b border-white/10 pb-6">
+    <div class="flex items-center gap-3">
+      <div class="w-1.5 h-6 bg-gradient-to-b from-violet-500 to-pink-500 rounded-full shadow-lg shadow-pink-500/50"></div>
+      <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+        Arama Sonuçları: <span class="text-gradient">"{{ query }}"</span>
+      </h1>
+    </div>
+    <p class="text-xs sm:text-sm text-zinc-400 mt-2">Toplam <span class="text-fuchsia-400 font-bold">{{ count }}</span> adet sonuç bulundu.</p>
+  </div>
+
+  {% if results %}
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
+      {% for item in results %}
+        <a href="/dizi/{{ item.slug }}" class="dizi-card group block rounded-2xl overflow-hidden bg-[#141420] border border-white/10 shadow-lg">
+          <div class="aspect-[2/3] w-full relative overflow-hidden bg-zinc-900">
+            <img src="{{ item.poster_url }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="{{ item.title }}" loading="lazy">
+            <div class="play-overlay absolute inset-0 bg-black/60 opacity-0 transition-opacity flex items-center justify-center">
+              <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-violet-600 to-pink-500 text-white flex items-center justify-center shadow-lg play-btn-glow">
+                <i class="fa-solid fa-play ml-0.5 text-xs"></i>
+              </div>
+            </div>
+            <div class="absolute top-2.5 right-2.5 px-2 py-0.5 bg-black/80 backdrop-blur-md rounded-md text-[11px] font-black text-amber-400 border border-amber-400/30">
+              ⭐ {{ item.rating or "9.0" }}
+            </div>
+          </div>
+          <div class="p-3.5">
+            <h3 class="text-sm font-bold text-white truncate group-hover:text-fuchsia-400 transition">{{ item.title }}</h3>
+            <div class="text-xs text-zinc-400 mt-1">{{ item.release_year }} • {{ item.country or "Asya" }}</div>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-24 bg-[#12121A] rounded-3xl border border-white/10 space-y-4">
+      <div class="w-16 h-16 rounded-2xl bg-white/5 mx-auto flex items-center justify-center text-zinc-500 text-3xl">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </div>
+      <h3 class="text-lg font-bold text-white">Aradığınız kriterlere uygun dizi bulunamadı.</h3>
+      <p class="text-xs text-zinc-400 max-w-sm mx-auto">Farklı bir anahtar kelime, oyuncu veya dizi adı ile tekrar arama yapabilirsiniz.</p>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

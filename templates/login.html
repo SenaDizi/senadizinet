@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-[75vh] flex items-center justify-center px-4 py-16">
+  <div class="w-full max-w-md bg-[#12121A] border border-white/10 rounded-3xl p-8 sm:p-10 shadow-2xl space-y-7">
+    
+    <div class="text-center space-y-2">
+      <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-violet-600 via-fuchsia-600 to-pink-500 mx-auto flex items-center justify-center text-white text-xl shadow-lg shadow-fuchsia-500/30">
+        <i class="fa-solid fa-play ml-0.5"></i>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight pt-2">Giriş Yap</h1>
+      <p class="text-xs text-zinc-400">SenaDizi hesabınızla oturum açın ve izlemeye devam edin.</p>
+    </div>
+
+    <form id="login-form" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+      <div>
+        <label class="block text-xs font-bold text-zinc-300 mb-1.5">Kullanıcı Adı veya E-Posta</label>
+        <input type="text" id="login_identity" required placeholder="ornek@senadizi.com" class="w-full bg-[#181824] border border-white/10 rounded-2xl px-4 py-3.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 transition font-medium">
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-zinc-300 mb-1.5">Şifre</label>
+        <input type="password" id="login_password" required placeholder="••••••••" class="w-full bg-[#181824] border border-white/10 rounded-2xl px-4 py-3.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 transition font-medium">
+      </div>
+
+      <button type="submit" class="w-full py-4 btn-gradient text-white font-black text-xs uppercase tracking-wider rounded-2xl transition shadow-xl mt-2">
+        Giriş Yap
+      </button>
+    </form>
+
+    <div class="text-center text-xs text-zinc-400 pt-2">
+      Hesabınız yok mu? <a href="/kayit?next={{ next_url }}" class="text-fuchsia-400 font-bold hover:underline">Hemen Kayıt Olun</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  async function handleLoginSubmit(e) {
+    e.preventDefault();
+    const idt = document.getElementById('login_identity').value.trim();
+    const pw = document.getElementById('login_password').value;
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email_or_username: idt, password: pw })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast('Giriş başarılı! Yönlendiriliyorsunuz...', 'success');
+        setTimeout(() => window.location.href = '{{ next_url or "/" }}', 700);
+      } else {
+        showToast(data.detail || 'Giriş başarısız.', 'error');
+      }
+    } catch (err) {
+      showToast('Bağlantı hatası.', 'error');
+    }
+  }
+</script>
+{% endblock %}

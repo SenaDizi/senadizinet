@@ -1,0 +1,103 @@
+{% extends "admin/admin_base.html" %}
+
+{% block admin_content %}
+<div class="space-y-6">
+  
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-black text-white">Kategori Yönetimi</h1>
+      <p class="text-xs text-zinc-400 mt-0.5">Dizi kategorilerini ekleyin veya düzenleyin.</p>
+    </div>
+
+    <button onclick="openModal('add-category-modal')" class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-red-600/30">
+      <i class="fa-solid fa-plus mr-1"></i> Yeni Kategori
+    </button>
+  </div>
+
+  <div class="bg-[#17171C] border border-white/5 rounded-2xl overflow-hidden">
+    <table class="w-full text-left text-xs">
+      <thead class="bg-zinc-900/80 text-zinc-400 uppercase text-[10px] font-bold border-b border-zinc-800">
+        <tr>
+          <th class="p-4">İkon</th>
+          <th class="p-4">Kategori Adı</th>
+          <th class="p-4">Slug</th>
+          <th class="p-4">Açıklama</th>
+          <th class="p-4 text-right">İşlem</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-zinc-800/60">
+        {% for cat in categories %}
+          <tr class="hover:bg-zinc-900/40 transition">
+            <td class="p-4"><i class="fa-solid {{ cat.icon or 'fa-film' }} text-red-500 text-base"></i></td>
+            <td class="p-4 font-bold text-white">{{ cat.name }}</td>
+            <td class="p-4 text-zinc-400">{{ cat.slug }}</td>
+            <td class="p-4 text-zinc-400">{{ cat.description or '-' }}</td>
+            <td class="p-4 text-right">
+              <button onclick="deleteCategory({{ cat.id }}, '{{ cat.name }}')" class="text-red-500 hover:text-red-400 p-1"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- YENİ KATEGORİ MODALI -->
+<div id="add-category-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="w-full max-w-md bg-[#17171C] border border-zinc-800 rounded-3xl p-6 space-y-4">
+    <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+      <h3 class="text-base font-bold text-white">Yeni Kategori Ekle</h3>
+      <button onclick="closeModal('add-category-modal')" class="text-zinc-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <form id="add-category-form" onsubmit="handleAddCategory(event)" class="space-y-3 text-xs">
+      <div>
+        <label class="block font-bold text-zinc-300 mb-1">Kategori Adı *</label>
+        <input type="text" id="cat_name" required placeholder="Aksiyon, Romantik vb." class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white">
+      </div>
+      <div>
+        <label class="block font-bold text-zinc-300 mb-1">FontAwesome İkonu</label>
+        <input type="text" id="cat_icon" placeholder="fa-film" value="fa-film" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white">
+      </div>
+      <div>
+        <label class="block font-bold text-zinc-300 mb-1">Açıklama</label>
+        <textarea id="cat_desc" rows="2" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white"></textarea>
+      </div>
+
+      <div class="pt-4 border-t border-zinc-800 flex justify-end gap-2">
+        <button type="button" onclick="closeModal('add-category-modal')" class="px-4 py-2 bg-zinc-800 text-zinc-300 font-bold rounded-xl">İptal</button>
+        <button type="submit" class="px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl">Ekle</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  async function handleAddCategory(e) {
+    e.preventDefault();
+    const name = document.getElementById('cat_name').value.trim();
+    const icon = document.getElementById('cat_icon').value.trim();
+    const description = document.getElementById('cat_desc').value.trim();
+
+    try {
+      const res = await fetch('/api/admin/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, icon, description })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(data.message, 'success');
+        setTimeout(() => window.location.reload(), 800);
+      } else {
+        showToast(data.detail || 'Hata oluştu.', 'error');
+      }
+    } catch (e) {
+      showToast('Bağlantı hatası.', 'error');
+    }
+  }
+</script>
+{% endblock %}

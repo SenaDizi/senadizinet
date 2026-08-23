@@ -1,0 +1,55 @@
+{% extends "admin/admin_base.html" %}
+
+{% block admin_content %}
+<div class="space-y-6">
+  
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-black text-white">Kullanıcı Yönetimi</h1>
+      <p class="text-xs text-zinc-400 mt-0.5">Kullanıcı listesi, yetkilendirme ve durum (aktif/pasif) yönetimi.</p>
+    </div>
+  </div>
+
+  <div class="bg-[#17171C] border border-white/5 rounded-2xl overflow-hidden">
+    <table class="w-full text-left text-xs">
+      <thead class="bg-zinc-900/80 text-zinc-400 uppercase text-[10px] font-bold border-b border-zinc-800">
+        <tr>
+          <th class="p-4">Kullanıcı</th>
+          <th class="p-4">E-Posta</th>
+          <th class="p-4">Yetki</th>
+          <th class="p-4">Kayıt Tarihi</th>
+          <th class="p-4">Durum</th>
+          <th class="p-4 text-right">İşlem</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-zinc-800/60">
+        {% for u in users_list %}
+          <tr class="hover:bg-zinc-900/40 transition">
+            <td class="p-4 font-bold text-white">{{ u.full_name or u.username }} ({{ u.username }})</td>
+            <td class="p-4 text-zinc-300">{{ u.email }}</td>
+            <td class="p-4">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold {% if u.role.value == 'admin' %}bg-red-950 text-red-400 border border-red-800/40{% else %}bg-zinc-800 text-zinc-300{% endif %}">
+                {{ u.role.value|upper }}
+              </span>
+            </td>
+            <td class="p-4 text-zinc-400">{{ u.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+            <td class="p-4">
+              {% if u.is_active %}
+                <span class="px-2 py-0.5 bg-green-950 text-green-400 rounded text-[10px] font-bold">Aktif</span>
+              {% else %}
+                <span class="px-2 py-0.5 bg-red-950 text-red-400 rounded text-[10px] font-bold">Pasif</span>
+              {% endif %}
+            </td>
+            <td class="p-4 text-right">
+              <button onclick="toggleUserStatus({{ u.id }})" class="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-white rounded text-[11px] font-semibold transition">
+                {% if u.is_active %}Pasif Yap{% else %}Aktif Yap{% endif %}
+              </button>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

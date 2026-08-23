@@ -1,0 +1,69 @@
+{% extends "admin/admin_base.html" %}
+
+{% block admin_content %}
+<div class="max-w-3xl space-y-6">
+  
+  <div>
+    <h1 class="text-2xl font-black text-white">Site Ayarları</h1>
+    <p class="text-xs text-zinc-400 mt-0.5">Platform genel marka, başlık, iletişim ve sosyal medya yapılandırması.</p>
+  </div>
+
+  <div class="bg-[#17171C] border border-white/5 rounded-2xl p-6">
+    <form id="settings-form" onsubmit="handleSaveSettings(event)" class="space-y-4 text-xs">
+      <div>
+        <label class="block font-bold text-zinc-300 mb-1">Site Adı</label>
+        <input type="text" id="set_site_name" value="SenaDizi" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-2.5 text-white">
+      </div>
+
+      <div>
+        <label class="block font-bold text-zinc-300 mb-1">Site Açıklaması (Meta Description)</label>
+        <textarea id="set_site_desc" rows="2" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-2.5 text-white">Yüksek Kaliteli Lisanslı Dizi ve Video Akış Platformu</textarea>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block font-bold text-zinc-300 mb-1">İletişim E-Postası</label>
+          <input type="email" id="set_contact_email" value="destek@senadizinet.com" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-2.5 text-white">
+        </div>
+        <div>
+          <label class="block font-bold text-zinc-300 mb-1">Ana Vurgu Rengi</label>
+          <input type="text" id="set_primary_color" value="#E50914" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-2.5 text-white">
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-zinc-800 flex justify-end">
+        <button type="submit" class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition shadow-lg shadow-red-600/30">
+          Ayarları Kaydet
+        </button>
+      </div>
+    </form>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  async function handleSaveSettings(e) {
+    e.preventDefault();
+    const site_name = document.getElementById('set_site_name').value.trim();
+    const site_description = document.getElementById('set_site_desc').value.trim();
+    const contact_email = document.getElementById('set_contact_email').value.trim();
+    const primary_color = document.getElementById('set_primary_color').value.trim();
+
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ site_name, site_description, contact_email, primary_color })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(data.message, 'success');
+      }
+    } catch (err) {
+      showToast('Hata oluştu.', 'error');
+    }
+  }
+</script>
+{% endblock %}

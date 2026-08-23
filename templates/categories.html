@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
+  
+  <div class="border-b border-white/10 pb-6">
+    <div class="flex items-center gap-3">
+      <div class="w-1.5 h-6 bg-gradient-to-b from-violet-500 to-pink-500 rounded-full shadow-lg shadow-pink-500/50"></div>
+      <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+        Dizi Türleri & Kategoriler
+      </h1>
+    </div>
+    <p class="text-xs sm:text-sm text-zinc-400 mt-2">Kore, Çin ve tüm Asya dizi türlerine göz atın, binlerce bölümü anında keşfedin.</p>
+  </div>
+
+  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+    {% for cat in all_categories %}
+      <a href="/diziler?kategori={{ cat.slug }}" class="group block p-6 rounded-3xl bg-[#12121A] border border-white/10 hover:border-fuchsia-500/60 hover:bg-[#181826] transition-all duration-300 transform hover:-translate-y-1.5 shadow-xl">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-violet-600/20 to-pink-600/20 text-fuchsia-400 border border-fuchsia-500/30 flex items-center justify-center text-2xl mb-4 group-hover:bg-gradient-to-tr group-hover:from-violet-600 group-hover:to-pink-600 group-hover:text-white transition-all duration-300 shadow-lg">
+          <i class="fa-solid {{ cat.icon or 'fa-film' }}"></i>
+        </div>
+        <h3 class="text-base sm:text-lg font-black text-white group-hover:text-fuchsia-300 transition">{{ cat.name }}</h3>
+        <p class="text-xs text-zinc-400 mt-1.5 line-clamp-2 leading-relaxed">{{ cat.description or 'En popüler ' ~ cat.name ~ ' yapımları' }}</p>
+      </a>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

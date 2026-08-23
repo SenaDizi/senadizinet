@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: senadizinet
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: HOST
+        value: 0.0.0.0
+      - key: APP_NAME
+        value: SenaDizi
+      - key: APP_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEFAULT_ADMIN_EMAIL
+        value: admin@senadizinet.com
+      - key: DEFAULT_ADMIN_PASSWORD
+        value: SenaDizi2026!

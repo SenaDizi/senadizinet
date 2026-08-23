@@ -1,0 +1,209 @@
+/* ===================================================================
+   SenaDizi – Modern Sinematik Asya & Dizi Akış Teması (Dramaflix Stili)
+   =================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg-dark: #0A0A0F;
+  --bg-surface: #12121A;
+  --bg-card: #181824;
+  --bg-card-hover: #1F1F2E;
+  
+  --primary-violet: #8B5CF6;
+  --primary-fuchsia: #D946EF;
+  --primary-pink: #EC4899;
+  --primary-red: #EF4444;
+  
+  --accent-gradient: linear-gradient(135deg, #8B5CF6 0%, #D946EF 50%, #EC4899 100%);
+  --accent-gradient-hover: linear-gradient(135deg, #7C3AED 0%, #C026D3 50%, #DB2777 100%);
+  --text-gradient: linear-gradient(135deg, #C4B5FD 0%, #F472B6 100%);
+  
+  --glow-accent: 0 0 25px rgba(168, 85, 247, 0.4);
+  --glow-pink: 0 0 25px rgba(236, 72, 153, 0.4);
+  
+  --text-main: #FFFFFF;
+  --text-muted: #94A3B8;
+  --text-dim: #64748B;
+}
+
+/* Genel Sayfa Ayarları */
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow-x: hidden;
+  letter-spacing: -0.01em;
+}
+
+/* Özel Akıcı Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #0D0D14;
+}
+::-webkit-scrollbar-thumb {
+  background: #252538;
+  border-radius: 9999px;
+  transition: background 0.3s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #8B5CF6, #EC4899);
+}
+
+/* Yatay Liste Scrollbar Gizleme */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Glassmorphism Menü ve Kartlar */
+.glass-nav {
+  background: rgba(10, 10, 15, 0.82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.glass-card {
+  background: rgba(18, 18, 26, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-pill {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Gradient Butonlar ve Vurgular */
+.btn-gradient {
+  background: var(--accent-gradient);
+  color: #FFFFFF;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px -2px rgba(168, 85, 247, 0.45);
+}
+.btn-gradient:hover {
+  background: var(--accent-gradient-hover);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(217, 70, 239, 0.55);
+}
+
+.text-gradient {
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Hero Slider Gradient Karartma */
+.hero-gradient {
+  background: 
+    linear-gradient(180deg, rgba(10,10,15,0.05) 0%, rgba(10,10,15,0.7) 65%, rgba(10,10,15,1) 100%),
+    linear-gradient(90deg, rgba(10,10,15,0.96) 0%, rgba(10,10,15,0.65) 45%, rgba(10,10,15,0.15) 100%);
+}
+
+/* Dizi Kartı Efektleri */
+.dizi-card {
+  position: relative;
+  transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@media (hover: hover) and (pointer: fine) {
+  .dizi-card:hover {
+    transform: translateY(-7px) scale(1.035);
+    box-shadow: 0 20px 40px -10px rgba(139, 92, 246, 0.4), 0 0 0 1.5px rgba(217, 70, 239, 0.6);
+    z-index: 20;
+  }
+  .dizi-card:hover .play-overlay {
+    opacity: 1;
+  }
+  .dizi-card:hover .card-badge-glow {
+    box-shadow: 0 0 15px rgba(217, 70, 239, 0.8);
+  }
+}
+
+/* Play Butonu Nabız (Pulse) */
+.play-btn-glow {
+  box-shadow: 0 0 30px rgba(217, 70, 239, 0.7);
+  animation: pulse-glow 2s infinite;
+}
+@keyframes pulse-glow {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 25px rgba(217, 70, 239, 0.6);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 0 35px rgba(139, 92, 246, 0.85);
+  }
+}
+
+/* Sinema Işıklandırma (Ambient Glow) */
+.cinema-glow {
+  box-shadow: 0 0 80px rgba(139, 92, 246, 0.22);
+}
+
+/* Shimmer Loading */
+.skeleton {
+  background: linear-gradient(90deg, #141420 25%, #242436 50%, #141420 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Mobil Alt Menü Safe Area */
+.mobile-nav-bottom {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
+/* Toast Bildirim Kutusu */
+#toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.toast {
+  min-width: 280px;
+  max-width: 400px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(16px);
+  animation: slide-in 0.3s ease;
+}
+.toast-success {
+  background: rgba(16, 185, 129, 0.9);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+.toast-error {
+  background: rgba(239, 68, 68, 0.9);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+}
+.toast-info {
+  background: rgba(139, 92, 246, 0.9);
+  border: 1px solid rgba(192, 132, 252, 0.3);
+}
+@keyframes slide-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}

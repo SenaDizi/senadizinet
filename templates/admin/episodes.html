@@ -1,0 +1,248 @@
+{% extends "admin/admin_base.html" %}
+
+{% block admin_content %}
+<div class="space-y-6">
+  
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-black text-white">Sezon & Bölüm Yönetimi</h1>
+      <p class="text-xs text-zinc-400 mt-0.5">Dizi seçin, sezon ekleyin ve bölümleri tek tek veya toplu olarak oluşturun.</p>
+    </div>
+
+    <!-- Dizi Seçici Dropdown -->
+    <div class="flex items-center gap-3">
+      <label class="text-xs text-zinc-400">Dizi:</label>
+      <select onchange="location = '/admin/episodes?series_id=' + this.value;" class="bg-zinc-900 border border-zinc-700 text-xs text-white rounded-xl px-4 py-2 font-bold focus:outline-none focus:border-red-500">
+        {% for s in all_series %}
+          <option value="{{ s.id }}" {% if selected_series and selected_series.id == s.id %}selected{% endif %}>{{ s.title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  {% if selected_series %}
+    <div class="flex items-center justify-between bg-[#17171C] border border-white/5 rounded-2xl p-4">
+      <div class="flex items-center gap-3">
+        <img src="{{ selected_series.poster_url }}" class="w-10 h-14 object-cover rounded" alt="{{ selected_series.title }}">
+        <div>
+          <h2 class="text-base font-bold text-white">{{ selected_series.title }}</h2>
+          <div class="text-xs text-zinc-400">{{ seasons|length }} Sezon mevcut</div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="openModal('add-season-modal')" class="px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold rounded-xl transition">
+          <i class="fa-solid fa-plus mr-1"></i> Yeni Sezon
+        </button>
+        <button onclick="openModal('add-episode-modal')" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl transition shadow-lg shadow-red-600/30">
+          <i class="fa-solid fa-play mr-1"></i> Bölüm Ekle
+        </button>
+        <button onclick="openModal('bulk-episode-modal')" class="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition">
+          <i class="fa-solid fa-bolt mr-1"></i> Toplu Bölüm
+        </button>
+      </div>
+    </div>
+
+    <!-- Sezon ve Bölümler Listesi -->
+    <div class="space-y-6">
+      {% for season in seasons %}
+        <div class="bg-[#17171C] border border-white/5 rounded-2xl p-6 space-y-4">
+          <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+            <h3 class="text-sm font-bold text-white">{{ season.title or (season.season_number ~ '. Sezon') }}</h3>
+            <span class="text-xs text-zinc-400">{{ season.episodes|length }} Bölüm</span>
+          </div>
+
+          <div class="divide-y divide-zinc-800/60 text-xs">
+            {% for ep in season.episodes %}
+              <div class="py-3 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-8 h-8 rounded-lg bg-zinc-800 text-white font-bold flex items-center justify-center text-xs flex-shrink-0">
+                    {{ ep.episode_number }}
+                  </div>
+                  <div class="min-w-0">
+                    <div class="font-bold text-white truncate">{{ ep.title }}</div>
+                    <div class="text-[10px] text-zinc-400 truncate max-w-md">{{ ep.video_url }}</div>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-3 flex-shrink-0">
+                  {% if not ep.is_free %}
+                    <span class="px-2 py-0.5 bg-amber-950 text-amber-400 rounded text-[10px] font-bold">VIP</span>
+                  {% endif %}
+                  <span class="text-zinc-400">{{ ep.duration_minutes }} dk</span>
+                  <button onclick="deleteEpisode({{ ep.id }}, '{{ ep.title }}')" class="text-red-500 hover:text-red-400 p-1" title="Sil"><i class="fa-solid fa-trash"></i></button>
+                </div>
+              </div>
+            {% else %}
+              <div class="text-xs text-zinc-400 py-4 text-center">Bu sezonda henüz bölüm yok.</div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <div class="text-center py-16 text-zinc-400">Lütfen önce bir dizi ekleyin veya seçin.</div>
+  {% endif %}
+
+</div>
+
+<!-- YENİ BÖLÜM MODALI -->
+<div id="add-episode-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="w-full max-w-lg bg-[#17171C] border border-zinc-800 rounded-3xl p-6 space-y-4">
+    <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+      <h3 class="text-base font-bold text-white">Bölüm Ekle</h3>
+      <button onclick="closeModal('add-episode-modal')" class="text-zinc-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <form id="add-episode-form" onsubmit="handleAddEpisode(event)" class="space-y-3 text-xs">
+      <div>
+        <label class="block font-bold text-zinc-300 mb-1">Sezon</label>
+        <select id="ep_season_id" required class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white">
+          {% for s in seasons %}
+            <option value="{{ s.id }}">{{ s.title or (s.season_number ~ '. Sezon') }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="grid grid-cols-3 gap-3">
+        <div>
+          <label class="block font-bold text-zinc-300 mb-1">Bölüm No *</label>
+          <input type="number" id="ep_number" required value="1" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white">
+        </div>
+        <div class="col-span-2">
+          <label class="block font-bold text-zinc-300 mb-1">Bölüm Başlığı *</label>
+          <input type="text" id="ep_title" required placeholder="1. Bölüm: Başlangıç" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white">
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-bold text-zinc-300 mb-1">Video Kaynağı URL (MP4 / HLS / CDN) *</label>
+        <input type="url" id="ep_video_url" required placeholder="https://cdn.example.com/videos/ep1.mp4" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white">
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-zinc-300 mb-1">Süre (Dakika)</label>
+          <input type="number" id="ep_duration" value="45" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white">
+        </div>
+        <div class="flex items-center pt-5">
+          <label class="flex items-center gap-2 font-bold text-zinc-300">
+            <input type="checkbox" id="ep_is_free" checked class="accent-red-600 rounded">
+            <span>Ücretsiz Bölüm</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-zinc-800 flex justify-end gap-2">
+        <button type="button" onclick="closeModal('add-episode-modal')" class="px-4 py-2 bg-zinc-800 text-zinc-300 font-bold rounded-xl">İptal</button>
+        <button type="submit" class="px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl">Kaydet</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- TOPLU BÖLÜM EKLEME MODALI -->
+<div id="bulk-episode-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="w-full max-w-lg bg-[#17171C] border border-zinc-800 rounded-3xl p-6 space-y-4">
+    <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+      <h3 class="text-base font-bold text-white">Toplu Bölüm Oluşturucu</h3>
+      <button onclick="closeModal('bulk-episode-modal')" class="text-zinc-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <form id="bulk-episode-form" onsubmit="handleBulkEpisodes(event)" class="space-y-3 text-xs">
+      <div>
+        <label class="block font-bold text-zinc-300 mb-1">Sezon</label>
+        <select id="bulk_season_id" required class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white">
+          {% for s in seasons %}
+            <option value="{{ s.id }}">{{ s.title or (s.season_number ~ '. Sezon') }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-zinc-300 mb-1">Başlangıç Bölüm No</label>
+          <input type="number" id="bulk_start" value="1" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white">
+        </div>
+        <div>
+          <label class="block font-bold text-zinc-300 mb-1">Bölüm Sayısı</label>
+          <input type="number" id="bulk_count" value="10" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white">
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-bold text-zinc-300 mb-1">Başlık Şablonu ({number} otomatik yerleşir)</label>
+        <input type="text" id="bulk_title_pattern" value="{number}. Bölüm" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white">
+      </div>
+
+      <div>
+        <label class="block font-bold text-zinc-300 mb-1">Video URL Şablonu (Örn: https://cdn.com/ep_{number}.mp4)</label>
+        <input type="text" id="bulk_url_pattern" placeholder="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white">
+      </div>
+
+      <div class="pt-4 border-t border-zinc-800 flex justify-end gap-2">
+        <button type="button" onclick="closeModal('bulk-episode-modal')" class="px-4 py-2 bg-zinc-800 text-zinc-300 font-bold rounded-xl">İptal</button>
+        <button type="submit" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl">Toplu Oluştur</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  async function handleAddEpisode(e) {
+    e.preventDefault();
+    const season_id = parseInt(document.getElementById('ep_season_id').value);
+    const episode_number = parseInt(document.getElementById('ep_number').value);
+    const title = document.getElementById('ep_title').value.trim();
+    const video_url = document.getElementById('ep_video_url').value.trim();
+    const duration_minutes = parseInt(document.getElementById('ep_duration').value);
+    const is_free = document.getElementById('ep_is_free').checked;
+
+    try {
+      const res = await fetch('/api/admin/episodes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ season_id, episode_number, title, video_url, duration_minutes, is_free })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(data.message, 'success');
+        setTimeout(() => window.location.reload(), 800);
+      } else {
+        showToast(data.detail || 'Hata oluştu.', 'error');
+      }
+    } catch (err) {
+      showToast('Bağlantı hatası.', 'error');
+    }
+  }
+
+  async function handleBulkEpisodes(e) {
+    e.preventDefault();
+    const season_id = parseInt(document.getElementById('bulk_season_id').value);
+    const start_number = parseInt(document.getElementById('bulk_start').value);
+    const count = parseInt(document.getElementById('bulk_count').value);
+    const title_pattern = document.getElementById('bulk_title_pattern').value;
+    const video_url_pattern = document.getElementById('bulk_url_pattern').value;
+
+    try {
+      const res = await fetch('/api/admin/episodes/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ season_id, start_number, count, title_pattern, video_url_pattern })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(data.message, 'success');
+        setTimeout(() => window.location.reload(), 800);
+      } else {
+        showToast(data.detail || 'Hata oluştu.', 'error');
+      }
+    } catch (err) {
+      showToast('Bağlantı hatası.', 'error');
+    }
+  }
+</script>
+{% endblock %}

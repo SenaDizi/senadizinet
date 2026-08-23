@@ -1,0 +1,196 @@
+{% extends "admin/admin_base.html" %}
+
+{% block admin_content %}
+<div class="space-y-6">
+  
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-black text-white">Dizi Yönetimi</h1>
+      <p class="text-xs text-zinc-400 mt-0.5">Mevcut dizileri düzenleyin, silin veya yeni lisanslı dizi ekleyin.</p>
+    </div>
+
+    <button onclick="openModal('add-series-modal')" class="flex items-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-red-600/30">
+      <i class="fa-solid fa-plus"></i> Yeni Dizi Ekle
+    </button>
+  </div>
+
+  <!-- Dizi Tablosu -->
+  <div class="bg-[#17171C] border border-white/5 rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-zinc-900/80 text-zinc-400 uppercase text-[10px] font-bold border-b border-zinc-800">
+          <tr>
+            <th class="p-4">Kapak</th>
+            <th class="p-4">Dizi Adı</th>
+            <th class="p-4">Yıl / Ülke</th>
+            <th class="p-4">Puan</th>
+            <th class="p-4">Kategoriler</th>
+            <th class="p-4">Durum</th>
+            <th class="p-4 text-right">İşlemler</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-zinc-800/60">
+          {% for s in series_list %}
+            <tr class="hover:bg-zinc-900/40 transition">
+              <td class="p-4">
+                <img src="{{ s.poster_url }}" class="w-10 h-14 object-cover rounded shadow" alt="{{ s.title }}">
+              </td>
+              <td class="p-4 font-bold text-white">
+                <div>{{ s.title }}</div>
+                <div class="text-[10px] text-zinc-400 font-normal">/dizi/{{ s.slug }}</div>
+              </td>
+              <td class="p-4 text-zinc-300">{{ s.release_year }} / {{ s.country }}</td>
+              <td class="p-4 font-bold text-amber-400">⭐ {{ s.rating }}</td>
+              <td class="p-4 text-zinc-400">
+                {% for c in s.categories %}{{ c.name }}{% if not loop.last %}, {% endif %}{% endfor %}
+              </td>
+              <td class="p-4">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold {% if s.is_featured %}bg-red-950 text-red-400 border border-red-800/40{% else %}bg-zinc-800 text-zinc-400{% endif %}">
+                  {{ s.status }}
+                </span>
+              </td>
+              <td class="p-4 text-right space-x-2">
+                <a href="/dizi/{{ s.slug }}" target="_blank" class="p-1.5 text-zinc-400 hover:text-white" title="Görüntüle"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                <a href="/admin/episodes?series_id={{ s.id }}" class="p-1.5 text-blue-400 hover:text-blue-300" title="Bölümleri Yönet"><i class="fa-solid fa-layer-group"></i></a>
+                <button onclick="deleteSeries({{ s.id }}, '{{ s.title }}')" class="p-1.5 text-red-500 hover:text-red-400" title="Sil"><i class="fa-solid fa-trash"></i></button>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- YENİ DİZİ EKLE MODAL -->
+<div id="add-series-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="w-full max-w-2xl bg-[#17171C] border border-zinc-800 rounded-3xl p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+      <h3 class="text-lg font-black text-white">Yeni Dizi Ekle</h3>
+      <button onclick="closeModal('add-series-modal')" class="text-zinc-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <form id="add-series-form" onsubmit="handleAddSeries(event)" class="space-y-4 text-xs">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block font-bold text-zinc-300 mb-1">Dizi Adı *</label>
+          <input type="text" id="series_title" required class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white">
+        </div>
+        <div>
+          <label class="block font-bold text-zinc-300 mb-1">Yönetmen</label>
+          <input type="text" id="series_director" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white">
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-bold text-zinc-300 mb-1">Açıklama *</label>
+        <textarea id="series_description" required rows="3" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white"></textarea>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block font-bold text-zinc-300 mb-1">Dikey Kapak URL (Poster) *</label>
+          <input type="url" id="series_poster" required placeholder="https://..." class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white">
+        </div>
+        <div>
+          <label class="block font-bold text-zinc-300 mb-1">Yatay Banner URL (Hero)</label>
+          <input type="url" id="series_banner" placeholder="https://..." class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-4">
+        <div>
+          <label class="block font-bold text-zinc-300 mb-1">Yayın Yılı</label>
+          <input type="number" id="series_year" value="2026" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white">
+        </div>
+        <div>
+          <label class="block font-bold text-zinc-300 mb-1">Puan</label>
+          <input type="number" step="0.1" id="series_rating" value="8.5" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white">
+        </div>
+        <div>
+          <label class="block font-bold text-zinc-300 mb-1">Ülke</label>
+          <input type="text" id="series_country" value="Türkiye" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-white">
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-bold text-zinc-300 mb-1">Kategoriler</label>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {% for c in categories %}
+            <label class="flex items-center gap-1.5 text-zinc-300">
+              <input type="checkbox" name="cat_ids" value="{{ c.id }}" class="accent-red-600 rounded">
+              <span>{{ c.name }}</span>
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4 pt-2">
+        <label class="flex items-center gap-1.5 font-bold text-zinc-300">
+          <input type="checkbox" id="series_featured" class="accent-red-600 rounded">
+          <span>Hero Slider'da Göster</span>
+        </label>
+        <label class="flex items-center gap-1.5 font-bold text-amber-400">
+          <input type="checkbox" id="series_premium" class="accent-red-600 rounded">
+          <span>Sadece Premium</span>
+        </label>
+      </div>
+
+      <div class="pt-4 border-t border-zinc-800 flex justify-end gap-3">
+        <button type="button" onclick="closeModal('add-series-modal')" class="px-5 py-2.5 bg-zinc-800 text-zinc-300 font-bold rounded-xl">İptal</button>
+        <button type="submit" class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-600/30">Diziyi Kaydet</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  async function handleAddSeries(e) {
+    e.preventDefault();
+    const title = document.getElementById('series_title').value.trim();
+    const description = document.getElementById('series_description').value.trim();
+    const poster = document.getElementById('series_poster').value.trim();
+    const banner = document.getElementById('series_banner').value.trim();
+    const director = document.getElementById('series_director').value.trim();
+    const year = parseInt(document.getElementById('series_year').value);
+    const rating = parseFloat(document.getElementById('series_rating').value);
+    const country = document.getElementById('series_country').value.trim();
+    const featured = document.getElementById('series_featured').checked;
+    const premium = document.getElementById('series_premium').checked;
+
+    const checkedCats = Array.from(document.querySelectorAll('input[name="cat_ids"]:checked')).map(c => parseInt(c.value));
+
+    try {
+      const res = await fetch('/api/admin/series', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          description,
+          poster_url: poster,
+          banner_url: banner || poster,
+          director,
+          release_year: year,
+          rating,
+          country,
+          is_featured: featured,
+          is_premium_only: premium,
+          category_ids: checkedCats
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(data.message, 'success');
+        setTimeout(() => window.location.reload(), 800);
+      } else {
+        showToast(data.detail || 'Kayıt başarısız.', 'error');
+      }
+    } catch (err) {
+      showToast('Bağlantı hatası.', 'error');
+    }
+  }
+</script>
+{% endblock %}

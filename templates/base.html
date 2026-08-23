@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>{{ page_title or "SenaDizi – Asya & Kore Dizileri İzle" }}</title>
+  <meta name="description" content="{{ meta_description or 'SenaDizi ile en popüler K-Drama, C-Drama ve Asya dizilerini Full HD 1080p ve 4K kalitesinde Türkçe altyazılı kesintisiz izleyin.' }}">
+  
+  <!-- OpenGraph & SEO -->
+  <meta property="og:title" content="{{ page_title or 'SenaDizi – Asya & Kore Dizileri İzle' }}">
+  <meta property="og:description" content="{{ meta_description or 'SenaDizi ile en popüler K-Drama, C-Drama ve Asya dizilerini Full HD Türkçe altyazılı izleyin.' }}">
+  <meta property="og:type" content="video.tv_show">
+  <meta property="og:url" content="{{ canonical_url or request.url }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="{{ canonical_url or request.url }}">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              bg: '#0A0A0F',
+              surface: '#12121A',
+              card: '#181824',
+              cardHover: '#1F1F2E',
+              border: 'rgba(255, 255, 255, 0.08)'
+            },
+            accent: {
+              violet: '#8B5CF6',
+              fuchsia: '#D946EF',
+              pink: '#EC4899'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts & FontAwesome 6 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Custom Modern CSS -->
+  <link rel="stylesheet" href="/static/css/custom.css">
+</head>
+<body class="bg-[#0A0A0F] text-white min-h-screen flex flex-col antialiased selection:bg-fuchsia-600 selection:text-white pb-20 md:pb-0">
+
+  <!-- HEADER / NAVBAR -->
+  <header class="sticky top-0 z-50 w-full glass-nav transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3 flex items-center justify-between gap-4">
+      
+      <!-- Sol: Logo & Ana Menü -->
+      <div class="flex items-center gap-8">
+        <a href="/" class="flex items-center gap-2.5 group">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-violet-600 via-fuchsia-600 to-pink-500 flex items-center justify-center shadow-lg shadow-fuchsia-500/25 group-hover:scale-105 transition-transform">
+            <i class="fa-solid fa-play text-white text-sm ml-0.5"></i>
+          </div>
+          <span class="text-2xl font-black tracking-tight text-white flex items-center">
+            <span>Sena</span><span class="text-gradient font-black">Dizi</span>
+          </span>
+        </a>
+
+        <!-- Masaüstü Navigasyon -->
+        <nav class="hidden lg:flex items-center gap-6 text-xs uppercase tracking-wider font-bold text-zinc-300">
+          <a href="/" class="hover:text-fuchsia-400 transition py-1.5 {% if request.url.path == '/' %}text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-pink-400 border-b-2 border-fuchsia-500 font-extrabold{% endif %}">
+            Ana Sayfa
+          </a>
+          <a href="/diziler?kategori=k-drama" class="hover:text-fuchsia-400 transition py-1.5 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-violet-500"></span> K-Drama
+          </a>
+          <a href="/diziler?kategori=c-drama" class="hover:text-fuchsia-400 transition py-1.5 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-pink-500"></span> C-Drama
+          </a>
+          <a href="/diziler" class="hover:text-fuchsia-400 transition py-1.5 {% if request.url.path == '/diziler' and not request.query_params.get('kategori') %}text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-pink-400 border-b-2 border-fuchsia-500 font-extrabold{% endif %}">
+            Tüm Diziler
+          </a>
+          <a href="/kategoriler" class="hover:text-fuchsia-400 transition py-1.5 {% if request.url.path == '/kategoriler' %}text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-pink-400 border-b-2 border-fuchsia-500 font-extrabold{% endif %}">
+            Kategoriler
+          </a>
+          <a href="/yeni-eklenenler" class="hover:text-fuchsia-400 transition py-1.5 {% if request.url.path == '/yeni-eklenenler' %}text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-pink-400 border-b-2 border-fuchsia-500 font-extrabold{% endif %}">
+            Yeni
+          </a>
+          <a href="/populer" class="hover:text-fuchsia-400 transition py-1.5 {% if request.url.path == '/populer' %}text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-pink-400 border-b-2 border-fuchsia-500 font-extrabold{% endif %}">
+            Popüler
+          </a>
+          <a href="/abonelik" class="px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-fuchsia-500/20 border border-amber-500/40 text-amber-300 font-bold hover:scale-105 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-crown text-[10px] text-amber-400"></i> VIP
+          </a>
+        </nav>
+      </div>
+
+      <!-- Sağ: Canlı Arama, Favoriler & Profil -->
+      <div class="flex items-center gap-3">
+        
+        <!-- Canlı Arama Çubuğu -->
+        <div id="search-container" class="relative hidden sm:block w-48 md:w-64">
+          <div class="relative flex items-center">
+            <input 
+              type="text" 
+              placeholder="Dizi, oyuncu ara..." 
+              oninput="handleHeaderSearch(this)"
+              class="w-full bg-[#161622]/90 border border-white/10 text-xs rounded-full pl-9 pr-4 py-2 text-white placeholder-zinc-500 focus:outline-none focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 transition"
+            >
+            <i class="fa-solid fa-magnifying-glass absolute left-3 text-xs text-zinc-400"></i>
+          </div>
+          <!-- Dropdown Canlı Arama Sonuçları -->
+          <div id="search-dropdown" class="hidden absolute top-full mt-2 w-72 md:w-84 right-0 bg-[#12121A] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 divide-y divide-white/5"></div>
+        </div>
+
+        {% if current_user %}
+          <!-- Favorilerim Kısayolu -->
+          <a href="/favoriler" class="hidden sm:flex items-center justify-center w-10 h-10 rounded-full bg-[#181824] hover:bg-[#222233] border border-white/10 text-zinc-300 hover:text-pink-400 transition" title="Favorilerim">
+            <i class="fa-solid fa-heart text-sm"></i>
+          </a>
+
+          <!-- Profil Dropdown -->
+          <div class="relative">
+            <button onclick="toggleUserMenu()" class="flex items-center gap-2 p-0.5 rounded-full hover:ring-2 hover:ring-fuchsia-500 transition">
+              <img src="{{ current_user.avatar_url or '/static/img/default-avatar.png' }}" class="w-9 h-9 rounded-full object-cover bg-zinc-800 border border-white/15" alt="Avatar">
+            </button>
+
+            <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-60 bg-[#12121A] border border-white/10 rounded-2xl shadow-2xl py-2 z-50 divide-y divide-white/5">
+              <div class="px-4 py-3">
+                <div class="text-sm font-bold text-white truncate">{{ current_user.full_name or current_user.username }}</div>
+                <div class="text-xs text-zinc-400 truncate">{{ current_user.email }}</div>
+                <div class="mt-2 inline-flex items-center gap-1 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-300">
+                  <i class="fa-solid fa-shield text-[9px]"></i> {{ current_user.role.value }}
+                </div>
+              </div>
+
+              <div class="py-1">
+                {% if current_user.role.value == 'admin' %}
+                  <a href="/admin" class="flex items-center gap-2.5 px-4 py-2.5 text-xs text-fuchsia-400 hover:bg-white/5 transition font-bold">
+                    <i class="fa-solid fa-gauge-high text-xs"></i> Yönetim Paneli
+                  </a>
+                {% endif %}
+
+                <a href="/profil" class="flex items-center gap-2.5 px-4 py-2 text-xs text-zinc-300 hover:bg-white/5 transition font-medium">
+                  <i class="fa-solid fa-user text-xs text-zinc-400"></i> Profilim
+                </a>
+                <a href="/favoriler" class="flex items-center gap-2.5 px-4 py-2 text-xs text-zinc-300 hover:bg-white/5 transition font-medium">
+                  <i class="fa-solid fa-heart text-xs text-pink-400"></i> Favorilerim
+                </a>
+                <a href="/gecmis" class="flex items-center gap-2.5 px-4 py-2 text-xs text-zinc-300 hover:bg-white/5 transition font-medium">
+                  <i class="fa-solid fa-clock-rotate-left text-xs text-zinc-400"></i> İzleme Geçmişi
+                </a>
+                <a href="/abonelik" class="flex items-center gap-2.5 px-4 py-2 text-xs text-amber-300 hover:bg-white/5 transition font-bold">
+                  <i class="fa-solid fa-crown text-xs text-amber-400"></i> VIP Paketler
+                </a>
+              </div>
+
+              <div class="py-1">
+                <button onclick="handleLogout()" class="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-xs text-red-400 hover:bg-red-950/20 transition font-bold">
+                  <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i> Çıkış Yap
+                </button>
+              </div>
+            </div>
+          </div>
+        {% else %}
+          <!-- Giriş & Kayıt Butonları -->
+          <div class="flex items-center gap-2">
+            <a href="/giris" class="text-xs font-bold px-3.5 py-2 text-zinc-300 hover:text-white transition">Giriş</a>
+            <a href="/kayit" class="text-xs font-extrabold px-4 py-2 rounded-xl btn-gradient transition shadow-lg">Kayıt Ol</a>
+          </div>
+        {% endif %}
+
+        <!-- Mobil Menü Hamburger Butonu -->
+        <button onclick="toggleMobileMenu()" class="lg:hidden p-2 text-zinc-300 hover:text-white" aria-label="Menü">
+          <i class="fa-solid fa-bars-staggered text-xl"></i>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Mobil Açılır Drawer Menü -->
+    <div id="mobile-drawer" class="hidden lg:hidden bg-[#12121A] border-b border-white/10 px-4 py-4 space-y-3">
+      <form action="/ara" method="GET" class="relative">
+        <input type="text" name="q" placeholder="Dizi ara..." class="w-full bg-[#181824] border border-white/10 text-xs rounded-xl pl-9 pr-4 py-2.5 text-white">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-zinc-400 text-xs"></i>
+      </form>
+      <div class="grid grid-cols-2 gap-2 pt-2 text-xs font-bold">
+        <a href="/" class="p-2.5 rounded-xl bg-white/5 text-white flex items-center gap-2">
+          <i class="fa-solid fa-house text-violet-400"></i> Ana Sayfa
+        </a>
+        <a href="/diziler?kategori=k-drama" class="p-2.5 rounded-xl bg-white/5 text-white flex items-center gap-2">
+          <i class="fa-solid fa-film text-pink-400"></i> K-Drama
+        </a>
+        <a href="/diziler?kategori=c-drama" class="p-2.5 rounded-xl bg-white/5 text-white flex items-center gap-2">
+          <i class="fa-solid fa-film text-fuchsia-400"></i> C-Drama
+        </a>
+        <a href="/diziler" class="p-2.5 rounded-xl bg-white/5 text-white flex items-center gap-2">
+          <i class="fa-solid fa-list text-zinc-400"></i> Tüm Diziler
+        </a>
+        <a href="/kategoriler" class="p-2.5 rounded-xl bg-white/5 text-white flex items-center gap-2">
+          <i class="fa-solid fa-shapes text-amber-400"></i> Kategoriler
+        </a>
+        <a href="/abonelik" class="p-2.5 rounded-xl bg-gradient-to-r from-amber-500/20 to-fuchsia-500/20 border border-amber-500/40 text-amber-300 flex items-center gap-2 font-extrabold">
+          <i class="fa-solid fa-crown text-amber-400"></i> ⭐ VIP Plan
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ANA İÇERİK -->
+  <main class="flex-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- MOBİL ALT MENÜ (DRAMAFLIX DOKUNMATİK BAR) -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0D0D14]/95 backdrop-blur-2xl border-t border-white/10 flex items-center justify-around mobile-nav-bottom py-2">
+    <a href="/" class="flex flex-col items-center gap-1 text-[11px] {% if request.url.path == '/' %}text-fuchsia-400 font-black{% else %}text-zinc-400 font-medium{% endif %}">
+      <i class="fa-solid fa-house text-base"></i>
+      <span>Ana Sayfa</span>
+    </a>
+    <a href="/diziler" class="flex flex-col items-center gap-1 text-[11px] {% if request.url.path == '/diziler' %}text-fuchsia-400 font-black{% else %}text-zinc-400 font-medium{% endif %}">
+      <i class="fa-solid fa-film text-base"></i>
+      <span>Diziler</span>
+    </a>
+    <a href="/ara" class="flex flex-col items-center gap-1 text-[11px] {% if request.url.path == '/ara' %}text-fuchsia-400 font-black{% else %}text-zinc-400 font-medium{% endif %}">
+      <i class="fa-solid fa-magnifying-glass text-base"></i>
+      <span>Keşfet</span>
+    </a>
+    <a href="/favoriler" class="flex flex-col items-center gap-1 text-[11px] {% if request.url.path == '/favoriler' %}text-fuchsia-400 font-black{% else %}text-zinc-400 font-medium{% endif %}">
+      <i class="fa-solid fa-heart text-base"></i>
+      <span>Favoriler</span>
+    </a>
+    <a href="{% if current_user %}/profil{% else %}/giris{% endif %}" class="flex flex-col items-center gap-1 text-[11px] {% if request.url.path in ['/profil', '/giris'] %}text-fuchsia-400 font-black{% else %}text-zinc-400 font-medium{% endif %}">
+      <i class="fa-solid fa-user text-base"></i>
+      <span>{% if current_user %}Profil{% else %}Giriş{% endif %}</span>
+    </a>
+  </nav>
+
+  <!-- FOOTER -->
+  <footer class="bg-[#08080C] border-t border-white/5 text-zinc-400 text-xs py-14 px-4 sm:px-6 lg:px-8 mt-20">
+    <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-10">
+      <div class="space-y-4 col-span-2 sm:col-span-1">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-violet-600 to-pink-500 flex items-center justify-center text-white text-xs">
+            <i class="fa-solid fa-play"></i>
+          </div>
+          <span class="text-xl font-black text-white">Sena<span class="text-gradient">Dizi</span></span>
+        </div>
+        <p class="text-zinc-400 text-xs leading-relaxed">
+          Türkiye'nin modern, sinematik ve en zengin Asya & Kore dizi akış platformu. Full HD ve 4K kalitede kesintisiz dizi keyfi.
+        </p>
+      </div>
+
+      <div>
+        <h4 class="font-bold text-white mb-3 text-xs uppercase tracking-wider text-zinc-200">Diziler & Türler</h4>
+        <ul class="space-y-2 text-xs">
+          <li><a href="/diziler?kategori=k-drama" class="hover:text-fuchsia-400 transition">Kore Dizileri (K-Drama)</a></li>
+          <li><a href="/diziler?kategori=c-drama" class="hover:text-fuchsia-400 transition">Çin Dizileri (C-Drama)</a></li>
+          <li><a href="/diziler?kategori=romantik" class="hover:text-fuchsia-400 transition">Romantik & Aşk</a></li>
+          <li><a href="/diziler?kategori=fantastik" class="hover:text-fuchsia-400 transition">Tarihi & Fantastik</a></li>
+          <li><a href="/populer" class="hover:text-fuchsia-400 transition">En Çok İzlenenler</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="font-bold text-white mb-3 text-xs uppercase tracking-wider text-zinc-200">Kurumsal & Yasal</h4>
+        <ul class="space-y-2 text-xs">
+          <li><a href="/hakkimizda" class="hover:text-fuchsia-400 transition">Hakkımızda</a></li>
+          <li><a href="/iletisim" class="hover:text-fuchsia-400 transition">İletişim & Destek</a></li>
+          <li><a href="/gizlilik-politikasi" class="hover:text-fuchsia-400 transition">Gizlilik Politikası</a></li>
+          <li><a href="/kullanim-sartlari" class="hover:text-fuchsia-400 transition">Kullanım Şartları</a></li>
+          <li><a href="/telif-hakki" class="hover:text-fuchsia-400 transition text-pink-400 font-semibold">Telif Hakkı Bildirimi</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="font-bold text-white mb-3 text-xs uppercase tracking-wider text-zinc-200">Topluluk & Takip</h4>
+        <div class="flex items-center gap-2.5 mb-4">
+          <a href="https://twitter.com" target="_blank" class="w-8 h-8 rounded-full bg-[#181824] border border-white/10 flex items-center justify-center hover:bg-gradient-to-r hover:from-violet-600 hover:to-pink-600 hover:text-white transition"><i class="fa-brands fa-x-twitter text-xs"></i></a>
+          <a href="https://instagram.com" target="_blank" class="w-8 h-8 rounded-full bg-[#181824] border border-white/10 flex items-center justify-center hover:bg-gradient-to-r hover:from-violet-600 hover:to-pink-600 hover:text-white transition"><i class="fa-brands fa-instagram text-xs"></i></a>
+          <a href="https://youtube.com" target="_blank" class="w-8 h-8 rounded-full bg-[#181824] border border-white/10 flex items-center justify-center hover:bg-gradient-to-r hover:from-violet-600 hover:to-pink-600 hover:text-white transition"><i class="fa-brands fa-youtube text-xs"></i></a>
+          <a href="https://telegram.org" target="_blank" class="w-8 h-8 rounded-full bg-[#181824] border border-white/10 flex items-center justify-center hover:bg-gradient-to-r hover:from-violet-600 hover:to-pink-600 hover:text-white transition"><i class="fa-brands fa-telegram text-xs"></i></a>
+        </div>
+        <div class="text-[11px] text-zinc-500 leading-relaxed">
+          © 2026 SenaDizi. Tüm hakları saklıdır. Platformda yalnızca lisanslı ve yetkili içerikler yayınlanmaktadır.
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- Main JS -->
+  <script src="/static/js/app.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

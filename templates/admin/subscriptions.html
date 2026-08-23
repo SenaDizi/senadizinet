@@ -1,0 +1,27 @@
+{% extends "admin/admin_base.html" %}
+
+{% block admin_content %}
+<div class="space-y-6">
+  
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-black text-white">Abonelik & Paket Yönetimi</h1>
+      <p class="text-xs text-zinc-400 mt-0.5">Kullanıcılara sunulan abonelik planları ve fiyatlandırma.</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    {% for plan in plans %}
+      <div class="bg-[#17171C] border {% if plan.is_popular %}border-red-600{% else %}border-white/5{% endif %} rounded-2xl p-6 space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-base font-bold text-white">{{ plan.name }}</h3>
+          <span class="text-xs font-bold text-zinc-400">{{ plan.billing_period }}</span>
+        </div>
+        <div class="text-2xl font-black text-white">{{ plan.price }} {{ plan.currency }}</div>
+        <p class="text-xs text-zinc-400">{{ plan.description }}</p>
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

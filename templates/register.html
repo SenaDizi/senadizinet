@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-[75vh] flex items-center justify-center px-4 py-16">
+  <div class="w-full max-w-md bg-[#12121A] border border-white/10 rounded-3xl p-8 sm:p-10 shadow-2xl space-y-7">
+    
+    <div class="text-center space-y-2">
+      <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-violet-600 via-fuchsia-600 to-pink-500 mx-auto flex items-center justify-center text-white text-xl shadow-lg shadow-fuchsia-500/30">
+        <i class="fa-solid fa-user-plus ml-0.5"></i>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight pt-2">Yeni Hesap Oluştur</h1>
+      <p class="text-xs text-zinc-400">SenaDizi dünyasına katılın, Asya dizilerini favorileyin.</p>
+    </div>
+
+    <form id="register-form" onsubmit="handleRegisterSubmit(event)" class="space-y-4">
+      <div>
+        <label class="block text-xs font-bold text-zinc-300 mb-1.5">Ad Soyad</label>
+        <input type="text" id="reg_fullname" placeholder="Adınız Soyadınız" class="w-full bg-[#181824] border border-white/10 rounded-2xl px-4 py-3.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 transition font-medium">
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-zinc-300 mb-1.5">Kullanıcı Adı</label>
+        <input type="text" id="reg_username" required placeholder="kullaniciadi" class="w-full bg-[#181824] border border-white/10 rounded-2xl px-4 py-3.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 transition font-medium">
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-zinc-300 mb-1.5">E-Posta Adresi</label>
+        <input type="email" id="reg_email" required placeholder="ornek@senadizi.com" class="w-full bg-[#181824] border border-white/10 rounded-2xl px-4 py-3.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 transition font-medium">
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-zinc-300 mb-1.5">Şifre</label>
+        <input type="password" id="reg_password" required minlength="6" placeholder="••••••••" class="w-full bg-[#181824] border border-white/10 rounded-2xl px-4 py-3.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 transition font-medium">
+      </div>
+
+      <button type="submit" class="w-full py-4 btn-gradient text-white font-black text-xs uppercase tracking-wider rounded-2xl transition shadow-xl mt-2">
+        Kayıt Ol ve Başla
+      </button>
+    </form>
+
+    <div class="text-center text-xs text-zinc-400 pt-2">
+      Zaten hesabınız var mı? <a href="/giris?next={{ next_url }}" class="text-fuchsia-400 font-bold hover:underline">Giriş Yapın</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  async function handleRegisterSubmit(e) {
+    e.preventDefault();
+    const fn = document.getElementById('reg_fullname').value.trim();
+    const un = document.getElementById('reg_username').value.trim();
+    const em = document.getElementById('reg_email').value.trim();
+    const pw = document.getElementById('reg_password').value;
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ full_name: fn, username: un, email: em, password: pw })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast('Kayıt başarıyla tamamlandı! Yönlendiriliyorsunuz...', 'success');
+        setTimeout(() => window.location.href = '{{ next_url or "/" }}', 900);
+      } else {
+        showToast(data.detail || 'Kayıt başarısız.', 'error');
+      }
+    } catch (err) {
+      showToast('Bağlantı hatası.', 'error');
+    }
+  }
+</script>
+{% endblock %}

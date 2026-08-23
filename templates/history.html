@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
+  
+  <div class="border-b border-white/10 pb-6 flex items-center justify-between">
+    <div>
+      <div class="flex items-center gap-3">
+        <div class="w-1.5 h-6 bg-gradient-to-b from-violet-500 to-pink-500 rounded-full shadow-lg shadow-pink-500/50"></div>
+        <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+          İzleme Geçmişi
+        </h1>
+      </div>
+      <p class="text-xs sm:text-sm text-zinc-400 mt-2">İzlediğiniz bölümler ve kaldığınız dakikalar.</p>
+    </div>
+
+    {% if history_items %}
+      <button onclick="clearHistory()" class="px-4 py-2 glass-card hover:bg-red-950/40 text-zinc-300 hover:text-red-400 text-xs font-bold rounded-xl transition border border-white/10 flex items-center gap-1.5">
+        <i class="fa-solid fa-trash text-xs"></i> Geçmişi Temizle
+      </button>
+    {% endif %}
+  </div>
+
+  {% if history_items %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {% for h in history_items %}
+        <div class="bg-[#12121A] border border-white/10 rounded-3xl overflow-hidden p-3.5 flex gap-4 items-center group hover:border-fuchsia-500/50 hover:shadow-xl hover:shadow-fuchsia-500/10 transition-all duration-300">
+          <div class="w-36 aspect-video bg-zinc-900 rounded-2xl overflow-hidden flex-shrink-0 relative">
+            <img src="{{ h.episode.thumbnail_url or h.series.poster_url }}" class="w-full h-full object-cover" alt="{{ h.episode.title }}">
+            <!-- İlerleme Çubuğu -->
+            <div class="absolute bottom-0 left-0 right-0 h-1.5 bg-black/60">
+              <div class="h-full bg-gradient-to-r from-violet-600 to-pink-600 rounded-r" style="width: {{ h.progress_percent }}%;"></div>
+            </div>
+          </div>
+
+          <div class="flex-1 min-w-0">
+            <div class="text-[11px] text-fuchsia-400 font-black uppercase truncate">{{ h.series.title }}</div>
+            <h4 class="text-sm font-bold text-white truncate mt-0.5">{{ h.season.season_number }}. Sezon {{ h.episode.episode_number }}. Bölüm</h4>
+            <div class="text-[11px] text-zinc-400 mt-1 font-medium">%{{ h.progress_percent }} izlendi</div>
+            <a href="/dizi/{{ h.series.slug }}/sezon-{{ h.season.season_number }}/bolum-{{ h.episode.episode_number }}" class="inline-flex items-center gap-1.5 text-xs font-bold text-white hover:text-fuchsia-400 transition mt-2.5">
+              <i class="fa-solid fa-play text-[10px] text-fuchsia-400"></i> Devam Et
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-24 bg-[#12121A] rounded-3xl border border-white/10 space-y-4">
+      <div class="w-16 h-16 rounded-2xl bg-white/5 mx-auto flex items-center justify-center text-zinc-500 text-3xl">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+      </div>
+      <h3 class="text-lg font-bold text-white">İzleme geçmişiniz henüz boş.</h3>
+      <p class="text-xs text-zinc-400 max-w-sm mx-auto">Dizi izledikçe kaldığınız yer otomatik olarak buraya kaydedilecektir.</p>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  async function clearHistory() {
+    if (!confirm('İzleme geçmişinizi tamamen temizlemek istediğinize emin misiniz?')) return;
+    try {
+      const res = await fetch('/api/user/history', { method: 'DELETE' });
+      if (res.ok) {
+        showToast('Geçmiş temizlendi.', 'success');
+        setTimeout(() => window.location.reload(), 500);
+      }
+    } catch (e) {}
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+  <!-- Breadcrumb & Üst Navigasyon -->
+  <div class="flex items-center justify-between text-xs sm:text-sm text-zinc-400">
+    <div class="flex items-center gap-2.5 truncate">
+      <a href="/" class="text-zinc-400 hover:text-white transition">Ana Sayfa</a>
+      <span>/</span>
+      <a href="/dizi/{{ series.slug }}" class="text-white hover:text-fuchsia-400 transition font-bold">{{ series.title }}</a>
+      <span>/</span>
+      <span>{{ season.season_number }}. Sezon</span>
+      <span>/</span>
+      <span class="text-fuchsia-400 font-bold">{{ episode.episode_number }}. Bölüm</span>
+    </div>
+
+    <a href="/dizi/{{ series.slug }}" class="px-4 py-1.5 glass-card hover:bg-white/10 text-white rounded-xl transition text-xs font-bold flex items-center gap-1.5">
+      <i class="fa-solid fa-list text-[10px]"></i> Tüm Bölümler
+    </a>
+  </div>
+
+  <!-- VİDEO OYNATICI ALANI (CINEMA AMBIENT GLOW) -->
+  <div class="relative w-full aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/10 cinema-glow">
+    
+    {% if is_locked %}
+      <!-- Kilitli VIP İçerik Overlay -->
+      <div class="absolute inset-0 bg-[#0A0A0F]/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center space-y-5 z-30">
+        <div class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-amber-500/20 to-fuchsia-500/20 text-amber-400 flex items-center justify-center text-3xl border border-amber-500/30 shadow-2xl">
+          <i class="fa-solid fa-crown"></i>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">Bu Bölüm VIP Üyelere Özeldir</h2>
+        <p class="text-xs sm:text-sm text-zinc-400 max-w-md leading-relaxed">
+          Bu ve diğer tüm özel Asya dizi bölümlerini kesintisiz 4K Ultra HD kalitede izlemek için SenaDizi VIP üyeliğe geçin.
+        </p>
+        <a href="/abonelik" class="px-8 py-3.5 btn-gradient text-white text-sm font-black rounded-2xl transition shadow-xl">
+          <i class="fa-solid fa-crown mr-1.5 text-amber-300"></i> VIP Üyeliğe Yükselt
+        </a>
+      </div>
+    {% else %}
+      
+      <!-- Video Elementi -->
+      <video id="senadizi-player" class="w-full h-full object-contain" playsinline preload="auto">
+        <source src="{{ episode.video_url }}" type="video/mp4">
+        Tarayıcınız video oynatmayı desteklemiyor.
+      </video>
+
+      <!-- Özel Oynatıcı Kontrolleri Overlay -->
+      <div id="player-controls" class="absolute inset-0 bg-gradient-to-t from-black/95 via-transparent to-black/60 flex flex-col justify-between p-4 sm:p-6 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+        
+        <!-- Üst Bar: Bölüm Başlığı -->
+        <div class="flex items-center justify-between text-white pointer-events-auto">
+          <div class="text-xs sm:text-sm font-bold drop-shadow flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded-md bg-gradient-to-r from-violet-600 to-pink-600 text-[10px] font-black uppercase">S{{ season.season_number }} B{{ episode.episode_number }}</span>
+            <span>{{ series.title }} – {{ episode.title }}</span>
+          </div>
+        </div>
+
+        <!-- Orta Alan: Büyük Play / Pause -->
+        <div class="flex items-center justify-center pointer-events-auto">
+          <button id="center-play-btn" onclick="togglePlay()" class="w-20 h-20 rounded-full bg-gradient-to-tr from-violet-600 to-pink-500 text-white flex items-center justify-center text-2xl hover:scale-110 transition-transform shadow-2xl play-btn-glow">
+            <i class="fa-solid fa-play ml-1"></i>
+          </button>
+        </div>
+
+        <!-- Alt Bar: İlerleme Çubuğu ve Butonlar -->
+        <div class="space-y-3 pointer-events-auto">
+          
+          <!-- İlerleme Çubuğu (Progress Bar) -->
+          <input id="seek-bar" type="range" min="0" max="100" value="0" step="0.1" class="w-full h-1.5 bg-white/20 accent-fuchsia-500 rounded-lg cursor-pointer transition">
+
+          <div class="flex items-center justify-between text-white text-xs font-semibold">
+            
+            <div class="flex items-center gap-4">
+              <button onclick="togglePlay()" id="play-btn" class="hover:text-fuchsia-400 transition text-base">
+                <i class="fa-solid fa-play"></i>
+              </button>
+              
+              <!-- Ses -->
+              <div class="flex items-center gap-2">
+                <button onclick="toggleMute()" id="volume-btn" class="hover:text-fuchsia-400 transition">
+                  <i class="fa-solid fa-volume-high"></i>
+                </button>
+                <input id="volume-bar" type="range" min="0" max="1" step="0.05" value="1" class="w-20 h-1 bg-white/20 accent-fuchsia-500 rounded cursor-pointer hidden sm:block">
+              </div>
+
+              <!-- Zaman Göstergesi -->
+              <span id="time-display" class="font-mono text-zinc-300 text-xs">00:00 / 00:00</span>
+            </div>
+
+            <div class="flex items-center gap-4">
+              
+              <!-- Oynatma Hızı -->
+              <select id="speed-select" onchange="changeSpeed(this.value)" class="bg-[#181824] text-white text-xs rounded-lg px-2.5 py-1 border border-white/10 focus:outline-none">
+                <option value="0.75">0.75x</option>
+                <option value="1" selected>1.0x (Normal)</option>
+                <option value="1.25">1.25x</option>
+                <option value="1.5">1.5x</option>
+                <option value="2">2.0x</option>
+              </select>
+
+              <!-- Önceki / Sonraki Bölüm Kısayolları -->
+              {% if prev_ep %}
+                <a href="/dizi/{{ series.slug }}/sezon-{{ season.season_number }}/bolum-{{ prev_ep.episode_number }}" class="hover:text-fuchsia-400 transition text-sm" title="Önceki Bölüm">
+                  <i class="fa-solid fa-backward-step"></i>
+                </a>
+              {% endif %}
+              {% if next_ep %}
+                <a href="/dizi/{{ series.slug }}/sezon-{{ season.season_number }}/bolum-{{ next_ep.episode_number }}" class="hover:text-fuchsia-400 transition text-sm" title="Sonraki Bölüm">
+                  <i class="fa-solid fa-forward-step"></i>
+                </a>
+              {% endif %}
+
+              <!-- Tam Ekran -->
+              <button onclick="toggleFullscreen()" class="hover:text-fuchsia-400 transition text-base" title="Tam Ekran">
+                <i class="fa-solid fa-expand"></i>
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    {% endif %}
+  </div>
+
+  <!-- BÖLÜM BİLGİSİ VE SEZON BÖLÜMLERİ LİSTESİ -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+    
+    <!-- Sol 2 Kolon: Açıklama ve Detaylar -->
+    <div class="lg:col-span-2 space-y-5 bg-[#12121A] p-7 rounded-3xl border border-white/10 shadow-xl">
+      <div class="flex items-center justify-between">
+        <h1 class="text-xl sm:text-2xl font-black text-white tracking-tight">{{ episode.title }}</h1>
+        <button onclick="toggleFavorite({{ series.id }}, this)" class="px-4 py-2 rounded-xl glass-card hover:bg-white/10 text-xs font-bold text-zinc-300 hover:text-pink-400 transition flex items-center gap-1.5">
+          <i class="fa-regular fa-heart"></i> Favori
+        </button>
+      </div>
+
+      <p class="text-sm text-zinc-300 leading-relaxed">
+        {{ episode.description or series.description }}
+      </p>
+
+      <!-- Sonraki Bölüm Butonu (Next Episode Banner) -->
+      {% if next_ep %}
+        <div class="pt-5 border-t border-white/10 flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <div class="text-[11px] text-zinc-400 uppercase font-bold tracking-wider">Sıradaki Bölüm:</div>
+            <div class="text-sm font-bold text-white mt-0.5">{{ next_ep.episode_number }}. Bölüm: {{ next_ep.title }}</div>
+          </div>
+          <a href="/dizi/{{ series.slug }}/sezon-{{ season.season_number }}/bolum-{{ next_ep.episode_number }}" class="px-6 py-3 btn-gradient text-white text-xs font-extrabold rounded-xl transition shadow-lg flex items-center gap-2">
+            Sonraki Bölüme Geç <i class="fa-solid fa-arrow-right text-xs"></i>
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Sağ 1 Kolon: Bu Sezondaki Diğer Bölümler -->
+    <div class="bg-[#12121A] p-5 sm:p-6 rounded-3xl border border-white/10 space-y-4 shadow-xl">
+      <h3 class="text-sm font-black text-white border-b border-white/10 pb-3 flex items-center justify-between">
+        <span>{{ season.season_number }}. Sezon Bölümleri</span>
+        <span class="text-xs text-zinc-400 font-medium">{{ season_episodes|length }} Bölüm</span>
+      </h3>
+
+      <div class="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
+        {% for ep in season_episodes %}
+          <a href="/dizi/{{ series.slug }}/sezon-{{ season.season_number }}/bolum-{{ ep.episode_number }}" class="flex items-center gap-3.5 p-2.5 rounded-2xl transition {% if ep.id == episode.id %}bg-gradient-to-r from-violet-600/20 to-pink-600/20 border border-fuchsia-500/50 text-white shadow-lg{% else %}hover:bg-white/5 text-zinc-300 border border-transparent{% endif %}">
+            <div class="w-20 aspect-video bg-zinc-900 rounded-xl overflow-hidden flex-shrink-0 relative">
+              <img src="{{ ep.thumbnail_url or series.poster_url }}" class="w-full h-full object-cover" alt="{{ ep.title }}" loading="lazy">
+              {% if ep.id == episode.id %}
+                <div class="absolute inset-0 bg-fuchsia-600/60 flex items-center justify-center">
+                  <i class="fa-solid fa-volume-high text-white text-xs animate-pulse"></i>
+                </div>
+              {% endif %}
+            </div>
+            <div class="flex-1 min-w-0 text-xs">
+              <div class="font-bold truncate {% if ep.id == episode.id %}text-fuchsia-300{% endif %}">{{ ep.episode_number }}. {{ ep.title }}</div>
+              <div class="text-zinc-400 text-[11px] mt-0.5">{{ ep.duration_minutes or 45 }} dk</div>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const video = document.getElementById('senadizi-player');
+  const playBtn = document.getElementById('play-btn');
+  const centerPlayBtn = document.getElementById('center-play-btn');
+  const seekBar = document.getElementById('seek-bar');
+  const timeDisplay = document.getElementById('time-display');
+  const volumeBar = document.getElementById('volume-bar');
+  const volumeBtn = document.getElementById('volume-btn');
+
+  const resumeSeconds = {{ resume_seconds or 0 }};
+  const episodeId = {{ episode.id }};
+
+  if (video) {
+    if (resumeSeconds > 5) {
+      video.addEventListener('loadedmetadata', () => {
+        if (confirm(`Bu bölüme en son ${formatTime(resumeSeconds)} dakikasında kalmıştınız. Kaldığınız yerden devam etmek ister misiniz?`)) {
+          video.currentTime = resumeSeconds;
+        }
+      }, { once: true });
+    }
+
+    function togglePlay() {
+      if (video.paused) {
+        video.play();
+        if (playBtn) playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        if (centerPlayBtn) centerPlayBtn.classList.add('hidden');
+      } else {
+        video.pause();
+        if (playBtn) playBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+        if (centerPlayBtn) centerPlayBtn.classList.remove('hidden');
+      }
+    }
+
+    video.addEventListener('click', togglePlay);
+
+    video.addEventListener('timeupdate', () => {
+      if (video.duration) {
+        const percent = (video.currentTime / video.duration) * 100;
+        if (seekBar) seekBar.value = percent;
+        if (timeDisplay) timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
+      }
+    });
+
+    if (seekBar) {
+      seekBar.addEventListener('input', () => {
+        if (video.duration) {
+          video.currentTime = (seekBar.value / 100) * video.duration;
+        }
+      });
+    }
+
+    if (volumeBar) {
+      volumeBar.addEventListener('input', () => {
+        video.volume = volumeBar.value;
+      });
+    }
+
+    function toggleMute() {
+      video.muted = !video.muted;
+      if (volumeBtn) {
+        volumeBtn.innerHTML = video.muted ? '<i class="fa-solid fa-volume-xmark"></i>' : '<i class="fa-solid fa-volume-high"></i>';
+      }
+    }
+
+    function changeSpeed(speed) {
+      video.playbackRate = parseFloat(speed);
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        video.parentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    setInterval(() => {
+      if (!video.paused && video.duration > 0) {
+        fetch('/api/user/progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            episode_id: episodeId,
+            progress_seconds: video.currentTime,
+            duration_seconds: video.duration
+          })
+        }).catch(() => {});
+      }
+    }, 5000);
+  }
+</script>
+{% endblock %}
