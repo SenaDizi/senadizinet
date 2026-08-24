@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+.shorts-page .page { padding: 0 !important; }
+.shorts-page .bnav { background: rgba(0,0,0,0.95) !important; }
+</style>
+<script>
+document.body.classList.add('shorts-page');
+</script>
+
+<div class="sf" id="shortsFeed">
+  {% for ep in episodes %}
+    {% if ep.season and ep.season.series %}
+      <div class="si" data-ep-id="{{ ep.id }}">
+        <video playsinline loop preload="metadata" poster="{{ ep.thumbnail_url or ep.season.series.poster_url }}">
+          <source src="{{ ep.video_url }}" type="video/mp4">
+        </video>
+
+        <div class="si-tap" onclick="toggleShortsPlay(this)">
+          <div class="si-pause-icon">❚❚</div>
+        </div>
+
+        <div class="si-shade"></div>
+
+        <div class="si-info">
+          <span class="si-ep">{{ ep.episode_number }}. Bölüm</span>
+          <a href="/dizi/{{ ep.season.series.slug }}" class="si-name" style="display:block; color:#fff; font-size:15px; font-weight:800; text-decoration:none; margin-bottom:4px;">
+            {{ ep.season.series.title }}
+          </a>
+          <div class="si-meta">{{ ep.title }}</div>
+        </div>
+
+        <div class="si-actions">
+          <button class="si-btn" onclick="toggleFavorite({{ ep.season.series.id }}, this)">
+            <div class="si-btn-icon">🤍</div>
+            <span>Beğen</span>
+          </button>
+          <a href="/dizi/{{ ep.season.series.slug }}/sezon-{{ ep.season.season_number }}/bolum-{{ ep.episode_number }}" class="si-btn" style="text-decoration:none;">
+            <div class="si-btn-icon">📺</div>
+            <span>İzle</span>
+          </a>
+          <a href="/dizi/{{ ep.season.series.slug }}" class="si-btn" style="text-decoration:none;">
+            <div class="si-btn-icon">📑</div>
+            <span>Bölümler</span>
+          </a>
+        </div>
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleShortsPlay(tapEl) {
+  const si = tapEl.closest('.si');
+  const video = si.querySelector('video');
+  const icon = si.querySelector('.si-pause-icon');
+  if (video.paused) {
+    video.play();
+    icon.classList.remove('show');
+  } else {
+    video.pause();
+    icon.classList.add('show');
+  }
+}
+
+// Görünür videoyu otomatik oynat
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    const video = entry.target.querySelector('video');
+    if (!video) return;
+    if (entry.isIntersecting) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+      video.currentTime = 0;
+    }
+  });
+}, { threshold: 0.6 });
+
+document.querySelectorAll('.si').forEach(el => observer.observe(el));
+</script>
+{% endblock %}

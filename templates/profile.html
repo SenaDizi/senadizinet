@@ -1,121 +1,85 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14 space-y-10">
-  
-  <div class="border-b border-white/10 pb-6">
-    <div class="flex items-center gap-3">
-      <div class="w-1.5 h-6 bg-gradient-to-b from-violet-500 to-pink-500 rounded-full shadow-lg shadow-pink-500/50"></div>
-      <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
-        Hesabım & Profil
-      </h1>
-    </div>
-    <p class="text-xs sm:text-sm text-zinc-400 mt-2">Kullanıcı bilgilerinizi, VIP abonelik durumunuzu ve hesap güvenliğinizi yönetin.</p>
-  </div>
+<div class="section" style="padding-top: 32px;">
+  <div class="hesap-wrap">
+    <h1 class="hesap-baslik">Hesabım</h1>
 
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-    
-    <!-- Sol: Profil Kartı -->
-    <div class="bg-[#12121A] border border-white/10 rounded-3xl p-7 text-center space-y-5 shadow-2xl">
-      <img src="{{ current_user.avatar_url or '/static/img/default-avatar.png' }}" class="w-24 h-24 rounded-full mx-auto object-cover border-2 border-fuchsia-500 shadow-2xl" alt="Avatar">
-      <div>
-        <h2 class="text-lg font-black text-white">{{ current_user.full_name or current_user.username }}</h2>
-        <div class="text-xs text-zinc-400 mt-0.5">{{ current_user.email }}</div>
-        <div class="mt-3 inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-300 rounded-full text-[11px] font-black uppercase">
-          <i class="fa-solid fa-shield text-[10px]"></i> {{ current_user.role.value }}
-        </div>
+    <div class="hesap-grid">
+      <!-- Kullanıcı Bilgileri -->
+      <div class="acard">
+        <div class="hk-baslik">Kullanıcı Bilgileri</div>
+        <div class="hk-satir"><span>Kullanıcı Adı</span> <b>{{ current_user.username }}</b></div>
+        <div class="hk-satir"><span>E-Posta</span> <b>{{ current_user.email }}</b></div>
+        <div class="hk-satir"><span>Rol</span> <b>{{ current_user.role.value|upper }}</b></div>
+        <div class="hk-satir"><span>Kayıt Tarihi</span> <b>{{ current_user.created_at.strftime('%d.%m.%Y') }}</b></div>
       </div>
-      <div class="text-xs text-zinc-400 pt-3 border-t border-white/10 font-medium">
-        Kayıt Tarihi: {{ current_user.created_at.strftime('%d.%m.%Y') }}
-      </div>
-    </div>
 
-    <!-- Sağ 2 Kolon: Abonelik & Güvenlik -->
-    <div class="md:col-span-2 space-y-8">
-      
-      <!-- Abonelik Durumu Kartı -->
-      <div class="bg-[#12121A] border border-white/10 rounded-3xl p-7 space-y-5 shadow-2xl">
-        <div class="flex items-center justify-between">
-          <h3 class="text-base font-black text-white flex items-center gap-2">
-            <i class="fa-solid fa-crown text-amber-400"></i>
-            <span>Mevcut VIP Abonelik</span>
-          </h3>
-          {% if subscription and subscription.plan %}
-            <span class="px-3 py-1 bg-emerald-950/80 text-emerald-400 border border-emerald-500/40 rounded-full text-xs font-black uppercase">
-              {{ subscription.status }}
-            </span>
-          {% else %}
-            <span class="px-3 py-1 glass-pill text-zinc-400 rounded-full text-xs font-bold">Ücretsiz Standart</span>
-          {% endif %}
-        </div>
-
-        <div class="text-sm text-zinc-300">
-          Paket: <strong class="text-white">{% if subscription and subscription.plan %}{{ subscription.plan.name }}{% else %}Ücretsiz Standart Plan{% endif %}</strong>
-        </div>
-
-        {% if subscription and subscription.end_date %}
-          <div class="text-xs text-zinc-400">Bitiş / Yenilenme Tarihi: {{ subscription.end_date.strftime('%d.%m.%Y') }}</div>
+      <!-- VIP Üyelik Durumu -->
+      <div class="acard {% if subscription and subscription.status == 'active' %}vip-card vip-aktif{% endif %}">
+        <div class="hk-baslik">👑 VIP Üyelik</div>
+        {% if subscription and subscription.status == 'active' %}
+          <div class="vip-durum">
+            <div class="vip-buyuk">Aktif VIP Üye</div>
+            <div class="vip-kalan">Paket: {{ subscription.plan.name if subscription.plan else 'VIP' }}</div>
+          </div>
+        {% else %}
+          <div style="color:#888; font-size:13.5px; margin-bottom:14px; line-height:1.5;">
+            VIP üyelik ile tüm lisanslı dizileri reklamsız ve Full HD 1080p kalitesinde izleyin.
+          </div>
+          <a href="/vip" class="btn btn-red" style="width:100%; text-align:center;">👑 VIP Satın Al</a>
         {% endif %}
-
-        <div class="pt-2">
-          <a href="/abonelik" class="inline-block px-6 py-3 btn-gradient text-white text-xs font-black rounded-2xl transition shadow-xl">
-            VIP Paketleri İncele & Yükselt
-          </a>
-        </div>
       </div>
-
-      <!-- Şifre Değiştir Formu -->
-      <div class="bg-[#12121A] border border-white/10 rounded-3xl p-7 space-y-5 shadow-2xl">
-        <h3 class="text-base font-black text-white flex items-center gap-2">
-          <i class="fa-solid fa-key text-fuchsia-400"></i>
-          <span>Şifre Değiştir</span>
-        </h3>
-
-        <form id="password-form" onsubmit="handlePasswordChange(event)" class="space-y-4">
-          <div>
-            <label class="block text-xs font-bold text-zinc-300 mb-1.5">Mevcut Şifre</label>
-            <input type="password" id="current_pw" required class="w-full bg-[#181824] border border-white/10 text-xs rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-fuchsia-500 transition font-medium">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-zinc-300 mb-1.5">Yeni Şifre</label>
-            <input type="password" id="new_pw" required minlength="6" class="w-full bg-[#181824] border border-white/10 text-xs rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-fuchsia-500 transition font-medium">
-          </div>
-          <button type="submit" class="px-7 py-3 btn-gradient text-white text-xs font-black rounded-2xl transition shadow-xl">
-            Şifreyi Güncelle
-          </button>
-        </form>
-      </div>
-
     </div>
 
-  </div>
+    <!-- Şifre Güncelleme -->
+    <div class="acard" style="margin-top: 20px;">
+      <div class="hk-baslik">Şifre Değiştir</div>
+      <form id="pwForm" onsubmit="handlePasswordChange(event)" style="max-width: 420px;">
+        <div class="fg">
+          <label>Mevcut Şifre</label>
+          <input class="fc" type="password" id="current_pw" required>
+        </div>
+        <div class="fg">
+          <label>Yeni Şifre</label>
+          <input class="fc" type="password" id="new_pw" required minlength="6">
+        </div>
+        <button type="submit" class="btn btn-red">Şifreyi Güncelle</button>
+      </form>
+    </div>
 
+    <div style="margin-top: 24px; text-align: center;">
+      <button onclick="handleLogout()" class="btn btn-dark" style="color: #ff5b5b; border-color: rgba(255,91,91,0.3);">
+        Çıkış Yap
+      </button>
+    </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-  async function handlePasswordChange(e) {
-    e.preventDefault();
-    const cur = document.getElementById('current_pw').value;
-    const nw = document.getElementById('new_pw').value;
+async function handlePasswordChange(e) {
+  e.preventDefault();
+  const cur = document.getElementById('current_pw').value;
+  const nw = document.getElementById('new_pw').value;
 
-    try {
-      const res = await fetch('/api/auth/change-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ current_password: cur, new_password: nw })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        showToast(data.message, 'success');
-        document.getElementById('password-form').reset();
-      } else {
-        showToast(data.detail || 'Şifre güncellenemedi.', 'error');
-      }
-    } catch (err) {
-      showToast('Bağlantı hatası.', 'error');
+  try {
+    const res = await fetch('/api/auth/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ current_password: cur, new_password: nw })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showToast(data.message || 'Şifreniz başarıyla güncellendi.', 'success');
+      document.getElementById('pwForm').reset();
+    } else {
+      showToast(data.detail || 'Şifre güncellenemedi.', 'error');
     }
+  } catch(e) {
+    showToast('Bağlantı hatası.', 'error');
   }
+}
 </script>
 {% endblock %}

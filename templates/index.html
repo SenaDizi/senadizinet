@@ -1,300 +1,326 @@
 {% extends "base.html" %}
 
 {% block content %}
-<!-- 1. HERO SİNEMATİK SLIDER (DRAMAFLIX VITRIN) -->
-<div class="relative w-full h-[72vh] md:h-[84vh] overflow-hidden bg-black">
-  <div id="hero-slider" class="relative w-full h-full">
-    {% for hero in hero_series %}
-      <div class="hero-slide absolute inset-0 transition-opacity duration-1000 ease-in-out {% if loop.first %}opacity-100 z-10{% else %}opacity-0 z-0{% endif %}" data-index="{{ loop.index0 }}">
-        
-        <!-- Arka Plan Görseli -->
-        <img src="{{ hero.banner_url or hero.poster_url }}" class="w-full h-full object-cover object-center transform scale-105 transition-transform duration-10000" alt="{{ hero.title }}">
-        
-        <!-- Karartma / Gradient Katmanı -->
-        <div class="absolute inset-0 hero-gradient"></div>
+<style>
+@media (min-width: 768px) {
+  body.home-page .page { padding-top: 0 !important; }
+  body.home-page .hero-slider { margin-top: calc(-1 * var(--nav-h)); padding-top: var(--nav-h); box-sizing: border-box; }
+  body.home-page .nav { background: transparent !important; transition: background .3s; }
+  body.home-page .nav.scrolled { background: rgba(5,5,5,.95) !important; backdrop-filter: blur(16px); }
+}
 
-        <!-- İçerik Detayları -->
-        <div class="absolute bottom-12 md:bottom-20 left-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-20">
-          <div class="max-w-2xl space-y-4">
-            
-            <!-- Rozetler -->
-            <div class="flex items-center gap-2.5 flex-wrap">
-              <span class="px-3 py-1 text-xs font-black bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-full uppercase tracking-wider shadow-lg shadow-pink-500/25">
-                <i class="fa-solid fa-fire mr-1"></i> Trend Dizi
-              </span>
-              <span class="px-3 py-1 text-xs font-bold bg-[#181824]/90 text-amber-400 rounded-full border border-white/10 backdrop-blur-md">
-                ⭐ {{ hero.rating or "9.2" }} MDL Puanı
-              </span>
-              <span class="px-2.5 py-1 text-xs font-semibold glass-pill text-zinc-300 rounded-full">
-                4K Ultra HD
-              </span>
-              <span class="text-xs text-zinc-300 font-medium">
-                {{ hero.release_year or "2026" }} • {{ hero.country or "Güney Kore" }}
-              </span>
-            </div>
+.hero-slider { position: relative; overflow: hidden; }
+.hero.slide { position: absolute; top: 0; left: 0; width: 100%; opacity: 0; transition: opacity 0.5s ease, transform 0.5s ease; pointer-events: none; }
+.hero.slide.active { position: relative; opacity: 1; pointer-events: auto; }
 
-            <!-- Başlık -->
-            <h1 class="text-3xl sm:text-4xl md:text-6xl font-black text-white tracking-tight drop-shadow-2xl">
-              {{ hero.title }}
-            </h1>
+.hero-nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 10; width: 44px; height: 44px; border-radius: 50%; background: rgba(0,0,0,0.5); color: #fff; font-size: 24px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: background 0.2s; }
+.hero-nav:hover { background: rgba(229,9,20,0.8); }
+.hero-nav.prev { left: 20px; }
+.hero-nav.next { right: 20px; }
+@media (min-width: 768px) { body.home-page .hero-nav { top: calc(50% + (var(--nav-h) / 2)); } }
 
-            <!-- Açıklama -->
-            <p class="text-xs sm:text-sm md:text-base text-zinc-300 line-clamp-3 leading-relaxed drop-shadow">
-              {{ hero.description }}
-            </p>
+.hero-dots { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10; }
+.hero-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); cursor: pointer; transition: background 0.2s; }
+.hero-dot.active { background: #fff; width: 24px; border-radius: 4px; }
+@media(max-width: 768px){ 
+  .hero-desc { display: none; } 
+  .hero-nav { display: none; } 
+  .hero-dots { bottom: 10px; } 
+  .hero-body { padding-bottom: 25px !important; }
+  .hero { height: 100vw !important; }
+}
+</style>
+<script>
+document.body.classList.add('home-page');
+window.addEventListener('scroll', function() {
+  const nav = document.querySelector('.nav');
+  if (!nav) return;
+  nav.classList.toggle('scrolled', window.scrollY > 40);
+}, {passive: true});
+</script>
 
-            <!-- Kategoriler -->
-            <div class="flex items-center gap-2 pt-1 flex-wrap">
-              {% for cat in hero.categories %}
-                <a href="/diziler?kategori={{ cat.slug }}" class="text-xs font-semibold text-zinc-300 hover:text-white glass-pill px-3 py-1 rounded-full hover:border-fuchsia-500/50 transition">
-                  # {{ cat.name }}
-                </a>
-              {% endfor %}
-            </div>
+<h1 style="position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0;">Kısa Dizi İzle - Türkçe Altyazılı ve Dublajlı Kore Dramaları</h1>
 
-            <!-- Aksiyon Butonları -->
-            <div class="flex items-center gap-3.5 pt-3">
-              {% if hero.seasons and hero.seasons[0].episodes %}
-                <a href="/dizi/{{ hero.slug }}/sezon-{{ hero.seasons[0].season_number }}/bolum-{{ hero.seasons[0].episodes[0].episode_number }}" class="flex items-center gap-2.5 px-7 py-3.5 rounded-2xl btn-gradient font-black text-sm md:text-base transition">
-                  <i class="fa-solid fa-play"></i> Hemen İzle
-                </a>
-              {% else %}
-                <a href="/dizi/{{ hero.slug }}" class="flex items-center gap-2.5 px-7 py-3.5 rounded-2xl btn-gradient font-black text-sm md:text-base transition">
-                  <i class="fa-solid fa-play"></i> Bölümleri Gör
-                </a>
-              {% endif %}
-              
-              <a href="/dizi/{{ hero.slug }}" class="flex items-center gap-2 px-5 py-3.5 bg-white/10 hover:bg-white/20 text-white font-bold text-sm md:text-base rounded-2xl transition border border-white/15 backdrop-blur-md">
-                <i class="fa-solid fa-circle-info"></i> Detaylar
-              </a>
-
-              <button onclick="toggleFavorite({{ hero.id }}, this)" class="w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white rounded-2xl transition border border-white/15 backdrop-blur-md hover:text-pink-400" title="Favorilere Ekle">
-                <i class="fa-regular fa-heart text-lg"></i>
-              </button>
-            </div>
-
-          </div>
-        </div>
-
-      </div>
-    {% endfor %}
-  </div>
-
-  <!-- Slider Noktaları (Indicators) -->
-  <div class="absolute bottom-6 right-8 z-30 flex items-center gap-2.5">
-    {% for hero in hero_series %}
-      <button onclick="goToSlide({{ loop.index0 }})" class="slide-dot h-2.5 rounded-full transition-all duration-300 {% if loop.first %}bg-gradient-to-r from-violet-500 to-pink-500 w-8 shadow-lg shadow-pink-500/50{% else %}bg-white/30 hover:bg-white/60 w-2.5{% endif %}" aria-label="Slayt {{ loop.index }}"></button>
-    {% endfor %}
-  </div>
+<!-- Canlı Aktif Kullanıcı Sayacı -->
+<div class="global-online">
+  <span class="global-online-dot"></span>
+  Şu an sitede <span id="globalOnlineCount" style="color: #00ff66; font-size: 15px;">1.980</span> kişi aktif
 </div>
 
-<!-- 2. ANA SAYFA İÇERİK BÖLÜMLERİ -->
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
-
-  <!-- A. POPÜLER & TREND DİZİLER -->
-  <section>
-    <div class="flex items-center justify-between mb-6">
-      <div class="flex items-center gap-3">
-        <div class="w-1.5 h-6 bg-gradient-to-b from-violet-500 via-fuchsia-500 to-pink-500 rounded-full shadow-lg shadow-pink-500/50"></div>
-        <h2 class="text-xl md:text-2xl font-black text-white tracking-tight">Popüler & Trend Asya Dizileri</h2>
+<!-- 1. Hero Sinematik Slider -->
+<div class="hero-slider" id="heroSlider">
+  {% for hero in hero_series %}
+    <div class="hero slide {% if loop.first %}active{% endif %}">
+      <div class="hero-bg" style="background-image:url('{{ hero.banner_url or hero.poster_url }}')"></div>
+      <div class="hero-shade"></div>
+      <div class="hero-body">
+        <span class="hero-badge">🔥 Popüler</span>
+        <h2 class="hero-title">{{ hero.title }}</h2>
+        <div class="hero-desc" style="color:#aaa;font-size:15px;margin-bottom:20px;max-width:500px;line-height:1.5;text-shadow:0 2px 4px rgba(0,0,0,0.8);">
+          {{ hero.description[:140] }}...
+        </div>
+        <div class="hero-btns">
+          {% if hero.seasons and hero.seasons[0].episodes %}
+            <a href="/dizi/{{ hero.slug }}/sezon-{{ hero.seasons[0].season_number }}/bolum-{{ hero.seasons[0].episodes[0].episode_number }}" class="btn btn-red">▶ Hemen İzle</a>
+          {% else %}
+            <a href="/dizi/{{ hero.slug }}" class="btn btn-red">▶ Hemen İzle</a>
+          {% endif %}
+          <a href="/dizi/{{ hero.slug }}" class="btn btn-dark">Detay</a>
+        </div>
       </div>
-      <a href="/populer" class="text-xs md:text-sm font-bold text-fuchsia-400 hover:text-fuchsia-300 flex items-center gap-1 transition">
-        Tümünü Gör <i class="fa-solid fa-chevron-right text-xs"></i>
+      <a href="/dizi/{{ hero.slug }}" class="hero-poster-card">
+        <img src="{{ hero.poster_url }}" alt="{{ hero.title }}" referrerpolicy="no-referrer-when-downgrade" loading="{% if loop.first %}eager{% else %}lazy{% endif %}" decoding="async">
       </a>
     </div>
-
-    <div class="flex gap-5 overflow-x-auto hide-scrollbar pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
-      {% for dizi in popular_series %}
-        <div class="min-w-[170px] sm:min-w-[210px] max-w-[210px] flex-shrink-0">
-          <a href="/dizi/{{ dizi.slug }}" class="dizi-card group block rounded-2xl overflow-hidden bg-[#141420] border border-white/10">
-            <div class="aspect-[2/3] w-full relative overflow-hidden bg-zinc-900">
-              <img src="{{ dizi.poster_url }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="{{ dizi.title }}" loading="lazy">
-              
-              <!-- Play Hover Overlay -->
-              <div class="play-overlay absolute inset-0 bg-black/60 opacity-0 transition-opacity flex items-center justify-center">
-                <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-violet-600 to-pink-500 text-white flex items-center justify-center shadow-xl shadow-fuchsia-500/50 play-btn-glow">
-                  <i class="fa-solid fa-play ml-0.5 text-sm"></i>
-                </div>
-              </div>
-
-              <!-- Üst Rozetler -->
-              <div class="absolute top-2.5 left-2.5 px-2 py-0.5 glass-pill rounded-md text-[10px] font-black uppercase text-white">
-                HD
-              </div>
-              <div class="absolute top-2.5 right-2.5 px-2 py-0.5 bg-black/80 backdrop-blur-md rounded-md text-[11px] font-extrabold text-amber-400 border border-amber-400/30">
-                ⭐ {{ dizi.rating or "9.0" }}
-              </div>
-            </div>
-            
-            <div class="p-3.5">
-              <h3 class="text-sm font-bold text-white truncate group-hover:text-fuchsia-400 transition">{{ dizi.title }}</h3>
-              <div class="flex items-center justify-between text-xs text-zinc-400 mt-1">
-                <span>{{ dizi.release_year }}</span>
-                <span class="text-[11px] text-zinc-400">{{ dizi.country or "Asya" }}</span>
-              </div>
-            </div>
-          </a>
-        </div>
-      {% endfor %}
-    </div>
-  </section>
-
-  <!-- B. YENİ EKLENEN DİZİLER (GRID) -->
-  <section>
-    <div class="flex items-center justify-between mb-6">
-      <div class="flex items-center gap-3">
-        <div class="w-1.5 h-6 bg-gradient-to-b from-pink-500 to-violet-500 rounded-full shadow-lg shadow-pink-500/50"></div>
-        <h2 class="text-xl md:text-2xl font-black text-white tracking-tight">Yeni Eklenen Diziler</h2>
-      </div>
-      <a href="/yeni-eklenenler" class="text-xs md:text-sm font-bold text-fuchsia-400 hover:text-fuchsia-300 flex items-center gap-1 transition">
-        Tümünü Gör <i class="fa-solid fa-chevron-right text-xs"></i>
-      </a>
-    </div>
-
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
-      {% for dizi in new_series %}
-        <a href="/dizi/{{ dizi.slug }}" class="dizi-card group block rounded-2xl overflow-hidden bg-[#141420] border border-white/10">
-          <div class="aspect-[2/3] w-full relative overflow-hidden bg-zinc-900">
-            <img src="{{ dizi.poster_url }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="{{ dizi.title }}" loading="lazy">
-            <div class="play-overlay absolute inset-0 bg-black/60 opacity-0 transition-opacity flex items-center justify-center">
-              <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-violet-600 to-pink-500 text-white flex items-center justify-center shadow-lg play-btn-glow">
-                <i class="fa-solid fa-play ml-0.5 text-xs"></i>
-              </div>
-            </div>
-            <div class="absolute top-2.5 right-2.5 px-2 py-0.5 bg-black/80 backdrop-blur-md rounded-md text-[11px] font-extrabold text-amber-400 border border-amber-400/30">
-              ⭐ {{ dizi.rating or "8.8" }}
-            </div>
-          </div>
-          <div class="p-3.5">
-            <h3 class="text-sm font-bold text-white truncate group-hover:text-fuchsia-400 transition">{{ dizi.title }}</h3>
-            <div class="text-xs text-zinc-400 mt-1 truncate">
-              {{ dizi.categories|map(attribute='name')|join(', ') if dizi.categories else 'Dizi' }}
-            </div>
-          </div>
-        </a>
-      {% endfor %}
-    </div>
-  </section>
-
-  <!-- C. SON EKLENEN BÖLÜMLER (YATAY KARTLAR) -->
-  {% if recent_episodes %}
-  <section>
-    <div class="flex items-center justify-between mb-6">
-      <div class="flex items-center gap-3">
-        <div class="w-1.5 h-6 bg-gradient-to-b from-violet-500 to-fuchsia-500 rounded-full shadow-lg shadow-violet-500/50"></div>
-        <h2 class="text-xl md:text-2xl font-black text-white tracking-tight">Yeni Yayınlanan Bölümler</h2>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-      {% for ep in recent_episodes %}
-        {% if ep.season and ep.season.series %}
-          <a href="/dizi/{{ ep.season.series.slug }}/sezon-{{ ep.season.season_number }}/bolum-{{ ep.episode_number }}" class="group block bg-[#12121A] border border-white/10 rounded-2xl overflow-hidden hover:border-fuchsia-500/50 hover:shadow-xl hover:shadow-fuchsia-500/10 transition duration-300">
-            <div class="aspect-video w-full relative overflow-hidden bg-zinc-900">
-              <img src="{{ ep.thumbnail_url or ep.season.series.banner_url or ep.season.series.poster_url }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="{{ ep.title }}" loading="lazy">
-              <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent"></div>
-              <div class="absolute bottom-2.5 left-2.5 px-2.5 py-0.5 bg-gradient-to-r from-violet-600 to-pink-600 text-[10px] font-black uppercase text-white rounded-md shadow-md">
-                S{{ ep.season.season_number }} B{{ ep.episode_number }}
-              </div>
-              <div class="absolute bottom-2.5 right-2.5 text-[11px] text-zinc-300 bg-black/70 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/10 font-medium">
-                {{ ep.duration_minutes or 45 }} dk
-              </div>
-            </div>
-            <div class="p-3.5">
-              <div class="text-xs text-fuchsia-400 font-bold truncate">{{ ep.season.series.title }}</div>
-              <h4 class="text-sm font-semibold text-white truncate mt-0.5 group-hover:text-zinc-200">{{ ep.title }}</h4>
-            </div>
-          </a>
-        {% endif %}
-      {% endfor %}
-    </div>
-  </section>
-  {% endif %}
-
-  <!-- D. KATEGORİ SIRALARI (K-DRAMA, ROMANTİK, FANTASTİK, AKSİYON VB.) -->
-  {% for cat_row in category_rows %}
-    <section>
-      <div class="flex items-center justify-between mb-6">
-        <div class="flex items-center gap-3">
-          <div class="w-1.5 h-6 bg-gradient-to-b from-fuchsia-500 to-pink-500 rounded-full shadow-lg shadow-pink-500/50"></div>
-          <h2 class="text-xl md:text-2xl font-black text-white tracking-tight">{{ cat_row.category.name }}</h2>
-        </div>
-        <a href="/diziler?kategori={{ cat_row.category.slug }}" class="text-xs md:text-sm font-bold text-fuchsia-400 hover:text-fuchsia-300 flex items-center gap-1 transition">
-          Daha Fazla <i class="fa-solid fa-chevron-right text-xs"></i>
-        </a>
-      </div>
-
-      <div class="flex gap-5 overflow-x-auto hide-scrollbar pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
-        {% for dizi in cat_row.series %}
-          <div class="min-w-[160px] sm:min-w-[190px] max-w-[190px] flex-shrink-0">
-            <a href="/dizi/{{ dizi.slug }}" class="dizi-card group block rounded-2xl overflow-hidden bg-[#141420] border border-white/10">
-              <div class="aspect-[2/3] w-full relative overflow-hidden bg-zinc-900">
-                <img src="{{ dizi.poster_url }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="{{ dizi.title }}" loading="lazy">
-                <div class="absolute top-2.5 right-2.5 px-2 py-0.5 bg-black/80 backdrop-blur-md rounded-md text-[10px] font-black text-amber-400 border border-amber-400/30">
-                  ⭐ {{ dizi.rating or "9.1" }}
-                </div>
-              </div>
-              <div class="p-3">
-                <h3 class="text-xs sm:text-sm font-bold text-white truncate group-hover:text-fuchsia-400 transition">{{ dizi.title }}</h3>
-                <div class="text-[11px] text-zinc-400 mt-0.5">{{ dizi.release_year }}</div>
-              </div>
-            </a>
-          </div>
-        {% endfor %}
-      </div>
-    </section>
   {% endfor %}
 
+  <button class="hero-nav prev" onclick="moveHero(-1)">‹</button>
+  <button class="hero-nav next" onclick="moveHero(1)">›</button>
+
+  <div class="hero-dots">
+    {% for hero in hero_series %}
+      <div class="hero-dot {% if loop.first %}active{% endif %}" onclick="goToHero({{ loop.index0 }})"></div>
+    {% endfor %}
+  </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
-<script>
-  // Hero Slider Otomatik Döndürme
-  let currentSlide = 0;
-  const slides = document.querySelectorAll('.hero-slide');
-  const dots = document.querySelectorAll('.slide-dot');
-  let sliderInterval;
+<!-- 2. Popüler Platformlar Şeridi -->
+<div class="section" style="margin-top: 15px; margin-bottom: 5px;">
+  <div class="section-head" style="margin-bottom: 12px;">
+    <div class="section-title">🎬 Popüler Platformlar</div>
+  </div>
+  <div class="platform-scroll-row" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; -ms-overflow-style: none;">
+    <a href="/" class="plat-pill {% if not request.query_params.get('platform') %}on{% endif %}">
+      <span class="plat-icon">🎬</span>
+      <span>Tüm Platformlar</span>
+    </a>
+    <a href="/?platform=starshort" class="plat-pill {% if request.query_params.get('platform') == 'starshort' %}on{% endif %}">
+      <span class="plat-icon">⭐</span>
+      <span>StarShort</span>
+    </a>
+    <a href="/?platform=vibeshort" class="plat-pill {% if request.query_params.get('platform') == 'vibeshort' %}on{% endif %}">
+      <span class="plat-icon">🔮</span>
+      <span>VibeShort</span>
+    </a>
+    <a href="/?platform=dramabox" class="plat-pill {% if request.query_params.get('platform') == 'dramabox' %}on{% endif %}">
+      <span class="plat-icon">📦</span>
+      <span>DramaBox</span>
+    </a>
+    <a href="/?platform=shortmax" class="plat-pill {% if request.query_params.get('platform') == 'shortmax' %}on{% endif %}">
+      <span class="plat-icon">⚡</span>
+      <span>ShortMax</span>
+    </a>
+    <a href="/?platform=dramawave" class="plat-pill {% if request.query_params.get('platform') == 'dramawave' %}on{% endif %}">
+      <span class="plat-icon">🌊</span>
+      <span>DramaWave</span>
+    </a>
+    <a href="/?platform=netshort" class="plat-pill {% if request.query_params.get('platform') == 'netshort' %}on{% endif %}">
+      <span class="plat-icon">🕸️</span>
+      <span>NetShort</span>
+    </a>
+    <a href="/?platform=pinedrama" class="plat-pill {% if request.query_params.get('platform') == 'pinedrama' %}on{% endif %}">
+      <span class="plat-icon">🌲</span>
+      <span>PineDrama</span>
+    </a>
+    <a href="/?platform=freereels" class="plat-pill {% if request.query_params.get('platform') == 'freereels' %}on{% endif %}">
+      <span class="plat-icon">🎞️</span>
+      <span>FreeReels</span>
+    </a>
+    <a href="/?platform=reelshort" class="plat-pill {% if request.query_params.get('platform') == 'reelshort' %}on{% endif %}">
+      <span class="plat-icon">🎥</span>
+      <span>ReelShort</span>
+    </a>
+    <a href="/?platform=flextv" class="plat-pill {% if request.query_params.get('platform') == 'flextv' %}on{% endif %}">
+      <span class="plat-icon">📱</span>
+      <span>FlexTV</span>
+    </a>
+    <a href="/?platform=bilitv" class="plat-pill {% if request.query_params.get('platform') == 'bilitv' %}on{% endif %}">
+      <span class="plat-icon">📺</span>
+      <span>BiliTV</span>
+    </a>
+    <a href="/?platform=moboreels" class="plat-pill {% if request.query_params.get('platform') == 'moboreels' %}on{% endif %}">
+      <span class="plat-icon">🦁</span>
+      <span>MoboReels</span>
+    </a>
+    <a href="/?platform=storyreel" class="plat-pill {% if request.query_params.get('platform') == 'storyreel' %}on{% endif %}">
+      <span class="plat-icon">📖</span>
+      <span>StoryReel</span>
+    </a>
+    <a href="/?platform=stardusttv" class="plat-pill {% if request.query_params.get('platform') == 'stardusttv' %}on{% endif %}">
+      <span class="plat-icon">✨</span>
+      <span>StardustTV</span>
+    </a>
+    <a href="/?platform=dramabite" class="plat-pill {% if request.query_params.get('platform') == 'dramabite' %}on{% endif %}">
+      <span class="plat-icon">🍕</span>
+      <span>DramaBite</span>
+    </a>
+    <a href="/?platform=shortswave" class="plat-pill {% if request.query_params.get('platform') == 'shortswave' %}on{% endif %}">
+      <span class="plat-icon">🌊</span>
+      <span>ShortsWave</span>
+    </a>
+    <a href="/?platform=rapidtv" class="plat-pill {% if request.query_params.get('platform') == 'rapidtv' %}on{% endif %}">
+      <span class="plat-icon">🚀</span>
+      <span>RapidTV</span>
+    </a>
+  </div>
+</div>
 
-  function showSlide(index) {
-    if (!slides.length) return;
-    slides.forEach((s, i) => {
-      if (i === index) {
-        s.classList.remove('opacity-0', 'z-0');
-        s.classList.add('opacity-100', 'z-10');
-      } else {
-        s.classList.remove('opacity-100', 'z-10');
-        s.classList.add('opacity-0', 'z-0');
-      }
-    });
+<!-- 3. Kaldığın Yerden Devam Et Bölümü -->
+<div class="section" id="devamSection" style="display:none;">
+  <div class="section-head">
+    <div class="section-title">▶ Kaldığın Yerden Devam Et</div>
+    <button type="button" onclick="devamTemizle(this)" class="section-more" style="background:none;border:none;color:#888;cursor:pointer;padding:8px 14px;font-size:14px;" id="devamTemizleBtn">Temizle</button>
+  </div>
+  <div class="hrow" id="devamRow"></div>
+</div>
 
-    dots.forEach((d, i) => {
-      if (i === index) {
-        d.className = 'slide-dot h-2.5 rounded-full transition-all duration-300 bg-gradient-to-r from-violet-500 to-pink-500 w-8 shadow-lg shadow-pink-500/50';
-      } else {
-        d.className = 'slide-dot h-2.5 rounded-full transition-all duration-300 bg-white/30 hover:bg-white/60 w-2.5';
-      }
-    });
-    currentSlide = index;
-  }
+<!-- 4. Son Eklenenler Bölümü -->
+<div class="section">
+  <div class="section-head" style="flex-wrap:wrap;gap:10px;">
+    <div class="section-title">Son Eklenenler</div>
+    <div class="tabs" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:5px;">
+      <a href="/?tab=dub" class="btn btn-dark btn-sm {% if request.query_params.get('tab') == 'dub' %}on{% endif %}">🎙 TR Dublaj</a>
+      <a href="/?tab=sub" class="btn btn-dark btn-sm {% if request.query_params.get('tab') == 'sub' %}on{% endif %}">🇹🇷 TR Altyazılı</a>
+      <a href="/?tab=en" class="btn btn-dark btn-sm {% if request.query_params.get('tab') == 'en' %}on{% endif %}">🇬🇧 İngilizce</a>
+    </div>
+  </div>
+  <div class="hrow">
+    {% for dizi in new_series %}
+      <a href="/dizi/{{ dizi.slug }}" class="card card-wide">
+        <div class="card-poster">
+          <img src="{{ dizi.poster_url }}" alt="{{ dizi.title }}" width="425" height="640" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+          <div class="kart-rozet">
+            <span class="kr kr-yeni">YENİ</span>
+            {% if loop.index % 2 == 0 %}<span class="kr kr-dub">Dublajlı</span>{% endif %}
+          </div>
+          <div class="ep-count">{{ dizi.seasons[0].episodes|length if dizi.seasons and dizi.seasons[0].episodes else '45' }} Bölüm</div>
+          <div class="card-overlay"><div class="play-btn"></div></div>
+        </div>
+        <div class="card-info">
+          <div class="card-title">{{ dizi.title }}</div>
+        </div>
+      </a>
+    {% endfor %}
+    <a href="/diziler" class="card card-wide" style="display:flex;align-items:center;justify-content:center;background:#141414;border:1px solid #222;border-radius:12px;min-height:200px;text-decoration:none;">
+      <div style="text-align:center;padding:20px;">
+        <div style="font-size:32px;margin-bottom:8px;color:var(--accent);">➔</div>
+        <div style="font-weight:700;font-size:14px;color:#fff;">Tümünü Gör</div>
+      </div>
+    </a>
+  </div>
+</div>
 
-  function nextSlide() {
-    let next = (currentSlide + 1) % slides.length;
-    showSlide(next);
-  }
+<!-- 5. En Çok İzlenenler Bölümü -->
+<div class="section" style="margin-top:25px">
+  <div class="section-head">
+    <div class="section-title">En Çok İzlenenler</div>
+  </div>
+  <div class="hrow">
+    {% for dizi in popular_series %}
+      <a href="/dizi/{{ dizi.slug }}" class="card card-wide">
+        <div class="card-poster">
+          <img src="{{ dizi.poster_url }}" alt="{{ dizi.title }}" width="425" height="640" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+          <div class="kart-rozet">
+            <span class="kr kr-pop">POPÜLER</span>
+          </div>
+          <div class="ep-count">{{ dizi.seasons[0].episodes|length if dizi.seasons and dizi.seasons[0].episodes else '50' }} Bölüm</div>
+          <div class="card-overlay"><div class="play-btn"></div></div>
+        </div>
+        <div class="card-info">
+          <div class="card-title">{{ dizi.title }}</div>
+        </div>
+      </a>
+    {% endfor %}
+    <a href="/populer" class="card card-wide" style="display:flex;align-items:center;justify-content:center;background:#141414;border:1px solid #222;border-radius:12px;min-height:200px;text-decoration:none;">
+      <div style="text-align:center;padding:20px;">
+        <div style="font-size:32px;margin-bottom:8px;color:var(--accent);">➔</div>
+        <div style="font-weight:700;font-size:14px;color:#fff;">Tümünü Gör</div>
+      </div>
+    </a>
+  </div>
+</div>
 
-  function goToSlide(index) {
-    clearInterval(sliderInterval);
-    showSlide(index);
-    startSlider();
-  }
+<!-- 6. Popüler Dizi İzle Bölümü -->
+<div class="section" style="margin-top:25px">
+  <div class="section-head">
+    <div class="section-title">Popüler Dizi İzle</div>
+  </div>
+  <div class="hrow">
+    {% for dizi in popular_series %}
+      <a href="/dizi/{{ dizi.slug }}" class="card card-wide">
+        <div class="card-poster">
+          <img src="{{ dizi.poster_url }}" alt="{{ dizi.title }}" width="425" height="640" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+          <div class="kart-rozet">
+            {% if loop.index % 2 == 1 %}<span class="kr kr-pop">POPÜLER</span>{% else %}<span class="kr kr-yeni">YENİ</span>{% endif %}
+          </div>
+          <div class="ep-count">{{ dizi.seasons[0].episodes|length if dizi.seasons and dizi.seasons[0].episodes else '60' }} Bölüm</div>
+          <div class="card-overlay"><div class="play-btn"></div></div>
+        </div>
+        <div class="card-info">
+          <div class="card-title">{{ dizi.title }}</div>
+        </div>
+      </a>
+    {% endfor %}
+    <a href="/diziler" class="card card-wide" style="display:flex;align-items:center;justify-content:center;background:#141414;border:1px solid #222;border-radius:12px;min-height:200px;text-decoration:none;">
+      <div style="text-align:center;padding:20px;">
+        <div style="font-size:32px;margin-bottom:8px;color:var(--accent);">➔</div>
+        <div style="font-weight:700;font-size:14px;color:#fff;">Tümünü Gör</div>
+      </div>
+    </a>
+  </div>
+</div>
 
-  function startSlider() {
-    if (slides.length > 1) {
-      sliderInterval = setInterval(nextSlide, 7000);
-    }
-  }
+<!-- 7. Türkçe Dublajlı Dizi İzle Bölümü -->
+<div class="section" style="margin-top:25px">
+  <div class="section-head">
+    <div class="section-title">Türkçe Dublajlı Dizi İzle</div>
+  </div>
+  <div class="hrow">
+    {% for dizi in new_series %}
+      <a href="/dizi/{{ dizi.slug }}" class="card card-wide">
+        <div class="card-poster">
+          <img src="{{ dizi.poster_url }}" alt="{{ dizi.title }}" width="425" height="640" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+          <div class="kart-rozet">
+            <span class="kr kr-dub">Dublajlı</span>
+            {% if loop.index % 3 == 0 %}<span class="kr kr-pop">POPÜLER</span>{% endif %}
+          </div>
+          <div class="ep-count">{{ dizi.seasons[0].episodes|length if dizi.seasons and dizi.seasons[0].episodes else '48' }} Bölüm</div>
+          <div class="card-overlay"><div class="play-btn"></div></div>
+        </div>
+        <div class="card-info">
+          <div class="card-title">{{ dizi.title }} (Dublajlı)</div>
+        </div>
+      </a>
+    {% endfor %}
+    <a href="/?tab=dub" class="card card-wide" style="display:flex;align-items:center;justify-content:center;background:#141414;border:1px solid #222;border-radius:12px;min-height:200px;text-decoration:none;">
+      <div style="text-align:center;padding:20px;">
+        <div style="font-size:32px;margin-bottom:8px;color:var(--accent);">➔</div>
+        <div style="font-weight:700;font-size:14px;color:#fff;">Tümünü Gör</div>
+      </div>
+    </a>
+  </div>
+</div>
 
-  document.addEventListener('DOMContentLoaded', startSlider);
-</script>
+<!-- 8. Tüm Diziler (Grid) -->
+<div class="section" style="margin-top:25px">
+  <div class="section-head">
+    <div class="section-title">Tüm Diziler</div>
+  </div>
+  <div class="grid">
+    {% for dizi in popular_series + new_series %}
+      <a href="/dizi/{{ dizi.slug }}" class="card card-grid">
+        <div class="card-poster">
+          <img src="{{ dizi.poster_url }}" alt="{{ dizi.title }}" width="425" height="640" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+          <div class="ep-count">{{ dizi.seasons[0].episodes|length if dizi.seasons and dizi.seasons[0].episodes else '45' }} Bölüm</div>
+          <div class="card-overlay"><div class="play-btn"></div></div>
+        </div>
+        <div class="card-info">
+          <div class="card-name">{{ dizi.title }}</div>
+          <div class="card-sub">{{ dizi.seasons[0].episodes|length if dizi.seasons and dizi.seasons[0].episodes else '45' }} Bölüm</div>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+</div>
+
 {% endblock %}

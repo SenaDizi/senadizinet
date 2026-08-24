@@ -1,67 +1,80 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-14">
-  
-  <div class="text-center space-y-4 max-w-2xl mx-auto">
-    <span class="px-4 py-1.5 bg-gradient-to-r from-amber-500/20 to-fuchsia-500/20 border border-amber-500/40 rounded-full text-xs font-black uppercase tracking-wider text-amber-300 shadow-lg">
-      <i class="fa-solid fa-crown mr-1.5 text-amber-400"></i> SenaDizi VIP Ayrıcalıkları
-    </span>
-    <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight">Size En Uygun VIP Planı Seçin</h1>
-    <p class="text-xs sm:text-sm text-zinc-400 leading-relaxed">
-      Tüm K-Drama, C-Drama ve özel Asya yapımlarına 4K kalitesinde, reklamsız ve kesintisiz erişin. Dilediğiniz zaman iptal edin.
-    </p>
-  </div>
+<div class="section" style="padding-top: 32px;">
+  <div class="vip-satis">
+    
+    <div class="vip-satis-head">
+      <div class="vip-satis-ico">👑</div>
+      <h1 class="vip-satis-baslik">VIP Üyelik Ayrıcalıkları</h1>
+      <p class="vip-satis-alt">
+        Tüm Kore ve Asya dramalarını reklamsız, 1080p ve 4K Ultra HD kalitesinde sınırsız izleyin.
+      </p>
+    </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch max-w-5xl mx-auto">
-    {% for plan in plans %}
-      <div class="relative bg-[#12121A] border {% if plan.is_popular %}border-fuchsia-500 ring-2 ring-fuchsia-500/40 shadow-2xl shadow-fuchsia-500/20 bg-[#161622]{% else %}border-white/10{% endif %} rounded-3xl p-8 flex flex-col justify-between transition-all duration-300 transform hover:-translate-y-2">
-        
-        {% if plan.is_popular %}
-          <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 btn-gradient text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-xl">
-            EN ÇOK TERCİH EDİLEN
-          </div>
-        {% endif %}
-
-        <div class="space-y-6">
-          <div>
-            <h3 class="text-xl font-black text-white flex items-center gap-2">
-              <span>{{ plan.name }}</span>
-            </h3>
-            <p class="text-xs text-zinc-400 mt-1.5 leading-relaxed">{{ plan.description }}</p>
-          </div>
-
-          <div class="flex items-baseline gap-1.5 pt-2 border-t border-white/5">
-            <span class="text-4xl font-black text-white">{% if plan.price == 0 %}Ücretsiz{% else %}{{ plan.price }} ₺{% endif %}</span>
-            {% if plan.price > 0 %}
-              <span class="text-xs text-zinc-400 font-bold">/ {{ 'Ay' if plan.billing_period == 'monthly' else 'Yıl' }}</span>
-            {% endif %}
-          </div>
-
-          <!-- Özellikler Listesi -->
-          <ul class="space-y-3.5 text-xs text-zinc-300 pt-2">
-            <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-fuchsia-400 text-sm"></i> Lisanslı tüm Asya dizileri</li>
-            <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-fuchsia-400 text-sm"></i> Mobil, Tablet & Web tam uyum</li>
-            {% if plan.price > 0 %}
-              <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-fuchsia-400 text-sm"></i> 1080p Full HD & 4K Ultra HD</li>
-              <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-fuchsia-400 text-sm"></i> VIP kilitli bölümlere anında erişim</li>
-              <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-fuchsia-400 text-sm"></i> Sıfır reklam, kesintisiz izleme</li>
-              <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-fuchsia-400 text-sm"></i> Öncelikli sunucu hızı</li>
-            {% else %}
-              <li class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-zinc-500 text-sm"></i> 720p Standart HD Kalite</li>
-            {% endif %}
-          </ul>
-        </div>
-
-        <div class="pt-8">
-          <button onclick="selectPlan('{{ plan.slug }}')" class="w-full py-3.5 rounded-2xl font-black text-xs transition shadow-lg {% if plan.is_popular %}btn-gradient text-white{% else %}bg-white/10 hover:bg-white/20 text-white border border-white/10{% endif %}">
-            {% if plan.price == 0 %}Ücretsiz Başla{% else %}Hemen VIP Ol{% endif %}
+    <!-- VIP Plan Kartları -->
+    <div class="vip-planlar">
+      {% for plan in plans %}
+        <div class="vip-plan">
+          <div class="vip-plan-ad">{{ plan.name }}</div>
+          <div class="vip-plan-fiyat">{{ plan.price }} TL</div>
+          <p style="font-size: 12px; color: #888; margin-bottom: 20px; line-height: 1.4;">
+            {{ plan.description }}
+          </p>
+          <button onclick="selectPlan('{{ plan.slug }}')" class="vip-plan-btn" style="border:none; width:100%; cursor:pointer;">
+            👑 Hemen Katıl
           </button>
         </div>
+      {% endfor %}
+    </div>
 
+    <!-- Avantajlar Listesi -->
+    <div class="vip-avantaj">
+      <div class="vip-av">
+        <span>⚡</span>
+        <div>Tüm Kilitli Bölümlere Tam Erişim</div>
       </div>
-    {% endfor %}
-  </div>
+      <div class="vip-av">
+        <span>🎬</span>
+        <div>1080p & 4K Ultra HD Video Kalitesi</div>
+      </div>
+      <div class="vip-av">
+        <span>🚫</span>
+        <div>Tamamen Reklamsız Sinematik Deneyim</div>
+      </div>
+      <div class="vip-av">
+        <span>📱</span>
+        <div>Tüm Cihazlardan Kesintisiz Senkronizasyon</div>
+      </div>
+    </div>
 
+  </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function selectPlan(slug) {
+  try {
+    const res = await fetch('/api/subscriptions/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan_slug: slug })
+    });
+    if (res.status === 401) {
+      window.location.href = '/giris?next=/vip';
+      return;
+    }
+    const data = await res.json();
+    if (res.ok && data.success) {
+      showToast(data.message || 'VIP aboneliğiniz başarıyla başlatıldı!', 'success');
+      setTimeout(() => window.location.href = '/profil', 1200);
+    } else {
+      showToast(data.detail || 'Abonelik işlemi gerçekleştirilemedi.', 'error');
+    }
+  } catch(e) {
+    showToast('Bağlantı hatası.', 'error');
+  }
+}
+</script>
 {% endblock %}

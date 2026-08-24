@@ -1,184 +1,97 @@
 {% extends "base.html" %}
 
 {% block content %}
-<!-- Üst Büyük Banner & Detay Alanı (Cinematic Backdrop) -->
-<div class="relative w-full min-h-[55vh] md:min-h-[65vh] bg-[#0A0A0F] overflow-hidden">
-  <!-- Arka Plan Görseli & Ambient Işık -->
-  <img src="{{ series.banner_url or series.poster_url }}" class="absolute inset-0 w-full h-full object-cover opacity-25 filter blur-sm scale-105" alt="{{ series.title }}">
-  <div class="absolute inset-0 bg-gradient-to-t from-[#0A0A0F] via-[#0A0A0F]/80 to-transparent"></div>
-  <div class="absolute inset-0 bg-gradient-to-r from-[#0A0A0F] via-[#0A0A0F]/70 to-transparent"></div>
-
-  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-12 flex flex-col md:flex-row gap-10 items-start">
-    
-    <!-- Kapak Görseli (Poster) -->
-    <div class="w-52 sm:w-60 md:w-72 flex-shrink-0 mx-auto md:mx-0 rounded-3xl overflow-hidden shadow-2xl border border-white/10 group">
-      <img src="{{ series.poster_url }}" class="w-full h-auto object-cover aspect-[2/3] group-hover:scale-105 transition-transform duration-500" alt="{{ series.title }}">
+<div class="detail-hero">
+  <div class="detail-bg" style="background-image:url('{{ series.banner_url or series.poster_url }}')"></div>
+  <div class="detail-inner">
+    <div class="detail-poster">
+      <img src="{{ series.poster_url }}" alt="{{ series.title }}">
     </div>
-
-    <!-- Bilgi ve Aksiyonlar -->
-    <div class="flex-1 space-y-5">
-      <div class="flex items-center gap-2.5 flex-wrap">
-        <span class="px-3 py-1 text-xs font-black bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-full uppercase tracking-wider shadow-lg shadow-pink-500/20">
-          {{ series.status or 'Tamamlandı' }}
-        </span>
-        <span class="px-3 py-1 text-xs font-bold bg-[#141420] text-amber-400 rounded-full border border-amber-400/30 backdrop-blur-md">
-          ⭐ {{ series.rating or '9.3' }} / 10 MyDramaList
-        </span>
-        <span class="px-2.5 py-1 text-xs font-semibold glass-pill text-zinc-300 rounded-full">
-          {{ series.release_year }}
-        </span>
-        <span class="px-2.5 py-1 text-xs font-semibold glass-pill text-zinc-300 rounded-full">
-          {{ series.country or 'Güney Kore' }}
-        </span>
-        <span class="px-2.5 py-1 text-xs font-semibold glass-pill text-zinc-300 rounded-full">
-          {{ series.seasons|length }} Sezon
-        </span>
+    <div class="detail-info">
+      <div class="tags">
+        <span class="tag tag-r">🔥 {{ series.status or 'Tamamlandı' }}</span>
+        <span class="tag">⭐ {{ series.rating or '9.2' }}</span>
+        <span class="tag">{{ series.release_year }}</span>
+        <span class="tag">{{ series.country or 'Asya' }}</span>
       </div>
-
-      <h1 class="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight drop-shadow-lg">
-        {{ series.title }}
-      </h1>
-
-      <p class="text-sm md:text-base text-zinc-300 leading-relaxed max-w-3xl">
-        {{ series.description }}
-      </p>
-
-      <!-- Yönetmen, Oyuncular & Kategoriler -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-4 border-t border-white/10 max-w-3xl">
-        <div>
-          <span class="text-zinc-400 font-medium">Yönetmen:</span>
-          <span class="text-white font-bold ml-1.5">{{ series.director or 'Belirtilmemiş' }}</span>
-        </div>
-        <div>
-          <span class="text-zinc-400 font-medium">Oyuncu Kadrosu:</span>
-          <span class="text-white font-bold ml-1.5">
-            {% for act in series.actors %}
-              {{ act.name }}{% if not loop.last %}, {% endif %}
-            {% else %}
-              Belirtilmemiş
-            {% endfor %}
-          </span>
-        </div>
-        <div class="sm:col-span-2 flex items-center gap-2 flex-wrap pt-1">
-          <span class="text-zinc-400 font-medium">Türler:</span>
-          {% for c in series.categories %}
-            <a href="/diziler?kategori={{ c.slug }}" class="text-xs font-semibold text-zinc-200 hover:text-white glass-pill px-3 py-0.5 rounded-full hover:border-fuchsia-500/50 transition">
-              {{ c.name }}
-            </a>
-          {% endfor %}
-        </div>
-      </div>
-
-      <!-- Aksiyon Butonları -->
-      <div class="flex items-center gap-3.5 pt-4 flex-wrap">
+      <h1 class="detail-title">{{ series.title }}</h1>
+      <div class="detail-btns">
         {% if first_episode %}
-          <a href="/dizi/{{ series.slug }}/sezon-{{ series.seasons[0].season_number }}/bolum-{{ first_episode.episode_number }}" class="flex items-center gap-2.5 px-7 py-3.5 rounded-2xl btn-gradient font-black text-sm md:text-base transition">
-            <i class="fa-solid fa-play"></i> 1. Sezon 1. Bölümü İzle
+          <a href="/dizi/{{ series.slug }}/sezon-{{ series.seasons[0].season_number }}/bolum-{{ first_episode.episode_number }}" class="btn btn-red">
+            ▶ Hemen İzle (1. Bölüm)
           </a>
         {% endif %}
-
-        <button onclick="toggleFavorite({{ series.id }}, this)" class="flex items-center gap-2 px-5 py-3.5 rounded-2xl glass-card hover:bg-white/10 {% if is_favorite %}text-pink-500 border-pink-500/50{% else %}text-white{% endif %} font-bold text-sm transition">
-          <i class="{% if is_favorite %}fa-solid text-pink-500{% else %}fa-regular{% endif %} fa-heart"></i>
-          <span>{% if is_favorite %}Favorilerden Çıkar{% else %}Favorilere Ekle{% endif %}</span>
+        <button onclick="toggleFavorite({{ series.id }}, this)" class="btn btn-dark">
+          {% if is_favorite %}❤️ Favorilerde{% else %}🤍 Favorilere Ekle{% endif %}
         </button>
       </div>
-
     </div>
-
   </div>
 </div>
 
-<!-- SEZONLAR & BÖLÜMLER ALANI -->
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
-  
-  <div class="border-b border-white/10 pb-4 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <div class="w-1.5 h-6 bg-gradient-to-b from-violet-500 to-pink-500 rounded-full shadow-lg shadow-pink-500/50"></div>
-      <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight">Tüm Bölümler</h2>
+<div class="detail-desc">
+  <p>{{ series.description }}</p>
+  {% if series.director %}
+    <div style="margin-top: 10px; font-size: 12px; color: #777;">
+      <b>Yönetmen:</b> {{ series.director }}
+    </div>
+  {% endif %}
+</div>
+
+<!-- Bölümler Listesi -->
+<div class="ep-wrap">
+  <div class="section-head" style="padding-top:0">
+    <div class="section-title">Bölümler</div>
+    <div class="section-count">
+      {% if series.seasons and series.seasons[0].episodes %}
+        {{ series.seasons[0].episodes|length }} Bölüm
+      {% else %}
+        0 Bölüm
+      {% endif %}
     </div>
   </div>
 
   {% if series.seasons %}
-    <!-- Sezon Blokları -->
-    <div class="space-y-8">
-      {% for season in series.seasons %}
-        <div class="bg-[#12121A] border border-white/10 rounded-3xl p-5 sm:p-7 space-y-5 shadow-xl">
-          <div class="flex items-center justify-between border-b border-white/10 pb-4">
-            <h3 class="text-lg font-black text-white flex items-center gap-2">
-              <span class="text-gradient">{{ season.title or (season.season_number ~ '. Sezon') }}</span>
-            </h3>
-            <span class="text-xs font-bold text-zinc-400 glass-pill px-3 py-1 rounded-full">{{ season.episodes|length }} Bölüm</span>
-          </div>
-
-          <!-- Bölüm Kartları Grid -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {% for ep in season.episodes %}
-              <a href="/dizi/{{ series.slug }}/sezon-{{ season.season_number }}/bolum-{{ ep.episode_number }}" class="group flex gap-3.5 p-3 rounded-2xl bg-[#181824] border border-white/5 hover:border-fuchsia-500/50 hover:bg-[#1E1E2E] transition-all duration-300">
-                <div class="w-32 aspect-video rounded-xl overflow-hidden bg-zinc-900 flex-shrink-0 relative">
-                  <img src="{{ ep.thumbnail_url or series.poster_url }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="{{ ep.title }}" loading="lazy">
-                  <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-r from-violet-600 to-pink-600 flex items-center justify-center text-white text-xs">
-                      <i class="fa-solid fa-play ml-0.5"></i>
-                    </div>
-                  </div>
-                  {% if not ep.is_free %}
-                    <div class="absolute top-1.5 left-1.5 px-2 py-0.5 bg-gradient-to-r from-amber-500 to-amber-600 text-[9px] font-black text-white rounded-md shadow">
-                      VIP
-                    </div>
-                  {% else %}
-                    <div class="absolute top-1.5 left-1.5 px-2 py-0.5 bg-emerald-600 text-[9px] font-black text-white rounded-md shadow">
-                      ÜCRETSİZ
-                    </div>
-                  {% endif %}
-                </div>
-
-                <div class="flex-1 min-w-0 flex flex-col justify-center">
-                  <div class="text-[11px] font-bold text-fuchsia-400">Bölüm {{ ep.episode_number }}</div>
-                  <h4 class="text-sm font-bold text-white truncate group-hover:text-fuchsia-300 transition">{{ ep.title }}</h4>
-                  <div class="text-[11px] text-zinc-400 mt-1 flex items-center gap-2 font-medium">
-                    <span><i class="fa-regular fa-clock text-[10px]"></i> {{ ep.duration_minutes or 45 }} dk</span>
-                  </div>
-                </div>
-              </a>
-            {% else %}
-              <div class="text-xs text-zinc-400 py-4 col-span-3">Bu sezona henüz bölüm eklenmedi.</div>
-            {% endfor %}
-          </div>
-
+    {% for season in series.seasons %}
+      <div style="margin-bottom: 24px;">
+        {% if series.seasons|length > 1 %}
+          <h3 style="font-size: 14px; font-weight: 700; color: #aaa; margin-bottom: 12px;">{{ season.title or (season.season_number ~ '. Sezon') }}</h3>
+        {% endif %}
+        <div class="ep-grid">
+          {% for ep in season.episodes %}
+            <a href="/dizi/{{ series.slug }}/sezon-{{ season.season_number }}/bolum-{{ ep.episode_number }}" class="ep-btn" title="{{ ep.title }}">
+              {{ ep.episode_number }}
+            </a>
+          {% endfor %}
         </div>
-      {% endfor %}
-    </div>
+      </div>
+    {% endfor %}
   {% else %}
-    <div class="text-center py-12 text-zinc-400 text-sm">Bu diziye henüz sezon veya bölüm eklenmedi.</div>
+    <p style="color: #666; font-size: 13px;">Bu diziye henüz bölüm eklenmemiş.</p>
   {% endif %}
-
-  <!-- Benzer Asya Dizileri -->
-  {% if related_series %}
-    <div class="pt-10 border-t border-white/10 space-y-6">
-      <div class="flex items-center gap-3">
-        <div class="w-1.5 h-6 bg-gradient-to-b from-pink-500 to-violet-500 rounded-full shadow-lg shadow-pink-500/50"></div>
-        <h3 class="text-xl font-black text-white tracking-tight">Bunları da Beğenebilirsiniz</h3>
-      </div>
-      
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-5">
-        {% for rel in related_series %}
-          <a href="/dizi/{{ rel.slug }}" class="dizi-card group block rounded-2xl overflow-hidden bg-[#141420] border border-white/10">
-            <div class="aspect-[2/3] w-full relative overflow-hidden bg-zinc-900">
-              <img src="{{ rel.poster_url }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="{{ rel.title }}" loading="lazy">
-              <div class="play-overlay absolute inset-0 bg-black/60 opacity-0 transition-opacity flex items-center justify-center">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-violet-600 to-pink-500 text-white flex items-center justify-center shadow-lg">
-                  <i class="fa-solid fa-play ml-0.5 text-xs"></i>
-                </div>
-              </div>
-            </div>
-            <div class="p-3">
-              <h4 class="text-xs font-bold text-white truncate group-hover:text-fuchsia-400 transition">{{ rel.title }}</h4>
-            </div>
-          </a>
-        {% endfor %}
-      </div>
-    </div>
-  {% endif %}
-
 </div>
+
+<!-- Benzer Diziler -->
+{% if related_series %}
+<div class="section" style="margin-top: 20px;">
+  <div class="section-head">
+    <div class="section-title">Bunları da Beğenebilirsiniz</div>
+  </div>
+  <div class="hrow">
+    {% for rel in related_series %}
+      <a href="/dizi/{{ rel.slug }}" class="card card-wide">
+        <div class="card-poster">
+          <img src="{{ rel.poster_url }}" alt="{{ rel.title }}" width="425" height="640" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+          <div class="ep-count">{{ rel.seasons[0].episodes|length if rel.seasons and rel.seasons[0].episodes else '45' }} Bölüm</div>
+          <div class="card-overlay"><div class="play-btn"></div></div>
+        </div>
+        <div class="card-info">
+          <div class="card-title">{{ rel.title }}</div>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
 {% endblock %}

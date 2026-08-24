@@ -1,64 +1,50 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="min-h-[75vh] flex items-center justify-center px-4 py-16">
-  <div class="w-full max-w-md bg-[#12121A] border border-white/10 rounded-3xl p-8 sm:p-10 shadow-2xl space-y-7">
-    
-    <div class="text-center space-y-2">
-      <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-violet-600 via-fuchsia-600 to-pink-500 mx-auto flex items-center justify-center text-white text-xl shadow-lg shadow-fuchsia-500/30">
-        <i class="fa-solid fa-play ml-0.5"></i>
-      </div>
-      <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight pt-2">Giriş Yap</h1>
-      <p class="text-xs text-zinc-400">SenaDizi hesabınızla oturum açın ve izlemeye devam edin.</p>
-    </div>
+<div class="section" style="padding-top:32px">
+  <div class="uye-box">
+    <div class="uye-logo">SenaDizi</div>
+    <h1 class="uye-baslik">Tekrar Hoş Geldin</h1>
+    <p class="uye-alt">Hesabına giriş yap</p>
 
-    <form id="login-form" onsubmit="handleLoginSubmit(event)" class="space-y-4">
-      <div>
-        <label class="block text-xs font-bold text-zinc-300 mb-1.5">Kullanıcı Adı veya E-Posta</label>
-        <input type="text" id="login_identity" required placeholder="ornek@senadizi.com" class="w-full bg-[#181824] border border-white/10 rounded-2xl px-4 py-3.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 transition font-medium">
+    <form method="post" action="/api/auth/login">
+      <input type="hidden" name="next" value="{{ next_url or '/' }}">
+      
+      <div class="fg">
+        <label>E-Posta veya Kullanıcı Adı</label>
+        <input class="fc" type="text" name="email" required autocomplete="username" placeholder="ornek@mail.com">
+      </div>
+      
+      <div class="fg">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <label style="margin-bottom:0;">Şifre</label>
+          <a href="#" onclick="showToast('Şifre sıfırlama için yöneticinizle iletişime geçin.', 'info'); return false;" style="font-size:12px; color:#888; text-decoration:none; font-weight:700;">Şifremi Unuttum</a>
+        </div>
+        <input class="fc" type="password" name="password" required autocomplete="current-password" placeholder="••••••••">
       </div>
 
-      <div>
-        <label class="block text-xs font-bold text-zinc-300 mb-1.5">Şifre</label>
-        <input type="password" id="login_password" required placeholder="••••••••" class="w-full bg-[#181824] border border-white/10 rounded-2xl px-4 py-3.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 transition font-medium">
-      </div>
-
-      <button type="submit" class="w-full py-4 btn-gradient text-white font-black text-xs uppercase tracking-wider rounded-2xl transition shadow-xl mt-2">
-        Giriş Yap
-      </button>
+      <button class="btn btn-red btn-full" type="submit">Giriş Yap</button>
     </form>
 
-    <div class="text-center text-xs text-zinc-400 pt-2">
-      Hesabınız yok mu? <a href="/kayit?next={{ next_url }}" class="text-fuchsia-400 font-bold hover:underline">Hemen Kayıt Olun</a>
+    <div style="margin: 20px 0; text-align: center; color: #888; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+      <span style="height: 1px; background: rgba(255,255,255,0.08); flex: 1;"></span>
+      <span>veya</span>
+      <span style="height: 1px; background: rgba(255,255,255,0.08); flex: 1;"></span>
     </div>
 
+    <a href="#" onclick="showToast('Google ile giriş entegrasyonu çok yakında aktif edilecektir.', 'info'); return false;" style="display: flex; align-items: center; justify-content: center; gap: 12px; background: #fff; color: #111; padding: 12px; border-radius: 14px; font-weight: 700; text-decoration: none; font-size: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.2s;">
+      <svg viewBox="0 0 48 48" style="width: 20px; height: 20px; flex-shrink: 0;">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.5 24c0-1.61-.15-3.16-.42-4.69H24v8.87h12.66c-.55 2.92-2.2 5.39-4.69 7.06l7.29 5.65C43.5 35.84 46.5 30.49 46.5 24z"/>
+        <path fill="#FBBC05" d="M10.54 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.98-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.29-5.65c-2.03 1.35-4.63 2.16-7.6 2.16-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Gmail ile Giriş Yap
+    </a>
+
+    <div class="uye-gecis">
+      Hesabın yok mu? <a href="/kayit?next={{ next_url or '/' }}">Kayıt Ol</a>
+    </div>
   </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-  async function handleLoginSubmit(e) {
-    e.preventDefault();
-    const idt = document.getElementById('login_identity').value.trim();
-    const pw = document.getElementById('login_password').value;
-
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email_or_username: idt, password: pw })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        showToast('Giriş başarılı! Yönlendiriliyorsunuz...', 'success');
-        setTimeout(() => window.location.href = '{{ next_url or "/" }}', 700);
-      } else {
-        showToast(data.detail || 'Giriş başarısız.', 'error');
-      }
-    } catch (err) {
-      showToast('Bağlantı hatası.', 'error');
-    }
-  }
-</script>
 {% endblock %}
