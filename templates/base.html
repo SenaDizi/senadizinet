@@ -1,366 +1,149 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="google" content="notranslate">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>{{ page_title or "Kısa Dizi İzle - Türkçe Altyazılı ve Dublajlı | SenaDizi" }}</title>
-<meta name="description" content="{{ meta_description or 'Kısa dizi izle! En yeni Kore, Çin ve Asya dramalarını 1080p Türkçe altyazılı ve Türkçe dublajlı olarak reklamsız ve kesintisiz online izle.' }}">
-<meta name="keywords" content="kısa dizi izle, ücretsiz dizi izle, kore dizileri izle, türkçe dublaj kore dizisi, türkçe altyazılı kore dizisi, asya dizileri izle, kısa bölümlü dizi izle, mini dizi izle, online dizi izle, kore drama izle, netshort dizi">
-<meta property="og:title" content="{{ page_title or 'Kısa Dizi İzle - Türkçe Altyazılı ve Dublajlı | SenaDizi' }}">
-<meta property="og:description" content="{{ meta_description or 'Kısa dizi izle! En yeni Kore, Çin ve Asya dramalarını 1080p Türkçe altyazılı ve Türkçe dublajlı olarak reklamsız ve kesintisiz online izle.' }}">
-<meta property="og:image" content="{{ og_image or '/static/img/og-default.jpg' }}">
-<meta property="og:type" content="website">
-<meta property="og:url" content="{{ canonical_url or request.url }}">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{{ page_title or 'Kısa Dizi İzle - Türkçe Altyazılı ve Dublajlı | SenaDizi' }}">
-<meta name="twitter:description" content="{{ meta_description or 'Kısa dizi izle! En yeni Kore, Çin ve Asya dramalarını 1080p Türkçe altyazılı ve Türkçe dublajlı olarak reklamsız ve kesintisiz online izle.' }}">
-<link rel="canonical" href="{{ canonical_url or request.url }}">
-<meta name="theme-color" content="#e50914">
-<meta name="referrer" content="no-referrer">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="SenaDizi">
-
-<link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="/static/img/icon-192.png">
-<link rel="icon" type="image/png" sizes="192x192" href="/static/img/icon-192.png">
-
-<!-- Google Fonts: Outfit -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-<!-- Stil Dosyaları -->
-<link rel="stylesheet" href="/static/css/style.css?v=2026">
-<link rel="stylesheet" href="/static/css/premium.css?v=2026">
-<link rel="stylesheet" href="/static/css/desktop.css?v=2026">
-<link rel="stylesheet" href="/static/css/custom.css?v=2026">
+    <meta charset="UTF-8">
+    <meta name="google" content="notranslate">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>{% block title %}{{ page_title or 'Kısa Dizi İzle - Türkçe Altyazılı ve Dublajlı | SenaDizi' }}{% endblock %}</title>
+    <meta name="description" content="{{ meta_description or 'Kısa dizi izle! En yeni Kore, Çin ve Asya dramalarını 1080p Türkçe altyazılı ve Türkçe dublajlı olarak reklamsız ve kesintisiz izleyin.' }}">
+    <meta name="keywords" content="kısa dizi izle, ücretsiz dizi izle, kore dizileri izle, türkçe dublaj kore dizisi, türkçe altyazılı kore dizisi, asya dizileri izle, dikey dizi izle">
+    
+    <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/desktop.css">
+    <link rel="stylesheet" href="/static/css/premium.css">
+    <link rel="stylesheet" href="/static/css/custom.css">
+    {% block extra_head %}{% endblock %}
 </head>
-<body class="premium-theme">
+<body class="bg-black text-white antialiased font-sans flex flex-col min-h-screen">
 
-<!-- Sidebar Karartma Perdesi -->
-<div id="sbOverlay" onclick="document.querySelector('.sidebar').classList.remove('open');this.style.display='none'" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.5);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)"></div>
-
-<!-- Sol Sidebar Navigasyonu -->
-<aside class="sidebar">
-  <div style="display:flex;align-items:center;justify-content:space-between;padding-right:4px">
-    <a href="/" class="sb-logo">
-      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="32" height="32" rx="8" fill="#e50914"/>
-        <polygon points="11,8 11,24 25,16" fill="white"/>
-      </svg>
-      SenaDizi
-    </a>
-    <button class="sb-close" onclick="document.querySelector('.sidebar').classList.remove('open');var o=document.getElementById('sbOverlay');if(o)o.style.display='none'" style="background:rgba(255,255,255,0.08);border:none;color:#aaa;width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">✕</button>
-  </div>
-
-  <nav class="sb-nav">
-    <a href="/" class="sb-item {% if request.url.path == '/' and not request.query_params.get('tab') and not request.query_params.get('liste') %}on{% endif %}">
-      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-      Ana Sayfa
-    </a>
-    
-    <a href="/shorts" class="sb-item {% if request.url.path == '/shorts' %}on{% endif %}">
-      <svg viewBox="0 0 24 24"><path d="M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
-      Keşfet
-    </a>
-    
-    <a href="/?tab=dub" class="sb-item {% if request.query_params.get('tab') == 'dub' %}on{% endif %}">
-      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"></path><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
-      Dublajlı
+    <!-- Üst Telegram Duyuru Şeridi -->
+    <a href="https://t.me/+ZYUqjSkNW_o1OGQ8" target="_blank" rel="noopener noreferrer" class="telegram-banner block bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 text-xs sm:text-sm font-bold tracking-wide transition">
+        📢 SORUN VARSA TELEGRAMDAN BİLDİRİN DÜZELTELİM, İYİ SEYİRLER — KATILMAK İÇİN TIKLAYIN
     </a>
 
-    <a href="/favoriler" class="sb-item {% if request.url.path == '/favoriler' or request.query_params.get('liste') %}on{% endif %}">
-      <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
-      Listem
-    </a>
-
-    <a href="/duyurular" class="sb-item {% if request.url.path == '/duyurular' %}on{% endif %}">
-      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-      Duyurular
-    </a>
-
-    <a href="/vip" class="sb-item sb-vip {% if request.url.path in ['/vip', '/abonelik'] %}on{% endif %}">
-      <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-      VIP Üyelik
-    </a>
-    
-    <a href="/uygulama" class="sb-item {% if request.url.path == '/uygulama' %}on{% endif %}" style="color:#4caf50">
-      <svg viewBox="0 0 24 24"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>
-      UYGULAMA
-    </a>
-
-    {% if current_user and current_user.role.value == 'admin' %}
-      <a href="/admin" class="sb-item" style="color:#ff4b4b;">
-        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-        Admin Paneli
-      </a>
-    {% endif %}
-
-    <div class="sb-ayrac" style="margin-top: 15px;">Platformlar</div>
-    <div class="sb-platforms-list" style="max-height: 240px; overflow-y: auto; padding: 0 4px; margin-bottom: 10px; scrollbar-width: thin;">
-      <a href="/?platform=starshort" class="sb-item {% if request.query_params.get('platform') == 'starshort' %}on{% endif %}" style="font-size: 13px; padding: 8px 12px; gap: 8px; display: flex; align-items: center;">
-        <span style="font-size: 15px; width: 20px; text-align: center; flex-shrink: 0;">⭐</span>
-        <span>StarShort</span>
-      </a>
-      <a href="/?platform=vibeshort" class="sb-item {% if request.query_params.get('platform') == 'vibeshort' %}on{% endif %}" style="font-size: 13px; padding: 8px 12px; gap: 8px; display: flex; align-items: center;">
-        <span style="font-size: 15px; width: 20px; text-align: center; flex-shrink: 0;">🔮</span>
-        <span>VibeShort</span>
-      </a>
-      <a href="/?platform=dramabox" class="sb-item {% if request.query_params.get('platform') == 'dramabox' %}on{% endif %}" style="font-size: 13px; padding: 8px 12px; gap: 8px; display: flex; align-items: center;">
-        <span style="font-size: 15px; width: 20px; text-align: center; flex-shrink: 0;">📦</span>
-        <span>DramaBox</span>
-      </a>
-      <a href="/?platform=shortmax" class="sb-item {% if request.query_params.get('platform') == 'shortmax' %}on{% endif %}" style="font-size: 13px; padding: 8px 12px; gap: 8px; display: flex; align-items: center;">
-        <span style="font-size: 15px; width: 20px; text-align: center; flex-shrink: 0;">⚡</span>
-        <span>ShortMax</span>
-      </a>
-      <a href="/?platform=dramawave" class="sb-item {% if request.query_params.get('platform') == 'dramawave' %}on{% endif %}" style="font-size: 13px; padding: 8px 12px; gap: 8px; display: flex; align-items: center;">
-        <span style="font-size: 15px; width: 20px; text-align: center; flex-shrink: 0;">🌊</span>
-        <span>DramaWave</span>
-      </a>
-      <a href="/?platform=netshort" class="sb-item {% if request.query_params.get('platform') == 'netshort' %}on{% endif %}" style="font-size: 13px; padding: 8px 12px; gap: 8px; display: flex; align-items: center;">
-        <span style="font-size: 15px; width: 20px; text-align: center; flex-shrink: 0;">🕸️</span>
-        <span>NetShort</span>
-      </a>
-      <a href="/?platform=pinedrama" class="sb-item {% if request.query_params.get('platform') == 'pinedrama' %}on{% endif %}" style="font-size: 13px; padding: 8px 12px; gap: 8px; display: flex; align-items: center;">
-        <span style="font-size: 15px; width: 20px; text-align: center; flex-shrink: 0;">🌲</span>
-        <span>PineDrama</span>
-      </a>
-      <a href="/?platform=freereels" class="sb-item {% if request.query_params.get('platform') == 'freereels' %}on{% endif %}" style="font-size: 13px; padding: 8px 12px; gap: 8px; display: flex; align-items: center;">
-        <span style="font-size: 15px; width: 20px; text-align: center; flex-shrink: 0;">🎞️</span>
-        <span>FreeReels</span>
-      </a>
-      <a href="/?platform=reelshort" class="sb-item {% if request.query_params.get('platform') == 'reelshort' %}on{% endif %}" style="font-size: 13px; padding: 8px 12px; gap: 8px; display: flex; align-items: center;">
-        <span style="font-size: 15px; width: 20px; text-align: center; flex-shrink: 0;">🎥</span>
-        <span>ReelShort</span>
-      </a>
-      <a href="/?platform=flextv" class="sb-item {% if request.query_params.get('platform') == 'flextv' %}on{% endif %}" style="font-size: 13px; padding: 8px 12px; gap: 8px; display: flex; align-items: center;">
-        <span style="font-size: 15px; width: 20px; text-align: center; flex-shrink: 0;">📱</span>
-        <span>FlexTV</span>
-      </a>
-      <a href="/?platform=bilitv" class="sb-item {% if request.query_params.get('platform') == 'bilitv' %}on{% endif %}" style="font-size: 13px; padding: 8px 12px; gap: 8px; display: flex; align-items: center;">
-        <span style="font-size: 15px; width: 20px; text-align: center; flex-shrink: 0;">📺</span>
-        <span>BiliTV</span>
-      </a>
-      <a href="/?platform=moboreels" class="sb-item {% if request.query_params.get('platform') == 'moboreels' %}on{% endif %}" style="font-size: 13px; padding: 8px 12px; gap: 8px; display: flex; align-items: center;">
-        <span style="font-size: 15px; width: 20px; text-align: center; flex-shrink: 0;">🦁</span>
-        <span>MoboReels</span>
-      </a>
-      <a href="/?platform=storyreel" class="sb-item {% if request.query_params.get('platform') == 'storyreel' %}on{% endif %}" style="font-size: 13px; padding: 8px 12px; gap: 8px; display: flex; align-items: center;">
-        <span style="font-size: 15px; width: 20px; text-align: center; flex-shrink: 0;">📖</span>
-        <span>StoryReel</span>
-      </a>
-      <a href="/?platform=stardusttv" class="sb-item {% if request.query_params.get('platform') == 'stardusttv' %}on{% endif %}" style="font-size: 13px; padding: 8px 12px; gap: 8px; display: flex; align-items: center;">
-        <span style="font-size: 15px; width: 20px; text-align: center; flex-shrink: 0;">✨</span>
-        <span>StardustTV</span>
-      </a>
-      <a href="/?platform=dramabite" class="sb-item {% if request.query_params.get('platform') == 'dramabite' %}on{% endif %}" style="font-size: 13px; padding: 8px 12px; gap: 8px; display: flex; align-items: center;">
-        <span style="font-size: 15px; width: 20px; text-align: center; flex-shrink: 0;">🍕</span>
-        <span>DramaBite</span>
-      </a>
-      <a href="/?platform=shortswave" class="sb-item {% if request.query_params.get('platform') == 'shortswave' %}on{% endif %}" style="font-size: 13px; padding: 8px 12px; gap: 8px; display: flex; align-items: center;">
-        <span style="font-size: 15px; width: 20px; text-align: center; flex-shrink: 0;">🌊</span>
-        <span>ShortsWave</span>
-      </a>
-      <a href="/?platform=rapidtv" class="sb-item {% if request.query_params.get('platform') == 'rapidtv' %}on{% endif %}" style="font-size: 13px; padding: 8px 12px; gap: 8px; display: flex; align-items: center;">
-        <span style="font-size: 15px; width: 20px; text-align: center; flex-shrink: 0;">🚀</span>
-        <span>RapidTV</span>
-      </a>
-    </div>
-
-    <!-- Arama Kutusu -->
-    <form action="/ara" method="get" style="margin:10px 8px 4px;display:flex;align-items:center;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:12px;overflow:hidden">
-      <input type="search" name="q" placeholder="Dizi ara..." value="" autocomplete="off"
-        style="flex:1;background:none;border:none;outline:none;color:#fff;padding:10px 12px;font-size:13px;min-width:0;text-align:left">
-      <button type="submit" style="background:none;border:none;color:#aaa;padding:10px 12px;cursor:pointer;font-size:15px;flex-shrink:0">🔍</button>
-    </form>
-  </nav>
-
-  <div class="sb-alt">
-    {% if current_user %}
-      <a href="/profil" class="sb-hesap">
-        <div class="sb-avatar">{{ (current_user.username[0] if current_user else 'U')|upper }}</div>
-        <div class="sb-hesap-bilgi">
-          <b>{{ current_user.full_name or current_user.username }}</b>
-          <small>{% if current_user.role.value == 'admin' %}Yönetici{% else %}VIP Üye{% endif %}</small>
+    <!-- Üst Gezinme Çubuğu (Navbar) -->
+    <header class="navbar sticky top-0 z-50 bg-black/95 backdrop-blur border-b border-zinc-800 px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <button id="mobileMenuBtn" type="button" aria-label="Menü" class="text-white p-2 hover:bg-zinc-800 rounded-lg focus:outline-none">
+                <i class="fa-solid fa-bars text-xl"></i>
+            </button>
+            <a href="/" class="text-xl font-black text-red-600 tracking-wider">SenaDizi</a>
         </div>
-      </a>
-      <button onclick="handleLogout()" class="sb-btn sb-cikis">Çıkış Yap</button>
-    {% else %}
-      <a href="/giris" class="sb-btn sb-giris">→ Giriş Yap</a>
-      <a href="/kayit" class="sb-btn sb-kayit">Kayıt Ol</a>
-    {% endif %}
-    <button id="pwaInstallBtn" onclick="pwaInstall()" style="display:none;margin-top:6px;width:100%;background:rgba(229,9,20,.12);border:1px solid rgba(229,9,20,.3);color:#ff7070;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;gap:8px;">
-      📲 Uygulamayı Yükle
-    </button>
-  </div>
-</aside>
-
-<!-- Masaüstü & Üst Nav Bar -->
-<nav class="nav">
-  <div class="hamburger" onclick="document.querySelector('.sidebar').classList.toggle('open')" style="display:none; font-size:24px; color:#fff; cursor:pointer; margin-right:15px; line-height:1;">☰</div>
-  <a href="/" class="nav-logo">
-    <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="26" height="26" rx="6" fill="#e50914"/>
-      <polygon points="9,7 9,19 20,13" fill="white"/>
-    </svg>
-    SenaDizi
-  </a>
-  <div class="nav-links">
-    <a href="/" class="nav-link {% if request.url.path == '/' %}on{% endif %}">Ana Sayfa</a>
-    <a href="/shorts" class="nav-link {% if request.url.path == '/shorts' %}on{% endif %}">Keşfet</a>
-    <a href="/?tab=dub" class="nav-link {% if request.query_params.get('tab') == 'dub' %}on{% endif %}">Dublajlı</a>
-    <a href="/vip" class="nav-link {% if request.url.path in ['/vip', '/abonelik'] %}on{% endif %}" style="color:#ffd700;">👑 VIP Üyelik</a>
-  </div>
-</nav>
-
-<!-- Üst Mavi Duyuru Bandı (Telegram Destek) -->
-<div class="site-duyuru" id="topAnnouncementBanner" style="position:relative;z-index:9000;background:#2563eb;color:#fff;padding-top:env(safe-area-inset-top,0px);box-shadow:0 4px 10px rgba(0,0,0,0.3)">
-  <div style="display:flex;align-items:center;gap:6px;padding:10px 8px 10px 14px;min-height:44px">
-    <div style="flex:1;text-align:center;font-size:13.5px;line-height:1.4">
-      <a href="https://t.me/senadizi" target="_blank" style="color:#fff;text-decoration:none;font-weight:700;">
-        SORUN VARSA TELEGRAMDAN BİLDİRİN DÜZELTELİM İYİ SEYİRLER —
-      </a>
-    </div>
-    <button type="button" aria-label="Kapat" onclick="var b=document.getElementById('topAnnouncementBanner'); if(b) b.style.display='none'; try{localStorage.setItem('duyuru_kapat_senadizi','1')}catch(e){}" style="flex:none;background:rgba(0,0,0,.28);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation">✕</button>
-  </div>
-</div>
-<script>
-(function(){
-  var kapali = false;
-  try { kapali = localStorage.getItem('duyuru_kapat_senadizi') === '1'; } catch(e){}
-  if (kapali) {
-    var el = document.getElementById('topAnnouncementBanner');
-    if (el) el.style.display = 'none';
-  }
-})();
-</script>
-
-<!-- Mobil Floating Hamburger Menü Butonu (Sol Üst) -->
-<button id="mobileMenu" aria-label="Menüyü aç" onclick="document.querySelector('.sidebar').classList.toggle('open');var o=document.getElementById('sbOverlay');if(o)o.style.display='block'">
-  <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round">
-    <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-  </svg>
-</button>
-<style>
-#mobileMenu {
-  display: none;
-  position: fixed;
-  top: calc(env(safe-area-inset-top, 0px) + 10px);
-  left: 14px;
-  z-index: 9500;
-  width: 42px; height: 42px;
-  background: rgba(10,10,10,.85);
-  border: 1px solid rgba(255,255,255,.12);
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  align-items: center; justify-content: center;
-  cursor: pointer;
-}
-#mobileMenu svg { width: 20px; height: 20px; }
-@media (max-width: 1023px) {
-  #mobileMenu { display: flex; }
-}
-</style>
-
-<!-- Ana İçerik Sayfası -->
-<div class="page">
-  {% block content %}{% endblock %}
-</div>
-
-<!-- Footer -->
-<footer>
-  <p>&copy; 2026 SenaDizi. Tüm Hakları Saklıdır.</p>
-</footer>
-
-<!-- Mobil Alt Navigasyon (bnav) -->
-<nav class="bnav">
-  <div class="bnav-inner">
-    <a href="/" class="bnav-item {% if request.url.path == '/' %}on{% endif %}">
-      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-      <span>Ana Sayfa</span>
-    </a>
-    <a href="/shorts" class="bnav-item {% if request.url.path == '/shorts' %}on{% endif %}">
-      <svg viewBox="0 0 24 24"><path d="M10 9v6l5-3-5-3zm-1-6C6.8 3 5 4.8 5 7v10c0 2.2 1.8 4 4 4h6c2.2 0 4-1.8 4-4V7c0-2.2-1.8-4-4-4H9z"/></svg>
-      <span>Keşfet</span>
-    </a>
-    <a href="/ara" class="bnav-item {% if request.url.path == '/ara' %}on{% endif %}">
-      <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-      <span>Ara</span>
-    </a>
-  </div>
-</nav>
-
-<!-- Yüzen Mavi Telegram Destek Butonu (Sağ Alt) -->
-<a href="https://t.me/senadizi" target="_blank" rel="noopener" aria-label="Telegram grubumuza katıl" title="Telegram grubumuza katıl" style="position:fixed;bottom:calc(env(safe-area-inset-bottom, 20px) + 80px);right:20px;z-index:9998;background:#0088cc;color:#fff;width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(0,0,0,.4);transition:transform 0.2s">
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-</a>
-
-<!-- iPhone / iOS PWA Kurulum Banner -->
-<div id="iosBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;padding:16px 16px calc(16px + env(safe-area-inset-bottom, 20px));background:rgba(18,18,18,0.98);border-top:1px solid #333;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)">
-  <button onclick="iosBannerKapat()" style="position:absolute;top:10px;right:12px;background:none;border:none;color:#888;font-size:20px;line-height:1;cursor:pointer">✕</button>
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-    <svg width="36" height="36" viewBox="0 0 36 36"><rect width="36" height="36" rx="9" fill="#e50914"/><polygon points="13,9 13,27 28,18" fill="white"/></svg>
-    <div>
-      <div style="font-weight:700;font-size:14px;color:#fff">SenaDizi'yi Ana Ekrana Ekle</div>
-      <div style="font-size:12px;color:#999;margin-top:2px">Uygulama gibi tam ekran açılır</div>
-    </div>
-  </div>
-  <div style="display:flex;flex-direction:column;gap:8px">
-    <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.05);border-radius:10px;padding:10px 12px">
-      <span style="font-size:20px">1</span>
-      <span style="font-size:13px;color:#ddd">Alt ortadaki <strong style="color:#fff">Paylaş</strong> butonuna bas</span>
-      <svg style="margin-left:auto;flex-shrink:0" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.05);border-radius:10px;padding:10px 12px">
-      <span style="font-size:20px">2</span>
-      <span style="font-size:13px;color:#ddd"><strong style="color:#fff">Ana Ekrana Ekle</strong>'ye bas</span>
-      <svg style="margin-left:auto;flex-shrink:0" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><line x1="14" y1="17" x2="20" y2="17"/><line x1="17" y1="14" x2="17" y2="20"/></svg>
-    </div>
-  </div>
-</div>
-
-<!-- Telegram & VIP Destek Popup Modal -->
-<div id="telegramModal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.85);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);align-items:center;justify-content:center;padding:20px;">
-  <div style="background:#141414;border:1px solid #2a2a2a;border-radius:18px;max-width:380px;width:100%;text-align:center;position:relative;box-shadow:0 10px 40px rgba(0,0,0,0.8);overflow:hidden;">
-    <button onclick="closeTelegramModal()" style="position:absolute;top:14px;right:14px;background:rgba(255,255,255,0.08);border:none;color:#aaa;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;z-index:2;">✕</button>
-    <div style="padding:36px 24px 24px;">
-      <div style="display:flex;justify-content:center;gap:15px;margin-bottom:20px;">
-        <div style="background:#FFD700;width:60px;height:60px;border-radius:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(255,215,0,0.3)">
-          <span style="font-size:30px;">👑</span>
-        </div>
-        <div style="background:#2AABEE;width:60px;height:60px;border-radius:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(42,171,238,0.3)">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="#fff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-        </div>
-      </div>
-      <h3 style="color:#fff;font-size:20px;margin-bottom:12px;font-weight:800;letter-spacing:-0.3px">Bizi Destekleyin & Katılın!</h3>
-      <p style="color:#aaa;font-size:14px;line-height:1.6;margin-bottom:24px">
-        Sadece <b>2 kahve fiyatına</b> VIP üye olarak reklamları kapatabilir ve sitemizin ayakta kalmasına destek olabilirsiniz! Ayrıca güncel duyurular için Telegram grubumuza katılın.
-      </p>
-      
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <a href="/vip" onclick="closeTelegramModal()" style="display:flex;background:#e50914;color:#fff;text-decoration:none;padding:14px;border-radius:12px;font-weight:700;font-size:15px;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 15px rgba(229,9,20,0.3)">
-          👑 VIP Üye Ol (Reklamsız İzle)
-        </a>
         
-        <a href="https://t.me/senadizi" target="_blank" rel="noopener" onclick="closeTelegramModal()" style="display:flex;background:#1c7ba8;color:#fff;text-decoration:none;padding:14px;border-radius:12px;font-weight:700;font-size:15px;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 15px rgba(42,171,238,0.3)">
-          ✈️ Telegram Grubuna Katıl
+        <div class="flex items-center gap-3">
+            <a href="/search" class="text-zinc-300 hover:text-white p-2">
+                <i class="fa-solid fa-magnifying-glass text-lg"></i>
+            </a>
+            {% if current_user.is_authenticated %}
+                <a href="/profile" class="text-zinc-300 hover:text-white p-2">
+                    <i class="fa-solid fa-user text-lg"></i>
+                </a>
+            {% else %}
+                <a href="/login" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-md">Giriş Yap</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- Sol Açılır Yan Menü (Sidebar) -->
+    <div id="sideMenuOverlay" class="fixed inset-0 bg-black/70 z-50 hidden transition-opacity"></div>
+    <aside id="sideMenu" class="fixed top-0 left-0 bottom-0 w-72 bg-zinc-950 border-r border-zinc-800 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out p-5 flex flex-col justify-between overflow-y-auto">
+        <div>
+            <div class="flex items-center justify-between pb-4 border-b border-zinc-800 mb-4">
+                <span class="text-xl font-bold text-red-600 tracking-wider">SenaDizi</span>
+                <button id="closeSideMenuBtn" type="button" class="text-zinc-400 hover:text-white text-2xl p-1">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <nav class="flex flex-col gap-2">
+                <a href="/" class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-200 hover:bg-zinc-900 transition">
+                    <i class="fa-solid fa-house w-5 text-red-500"></i> Ana Sayfa
+                </a>
+                <a href="/catalog" class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-200 hover:bg-zinc-900 transition">
+                    <i class="fa-solid fa-film w-5 text-red-500"></i> Tüm Diziler
+                </a>
+                <a href="/shorts" class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-200 hover:bg-zinc-900 transition">
+                    <i class="fa-solid fa-bolt w-5 text-yellow-500"></i> Shorts
+                </a>
+                <a href="/favorites" class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-200 hover:bg-zinc-900 transition">
+                    <i class="fa-solid fa-heart w-5 text-red-500"></i> Favorilerim
+                </a>
+                <a href="/subscription" class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-200 hover:bg-zinc-900 transition">
+                    <i class="fa-solid fa-crown w-5 text-amber-400"></i> Premium Üyelik
+                </a>
+                <a href="https://t.me/+ZYUqjSkNW_o1OGQ8" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 px-3 py-2 rounded-lg text-blue-400 hover:bg-zinc-900 transition">
+                    <i class="fa-brands fa-telegram w-5"></i> Telegram Kanalımız
+                </a>
+            </nav>
+        </div>
+
+        <div class="pt-4 border-t border-zinc-800 text-xs text-zinc-500">
+            © 2026 SenaDizi. Tüm hakları saklıdır.
+        </div>
+    </aside>
+
+    <!-- Ana İçerik -->
+    <main class="flex-grow pb-16">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Sağ Alt Telegram Butonu -->
+    <a href="https://t.me/+ZYUqjSkNW_o1OGQ8" target="_blank" rel="noopener noreferrer" aria-label="Telegram Kanalı" class="fixed bottom-20 right-4 z-40 bg-sky-500 hover:bg-sky-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg shadow-sky-500/30 transition transform hover:scale-110">
+        <i class="fa-brands fa-telegram text-2xl"></i>
+    </a>
+
+    <!-- Alt Menü (Mobile Footer Navigation) -->
+    <nav class="mobile-bottom-nav fixed bottom-0 left-0 right-0 z-40 bg-zinc-950/95 backdrop-blur border-t border-zinc-800 flex justify-around py-2">
+        <a href="/" class="flex flex-col items-center text-xs text-zinc-400 hover:text-white">
+            <i class="fa-solid fa-house text-base"></i>
+            <span>Ana Sayfa</span>
         </a>
-      </div>
-      
-      <button onclick="closeTelegramModal()" style="background:none;border:none;color:#9a9a9a;font-size:14px;font-weight:600;cursor:pointer;padding:8px;margin-top:10px;">Şimdi değil</button>
-    </div>
-  </div>
-</div>
+        <a href="/catalog" class="flex flex-col items-center text-xs text-zinc-400 hover:text-white">
+            <i class="fa-solid fa-compass text-base"></i>
+            <span>Keşfet</span>
+        </a>
+        <a href="/shorts" class="flex flex-col items-center text-xs text-zinc-400 hover:text-white">
+            <i class="fa-solid fa-bolt text-base"></i>
+            <span>Shorts</span>
+        </a>
+        <a href="/favorites" class="flex flex-col items-center text-xs text-zinc-400 hover:text-white">
+            <i class="fa-solid fa-bookmark text-base"></i>
+            <span>Kaydet</span>
+        </a>
+        <a href="/search" class="flex flex-col items-center text-xs text-zinc-400 hover:text-white">
+            <i class="fa-solid fa-magnifying-glass text-base"></i>
+            <span>Ara</span>
+        </a>
+    </nav>
 
-<div id="toast-container"></div>
+    <!-- Menü Açma/Kapama Scripti -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const closeSideMenuBtn = document.getElementById('closeSideMenuBtn');
+            const sideMenu = document.getElementById('sideMenu');
+            const sideMenuOverlay = document.getElementById('sideMenuOverlay');
 
-<!-- Ana JavaScript Motoru -->
-<script src="/static/js/app.js?v=2026"></script>
-{% block scripts %}{% endblock %}
+            function toggleMenu() {
+                if (!sideMenu || !sideMenuOverlay) return;
+                const isOpen = !sideMenu.classList.contains('-translate-x-full');
+                if (isOpen) {
+                    sideMenu.classList.add('-translate-x-full');
+                    sideMenuOverlay.classList.add('hidden');
+                } else {
+                    sideMenu.classList.remove('-translate-x-full');
+                    sideMenuOverlay.classList.remove('hidden');
+                }
+            }
+
+            if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMenu);
+            if (closeSideMenuBtn) closeSideMenuBtn.addEventListener('click', toggleMenu);
+            if (sideMenuOverlay) sideMenuOverlay.addEventListener('click', toggleMenu);
+        });
+    </script>
+    <script src="/static/js/app.js"></script>
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>
