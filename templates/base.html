@@ -1,23 +1,11 @@
-[01:53, 25.08.2026] 🍂: <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="google" content="notranslate">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>{% block title %}{{ page_title or 'Kısa Dizi İzle - Türkçe Altyazılı ve Dublajlı | SenaDizi' }}{% endblock %}</title>
-    <meta name="description" content="{{ meta_description or 'Kısa dizi izle! En yeni Kore, Çin ve Asya dramalarını 1080p Türkçe altyazılı ve Türkçe dublajlı olarak reklamsız ve kesintisiz izleyin.' }}">
-    <meta name="keywords" content="kısa dizi izle, ücretsiz dizi izle, kore dizileri izle, türkçe dublaj kore dizisi, türkçe altyazılı kore dizisi, asya dizileri izle, dikey dizi izle">
-    
-    <link rel="icon" type="image/x-ic…
-[02:05, 25.08.2026] 🍂: <!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="google" content="notranslate">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>{% block title %}{{ page_title or 'Kısa Dizi İzle - Türkçe Altyazılı ve Dublajlı | SenaDizi' }}{% endblock %}</title>
-    <meta name="description" content="{{ meta_description or 'Kısa dizi izle! En yeni Kore, Çin ve Asya dramalarını 1080p Türkçe altyazılı ve Türkçe dublajlı olarak reklamsız ve kesintisiz izleyin.' }}">
-    <meta name="keywords" content="kısa dizi izle, ücretsiz dizi izle, kore dizileri izle, türkçe dublaj kore dizisi, türkçe altyazılı kore dizisi, asya dizileri izle, dikey dizi izle">
+    <title>{% block title %}Kısa Dizi İzle - Türkçe Altyazılı ve Dublajlı | SenaDizi{% endblock %}</title>
+    <meta name="description" content="Kısa dizi izle! En yeni Kore, Çin ve Asya dramalarını 1080p Türkçe altyazılı ve Türkçe dublajlı olarak reklamsız ve kesintisiz izleyin.">
     
     <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -222,11 +210,7 @@
         </div>
         <div class="custom-nav-right">
             <a href="/search" class="custom-nav-icon" aria-label="Arama"><i class="fa-solid fa-magnifying-glass"></i></a>
-            {% if current_user is defined and current_user and current_user.is_authenticated %}
-                <a href="/profile" class="custom-nav-icon" aria-label="Profil"><i class="fa-solid fa-user"></i></a>
-            {% else %}
-                <a href="/giris" class="custom-nav-btn">Giriş Yap</a>
-            {% endif %}
+            <a href="/giris" class="custom-nav-btn">Giriş Yap</a>
         </div>
     </header>
 
