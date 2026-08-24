@@ -1,4 +1,18 @@
-<!DOCTYPE html>
+[02:10, 25.08.2026] 🍂: <!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="google" content="notranslate">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>{% block title %}Kısa Dizi İzle - Türkçe Altyazılı ve Dublajlı | SenaDizi{% endblock %}</title>
+    <meta name="description" content="Kısa dizi izle! En yeni Kore, Çin ve Asya dramalarını 1080p Türkçe altyazılı ve Türkçe dublajlı olarak reklamsız ve kesintisiz izleyin.">
+    
+    <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/…
+[02:15, 25.08.2026] 🍂: Anajjaajjaajja
+[02:15, 25.08.2026] 🍂: <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -210,7 +224,11 @@
         </div>
         <div class="custom-nav-right">
             <a href="/search" class="custom-nav-icon" aria-label="Arama"><i class="fa-solid fa-magnifying-glass"></i></a>
-            <a href="/giris" class="custom-nav-btn">Giriş Yap</a>
+            {% if user or (request.state is defined and request.state.user) or (session is defined and session.get('user_id')) %}
+                <a href="/profile" class="custom-nav-icon" aria-label="Profil"><i class="fa-solid fa-user-check text-red-500"></i></a>
+            {% else %}
+                <a href="/giris" class="custom-nav-btn">Giriş Yap</a>
+            {% endif %}
         </div>
     </header>
 
@@ -228,6 +246,7 @@
                 <a href="/shorts" class="drawer-link"><i class="fa-solid fa-bolt" style="color:#eab308;"></i> Shorts</a>
                 <a href="/favorites" class="drawer-link"><i class="fa-solid fa-heart" style="color:#ef4444;"></i> Favorilerim</a>
                 <a href="/subscription" class="drawer-link"><i class="fa-solid fa-crown" style="color:#f59e0b;"></i> Premium Üyelik</a>
+                <a href="/admin" class="drawer-link"><i class="fa-solid fa-gear" style="color:#ef4444;"></i> Yönetim Paneli</a>
                 <a href="https://t.me/+ZYUqjSkNW_o1OGQ8" target="_blank" rel="noopener noreferrer" class="drawer-link tg-link">
                     <i class="fa-brands fa-telegram"></i> Telegram Kanalımız
                 </a>
