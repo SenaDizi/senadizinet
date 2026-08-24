@@ -1,19 +1,28 @@
 import os
 import sys
+
+# Windows Türkçe terminal (cp1254) utf-8 uyumluluğu
+if sys.stdout.encoding != 'utf-8':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 import uvicorn
 from app.config import settings
 from app.seed import seed_database
 
 def print_banner(host, port):
     print("=" * 70)
-    print("🎬  S E N A   D İ Z İ N E T  –  PROFESYONEL DİZİ PLATFORMU  🎬")
+    print("🎬  S E N A D I Z I  –  PROFESYONEL DIZI PLATFORMU  🎬")
     print("=" * 70)
-    print(f"📌 Bağlantı Noktası (Host / Port): http://{host}:{port}")
-    print(f"🛠️  Yönetim Paneli:                http://{host}:{port}/admin")
+    print(f"📌 Baglanti Adresi (Local):   http://localhost:{port}")
+    print(f"📌 Baglanti Adresi (Network): http://{host}:{port}")
+    print(f"🛠️  Yonetim Paneli:           http://localhost:{port}/admin")
     print("-" * 70)
-    print(f"🔑 Admin: {settings.DEFAULT_ADMIN_EMAIL} | Şifre: {settings.DEFAULT_ADMIN_PASSWORD}")
+    print(f"🔑 Admin: {settings.DEFAULT_ADMIN_EMAIL} | Sifre: {settings.DEFAULT_ADMIN_PASSWORD}")
     print("=" * 70)
-    print("🚀 Sunucu başlatılıyor...")
+    print("🚀 Sunucu baslatiliyor...")
 
 if __name__ == "__main__":
     seed_database()
