@@ -14,133 +14,294 @@
     <link rel="stylesheet" href="/static/css/desktop.css">
     <link rel="stylesheet" href="/static/css/premium.css">
     <link rel="stylesheet" href="/static/css/custom.css">
+    
+    <style>
+        .custom-tg-bar {
+            background-color: #0284c7;
+            color: #ffffff;
+            text-align: center;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            display: block;
+            text-decoration: none;
+            line-height: 1.4;
+        }
+        .custom-tg-bar:hover {
+            background-color: #0369a1;
+        }
+        .custom-navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background-color: #0b0b0e;
+            border-bottom: 1px solid #1f1f23;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .custom-nav-left, .custom-nav-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .custom-menu-btn {
+            background: #18181b;
+            border: 1px solid #27272a;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .custom-brand {
+            font-size: 20px;
+            font-weight: 900;
+            color: #e50914;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+        }
+        .custom-nav-icon {
+            color: #a1a1aa;
+            font-size: 18px;
+            text-decoration: none;
+            padding: 6px;
+        }
+        .custom-nav-btn {
+            background: #e50914;
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        /* Yan Menü (Drawer) */
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 9998;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .drawer-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .drawer-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 280px;
+            max-width: 85%;
+            background: #121216;
+            border-right: 1px solid #27272a;
+            z-index: 9999;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px 16px;
+            box-sizing: border-box;
+        }
+        .drawer-menu.active {
+            transform: translateX(0);
+        }
+        .drawer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #27272a;
+            margin-bottom: 15px;
+        }
+        .drawer-close {
+            background: transparent;
+            border: none;
+            color: #a1a1aa;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 4px;
+        }
+        .drawer-links {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .drawer-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            color: #e4e4e7;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s ease;
+        }
+        .drawer-link:hover {
+            background: #1e1e24;
+        }
+        .drawer-link i {
+            width: 20px;
+            text-align: center;
+        }
+        .drawer-link.tg-link {
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+        }
+        .drawer-footer {
+            font-size: 12px;
+            color: #71717a;
+            border-top: 1px solid #27272a;
+            padding-top: 12px;
+            text-align: center;
+        }
+        /* Kayan Telegram Butonu */
+        .floating-tg-btn {
+            position: fixed;
+            bottom: 75px;
+            right: 16px;
+            width: 50px;
+            height: 50px;
+            background-color: #0284c7;
+            color: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            text-decoration: none;
+            z-index: 900;
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+            transition: transform 0.2s ease;
+        }
+        .floating-tg-btn:hover {
+            transform: scale(1.08);
+        }
+    </style>
     {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-black text-white antialiased font-sans flex flex-col min-h-screen">
+<body>
 
-    <!-- Üst Telegram Duyuru Şeridi -->
-    <a href="https://t.me/+ZYUqjSkNW_o1OGQ8" target="_blank" rel="noopener noreferrer" class="telegram-banner block bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 text-xs sm:text-sm font-bold tracking-wide transition">
+    <!-- Üst Telegram Duyuru Barı -->
+    <a href="https://t.me/+ZYUqjSkNW_o1OGQ8" target="_blank" rel="noopener noreferrer" class="custom-tg-bar">
         📢 SORUN VARSA TELEGRAMDAN BİLDİRİN DÜZELTELİM, İYİ SEYİRLER — KATILMAK İÇİN TIKLAYIN
     </a>
 
-    <!-- Üst Gezinme Çubuğu (Navbar) -->
-    <header class="navbar sticky top-0 z-50 bg-black/95 backdrop-blur border-b border-zinc-800 px-4 py-3 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-            <button id="mobileMenuBtn" type="button" aria-label="Menü" class="text-white p-2 hover:bg-zinc-800 rounded-lg focus:outline-none">
-                <i class="fa-solid fa-bars text-xl"></i>
+    <!-- Üst Menü / Navbar -->
+    <header class="custom-navbar">
+        <div class="custom-nav-left">
+            <button id="openDrawerBtn" type="button" class="custom-menu-btn" aria-label="Menüyü Aç">
+                <i class="fa-solid fa-bars"></i>
             </button>
-            <a href="/" class="text-xl font-black text-red-600 tracking-wider">SenaDizi</a>
+            <a href="/" class="custom-brand">SenaDizi</a>
         </div>
-        
-        <div class="flex items-center gap-3">
-            <a href="/search" class="text-zinc-300 hover:text-white p-2">
-                <i class="fa-solid fa-magnifying-glass text-lg"></i>
-            </a>
+        <div class="custom-nav-right">
+            <a href="/search" class="custom-nav-icon" aria-label="Arama"><i class="fa-solid fa-magnifying-glass"></i></a>
             {% if current_user.is_authenticated %}
-                <a href="/profile" class="text-zinc-300 hover:text-white p-2">
-                    <i class="fa-solid fa-user text-lg"></i>
-                </a>
+                <a href="/profile" class="custom-nav-icon" aria-label="Profil"><i class="fa-solid fa-user"></i></a>
             {% else %}
-                <a href="/login" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-md">Giriş Yap</a>
+                <a href="/login" class="custom-nav-btn">Giriş Yap</a>
             {% endif %}
         </div>
     </header>
 
-    <!-- Sol Açılır Yan Menü (Sidebar) -->
-    <div id="sideMenuOverlay" class="fixed inset-0 bg-black/70 z-50 hidden transition-opacity"></div>
-    <aside id="sideMenu" class="fixed top-0 left-0 bottom-0 w-72 bg-zinc-950 border-r border-zinc-800 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out p-5 flex flex-col justify-between overflow-y-auto">
+    <!-- Açılır Yan Menü -->
+    <div id="drawerOverlay" class="drawer-overlay"></div>
+    <aside id="drawerMenu" class="drawer-menu">
         <div>
-            <div class="flex items-center justify-between pb-4 border-b border-zinc-800 mb-4">
-                <span class="text-xl font-bold text-red-600 tracking-wider">SenaDizi</span>
-                <button id="closeSideMenuBtn" type="button" class="text-zinc-400 hover:text-white text-2xl p-1">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+            <div class="drawer-header">
+                <span class="custom-brand">SenaDizi</span>
+                <button id="closeDrawerBtn" type="button" class="drawer-close" aria-label="Kapat">&times;</button>
             </div>
-            
-            <nav class="flex flex-col gap-2">
-                <a href="/" class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-200 hover:bg-zinc-900 transition">
-                    <i class="fa-solid fa-house w-5 text-red-500"></i> Ana Sayfa
+            <div class="drawer-links">
+                <a href="/" class="drawer-link"><i class="fa-solid fa-house" style="color:#ef4444;"></i> Ana Sayfa</a>
+                <a href="/catalog" class="drawer-link"><i class="fa-solid fa-film" style="color:#ef4444;"></i> Tüm Diziler</a>
+                <a href="/shorts" class="drawer-link"><i class="fa-solid fa-bolt" style="color:#eab308;"></i> Shorts</a>
+                <a href="/favorites" class="drawer-link"><i class="fa-solid fa-heart" style="color:#ef4444;"></i> Favorilerim</a>
+                <a href="/subscription" class="drawer-link"><i class="fa-solid fa-crown" style="color:#f59e0b;"></i> Premium Üyelik</a>
+                <a href="https://t.me/+ZYUqjSkNW_o1OGQ8" target="_blank" rel="noopener noreferrer" class="drawer-link tg-link">
+                    <i class="fa-brands fa-telegram"></i> Telegram Kanalımız
                 </a>
-                <a href="/catalog" class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-200 hover:bg-zinc-900 transition">
-                    <i class="fa-solid fa-film w-5 text-red-500"></i> Tüm Diziler
-                </a>
-                <a href="/shorts" class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-200 hover:bg-zinc-900 transition">
-                    <i class="fa-solid fa-bolt w-5 text-yellow-500"></i> Shorts
-                </a>
-                <a href="/favorites" class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-200 hover:bg-zinc-900 transition">
-                    <i class="fa-solid fa-heart w-5 text-red-500"></i> Favorilerim
-                </a>
-                <a href="/subscription" class="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-200 hover:bg-zinc-900 transition">
-                    <i class="fa-solid fa-crown w-5 text-amber-400"></i> Premium Üyelik
-                </a>
-                <a href="https://t.me/+ZYUqjSkNW_o1OGQ8" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 px-3 py-2 rounded-lg text-blue-400 hover:bg-zinc-900 transition">
-                    <i class="fa-brands fa-telegram w-5"></i> Telegram Kanalımız
-                </a>
-            </nav>
+            </div>
         </div>
-
-        <div class="pt-4 border-t border-zinc-800 text-xs text-zinc-500">
+        <div class="drawer-footer">
             © 2026 SenaDizi. Tüm hakları saklıdır.
         </div>
     </aside>
 
     <!-- Ana İçerik -->
-    <main class="flex-grow pb-16">
+    <main style="padding-bottom: 70px;">
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Sağ Alt Telegram Butonu -->
-    <a href="https://t.me/+ZYUqjSkNW_o1OGQ8" target="_blank" rel="noopener noreferrer" aria-label="Telegram Kanalı" class="fixed bottom-20 right-4 z-40 bg-sky-500 hover:bg-sky-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg shadow-sky-500/30 transition transform hover:scale-110">
-        <i class="fa-brands fa-telegram text-2xl"></i>
+    <!-- Sağ Alt Yuvarlak Telegram Butonu -->
+    <a href="https://t.me/+ZYUqjSkNW_o1OGQ8" target="_blank" rel="noopener noreferrer" class="floating-tg-btn" aria-label="Telegram">
+        <i class="fa-brands fa-telegram"></i>
     </a>
 
-    <!-- Alt Menü (Mobile Footer Navigation) -->
-    <nav class="mobile-bottom-nav fixed bottom-0 left-0 right-0 z-40 bg-zinc-950/95 backdrop-blur border-t border-zinc-800 flex justify-around py-2">
-        <a href="/" class="flex flex-col items-center text-xs text-zinc-400 hover:text-white">
-            <i class="fa-solid fa-house text-base"></i>
+    <!-- Alt Menü (Footer Nav) -->
+    <nav class="mobile-bottom-nav">
+        <a href="/" class="nav-item">
+            <i class="fa-solid fa-house"></i>
             <span>Ana Sayfa</span>
         </a>
-        <a href="/catalog" class="flex flex-col items-center text-xs text-zinc-400 hover:text-white">
-            <i class="fa-solid fa-compass text-base"></i>
+        <a href="/catalog" class="nav-item">
+            <i class="fa-solid fa-compass"></i>
             <span>Keşfet</span>
         </a>
-        <a href="/shorts" class="flex flex-col items-center text-xs text-zinc-400 hover:text-white">
-            <i class="fa-solid fa-bolt text-base"></i>
+        <a href="/shorts" class="nav-item">
+            <i class="fa-solid fa-bolt"></i>
             <span>Shorts</span>
         </a>
-        <a href="/favorites" class="flex flex-col items-center text-xs text-zinc-400 hover:text-white">
-            <i class="fa-solid fa-bookmark text-base"></i>
+        <a href="/favorites" class="nav-item">
+            <i class="fa-solid fa-bookmark"></i>
             <span>Kaydet</span>
         </a>
-        <a href="/search" class="flex flex-col items-center text-xs text-zinc-400 hover:text-white">
-            <i class="fa-solid fa-magnifying-glass text-base"></i>
+        <a href="/search" class="nav-item">
+            <i class="fa-solid fa-magnifying-glass"></i>
             <span>Ara</span>
         </a>
     </nav>
 
-    <!-- Menü Açma/Kapama Scripti -->
+    <!-- Menü Açma/Kapama Tetikleyici Scripti -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-            const closeSideMenuBtn = document.getElementById('closeSideMenuBtn');
-            const sideMenu = document.getElementById('sideMenu');
-            const sideMenuOverlay = document.getElementById('sideMenuOverlay');
+        document.addEventListener('DOMContentLoaded', function() {
+            var openBtn = document.getElementById('openDrawerBtn');
+            var closeBtn = document.getElementById('closeDrawerBtn');
+            var overlay = document.getElementById('drawerOverlay');
+            var menu = document.getElementById('drawerMenu');
 
-            function toggleMenu() {
-                if (!sideMenu || !sideMenuOverlay) return;
-                const isOpen = !sideMenu.classList.contains('-translate-x-full');
-                if (isOpen) {
-                    sideMenu.classList.add('-translate-x-full');
-                    sideMenuOverlay.classList.add('hidden');
-                } else {
-                    sideMenu.classList.remove('-translate-x-full');
-                    sideMenuOverlay.classList.remove('hidden');
+            function openMenu() {
+                if (menu && overlay) {
+                    menu.classList.add('active');
+                    overlay.classList.add('active');
                 }
             }
 
-            if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMenu);
-            if (closeSideMenuBtn) closeSideMenuBtn.addEventListener('click', toggleMenu);
-            if (sideMenuOverlay) sideMenuOverlay.addEventListener('click', toggleMenu);
+            function closeMenu() {
+                if (menu && overlay) {
+                    menu.classList.remove('active');
+                    overlay.classList.remove('active');
+                }
+            }
+
+            if (openBtn) openBtn.addEventListener('click', openMenu);
+            if (closeBtn) closeBtn.addEventListener('click', closeMenu);
+            if (overlay) overlay.addEventListener('click', closeMenu);
         });
     </script>
     <script src="/static/js/app.js"></script>
