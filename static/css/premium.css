@@ -1,0 +1,252 @@
+/* Premium Theme Overrides */
+:root {
+  --accent: #e50914;
+  --accent-glow: rgba(229, 9, 20, 0.4);
+  --bg-dark: #050505;
+  --nav-bg: rgba(5, 5, 5, 0.7);
+}
+
+body.premium-theme {
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--bg-dark);
+  background-image: radial-gradient(circle at 15% 50%, rgba(229, 9, 20, 0.05), transparent 25%),
+                    radial-gradient(circle at 85% 30%, rgba(229, 9, 20, 0.03), transparent 25%);
+  color: #f5f5f5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Nav with Glassmorphism */
+.premium-theme .nav {
+  background: var(--nav-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.premium-theme .nav-logo {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: linear-gradient(90deg, #ff3b3b, var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 20px var(--accent-glow);
+}
+
+/* Hero Section */
+.premium-theme .hero {
+  border-radius: 0 0 30px 30px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+.premium-theme .hero-shade {
+  background: linear-gradient(to right, rgba(5,5,5,1) 0%, rgba(5,5,5,0.4) 50%, transparent 100%),
+              linear-gradient(to top, var(--bg-dark) 0%, transparent 60%);
+}
+
+.premium-theme .hero-title {
+  font-size: clamp(24px, 6vw, 42px);
+  letter-spacing: -0.5px;
+  text-shadow: 0 4px 12px rgba(0,0,0,0.8);
+  animation: slideUp 0.8s ease-out forwards;
+}
+
+.premium-theme .hero-badge {
+  background: linear-gradient(45deg, #ff3b3b, var(--accent));
+  box-shadow: 0 2px 10px var(--accent-glow);
+  padding: 4px 10px;
+  font-size: 10px;
+  border-radius: 6px;
+  animation: fadeIn 1s ease-out forwards;
+}
+
+/* Buttons */
+.premium-theme .btn {
+  border-radius: 12px;
+  font-size: 13px;
+  padding: 10px 20px;
+  letter-spacing: 0.5px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: uppercase;
+}
+
+.premium-theme .btn-red {
+  background: linear-gradient(45deg, #e50914, #ff3b3b);
+  box-shadow: 0 4px 15px var(--accent-glow);
+}
+.premium-theme .btn-red:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(229, 9, 20, 0.6);
+}
+
+.premium-theme .btn-dark {
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.premium-theme .btn-dark:hover {
+  background: rgba(255,255,255,0.15);
+  transform: translateY(-2px);
+}
+
+/* Cards & Hover Effects */
+.premium-theme .card {
+  border-radius: 14px;
+  background: transparent;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.premium-theme .card-poster {
+  border-radius: 14px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.premium-theme .card:hover .card-poster {
+  transform: scale(1.05);
+  box-shadow: 0 10px 25px rgba(229, 9, 20, 0.2);
+}
+
+.premium-theme .card-poster img {
+  transition: transform 0.5s ease;
+}
+.premium-theme .card:hover .card-poster img {
+  transform: scale(1.08);
+}
+
+.premium-theme .card-new {
+  border-radius: 6px;
+  padding: 3px 8px;
+  background: rgba(229, 9, 20, 0.9);
+  backdrop-filter: blur(4px);
+}
+
+.premium-theme .card-name {
+  font-size: 13px;
+  margin-top: 4px;
+  color: #fff;
+}
+
+.premium-theme .card-sub {
+  color: #aaa;
+}
+
+/* Section Headings */
+.premium-theme .section-title {
+  font-size: 18px;
+  letter-spacing: 0.5px;
+}
+
+.premium-theme .section-title::before {
+  width: 4px;
+  height: 20px;
+  border-radius: 4px;
+  background: linear-gradient(to bottom, #ff3b3b, var(--accent));
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.premium-theme .section-more {
+  background: rgba(255,255,255,0.05);
+  padding: 4px 12px;
+  border-radius: 20px;
+  transition: background 0.3s ease;
+}
+.premium-theme .section-more:hover {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+
+/* Bottom Nav (Mobile) */
+.premium-theme .bnav {
+  background: rgba(10, 10, 10, 0.9);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.premium-theme .bnav-item {
+  color: #666;
+  font-weight: 500;
+}
+.premium-theme .bnav-item.on {
+  color: var(--accent);
+  text-shadow: 0 0 10px var(--accent-glow);
+}
+.premium-theme .bnav-item.on svg {
+  filter: drop-shadow(0 0 5px var(--accent-glow));
+}
+
+/* Animations */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Search input enhancement */
+.premium-theme .nav-search {
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.premium-theme .nav-search:focus-within {
+  border-color: rgba(229, 9, 20, 0.5);
+  box-shadow: 0 0 15px rgba(229, 9, 20, 0.2);
+}
+
+/* Grid & Cards Responsive Improvements */
+@media (max-width: 768px) {
+  .premium-theme .hero {
+    height: 70vw;
+    border-radius: 0 0 20px 20px;
+  }
+}
+
+/* Desktop/PC CSS Overrides */
+@media (min-width: 1024px) {
+  .section {
+    max-width: 1400px !important;
+    margin: 0 auto;
+    padding: 0 40px 50px !important;
+  }
+  .nav { padding: 0 40px !important; }
+  .hero-body { padding: 0 40px 20px !important; }
+  
+  .bnav { display: none !important; }
+  footer { margin-bottom: 0 !important; padding-bottom: 40px !important; }
+  
+  .nav-search { max-width: 500px !important; }
+  .nav-links { display: flex !important; margin-right: 20px; }
+  
+  .card { width: 180px !important; }
+  .card-wide { width: 200px !important; }
+  .card-poster { transition: transform 0.3s ease; }
+  .card:hover .card-poster { transform: scale(1.05); }
+  
+  .grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+    gap: 16px !important;
+  }
+}
+
+@media (min-width: 1440px) {
+  .section { max-width: 1600px !important; padding: 0 60px 60px !important; }
+  .nav { padding: 0 60px !important; }
+  .hero-body { padding: 0 60px 30px !important; }
+  .card { width: 220px !important; }
+  .card-wide { width: 240px !important; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important; }
+}
+
+@media (min-width: 1920px) {
+  .section { max-width: 2000px !important; }
+  .card { width: 260px !important; }
+  .card-wide { width: 280px !important; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important; }
+}
