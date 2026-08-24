@@ -1,28 +1,22 @@
 /**
- * SenaDizi – Modern Frontend Motoru (Dramaflix & Dramakolik Stili)
- * Toast Bildirimleri, Canlı Arama, Favori Sistemi, Mobil Çekmece & Profil Etkileşimleri
+ * SenaDizi – Dramakolik Birebir Frontend & Etkileşim Motoru
  */
 
-// Toast Bildirim Sistemi
+// 1. Toast Bildirim Sistemi
 function showToast(message, type = 'success') {
   let container = document.getElementById('toast-container');
   if (!container) {
     container = document.createElement('div');
     container.id = 'toast-container';
-    container.className = 'fixed bottom-20 md:bottom-6 right-6 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none px-4 md:px-0';
     document.body.appendChild(container);
   }
 
   const toast = document.createElement('div');
   const bgClass = type === 'error' ? 'toast-error' : (type === 'info' ? 'toast-info' : 'toast-success');
-  const icon = type === 'error' ? 'fa-circle-exclamation' : (type === 'info' ? 'fa-circle-info' : 'fa-circle-check');
+  const icon = type === 'error' ? '✕' : (type === 'info' ? 'ℹ' : '✓');
 
-  toast.className = `toast ${bgClass} pointer-events-auto`;
-  toast.innerHTML = `
-    <i class="fa-solid ${icon} text-base"></i>
-    <span class="text-xs font-bold flex-1 leading-snug">${message}</span>
-  `;
-
+  toast.className = `toast ${bgClass}`;
+  toast.innerHTML = `<span style="font-size:16px;">${icon}</span> <span>${message}</span>`;
   container.appendChild(toast);
 
   setTimeout(() => {
@@ -32,7 +26,144 @@ function showToast(message, type = 'success') {
   }, 3500);
 }
 
-// Favori Ekle / Çıkar
+// 2. Canlı Aktif Kullanıcı Sayacı
+(function() {
+  setInterval(function() {
+    const el = document.getElementById('globalOnlineCount');
+    if (el) {
+      let count = parseInt(el.innerText.replace(/\./g, ''));
+      if (isNaN(count)) return;
+      let diff = Math.floor(Math.random() * 21) - 10;
+      let newCount = count + diff;
+      if (newCount < 1500) newCount = 1500;
+      if (newCount > 3000) newCount = 3000;
+      el.innerText = newCount.toLocaleString('tr-TR');
+    }
+  }, 3500);
+})();
+
+// 3. Hero Slider Kontrolü
+let currentHero = 0;
+let heroInterval;
+
+function goToHero(idx) {
+  const slides = document.querySelectorAll('.hero.slide');
+  const dots = document.querySelectorAll('.hero-dot');
+  if (!slides.length) return;
+  
+  slides[currentHero].classList.remove('active');
+  if (dots[currentHero]) dots[currentHero].classList.remove('active');
+  currentHero = (idx + slides.length) % slides.length;
+  slides[currentHero].classList.add('active');
+  if (dots[currentHero]) dots[currentHero].classList.add('active');
+  resetHeroInterval();
+}
+
+function moveHero(dir) {
+  goToHero(currentHero + dir);
+}
+
+function resetHeroInterval() {
+  clearInterval(heroInterval);
+  const slides = document.querySelectorAll('.hero.slide');
+  if (slides.length > 1) {
+    heroInterval = setInterval(() => moveHero(1), 5000);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const slides = document.querySelectorAll('.hero.slide');
+  if (slides.length > 1) {
+    resetHeroInterval();
+  } else {
+    document.querySelectorAll('.hero-nav, .hero-dots').forEach(el => el.style.display = 'none');
+  }
+});
+
+// 4. Kaldığın Yerden Devam Et (localStorage & Server Sync)
+window.devamTemizle = function(btnEl) {
+  try { localStorage.removeItem('vipdrama_devam'); } catch(_) {}
+  try { fetch('/api/user/progress/clear', { method: 'POST' }).catch(() => {}); } catch(_) {}
+  const sec = document.getElementById('devamSection');
+  if (sec) sec.style.display = 'none';
+  showToast('İzleme geçmişi temizlendi.', 'info');
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    const dv = JSON.parse(localStorage.getItem('vipdrama_devam') || '[]').filter(x => x && x.slug);
+    const sec = document.getElementById('devamSection');
+    const row = document.getElementById('devamRow');
+    const btn = document.getElementById('devamTemizleBtn');
+    
+    if (dv.length && sec && row) {
+      row.innerHTML = dv.slice(0, 15).map(x => {
+        const esc = t => (t || '').replace(/</g, '&lt;');
+        return `<a href="/dizi/${encodeURIComponent(x.slug)}?ep=${x.ep || 1}" class="card-continue">
+          <div class="card-poster">
+            <img src="${x.poster ? x.poster + '?v=2' : ''}" alt="${esc(x.baslik)}" width="425" height="640" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+            <div class="ep-badge">▶ ${x.ep || 1}. Bölüm</div>
+            <div class="play-icon">▶</div>
+          </div>
+          <div class="card-info"><div class="card-title">${esc(x.baslik)}</div></div>
+        </a>`;
+      }).join('');
+      sec.style.display = 'block';
+      if (btn) btn.style.display = 'inline-block';
+    } else {
+      if (btn) btn.style.display = 'none';
+    }
+  } catch(_) {}
+});
+
+// 5. Telegram & VIP Popup Modal (12 Saat Throttle)
+function closeTelegramModal() {
+  const tm = document.getElementById('telegramModal');
+  if (tm) {
+    tm.style.opacity = '0';
+    setTimeout(() => { tm.style.display = 'none'; }, 300);
+  }
+  try { localStorage.setItem('tg_modal_seen', Date.now()); } catch(e) {}
+}
+
+(function() {
+  let shown = 0;
+  try { shown = parseInt(localStorage.getItem('tg_modal_seen') || '0'); } catch(e) {}
+  if (Date.now() - shown > 43200000) { // 12 saat
+    try { localStorage.setItem('tg_modal_seen', Date.now()); } catch(e) {}
+    setTimeout(() => {
+      const tm = document.getElementById('telegramModal');
+      if (tm) {
+        tm.style.display = 'flex';
+        tm.style.opacity = '0';
+        tm.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => { tm.style.opacity = '1'; }, 50);
+      }
+    }, 2000);
+  }
+})();
+
+// 6. iOS PWA Banner
+(function() {
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.navigator.standalone === true;
+  let dismissed = false;
+  try { dismissed = localStorage.getItem('iosBannerDismissed') === '1'; } catch(e) {}
+  if (isIos && !isStandalone && !dismissed) {
+    setTimeout(() => {
+      const b = document.getElementById('iosBanner');
+      if (b) b.style.display = 'block';
+    }, 2000);
+  }
+})();
+
+function iosBannerKapat() {
+  const b = document.getElementById('iosBanner');
+  if (b) b.style.display = 'none';
+  try { localStorage.setItem('iosBannerDismissed', '1'); } catch(e) {}
+}
+
+// 7. Favori Ekle / Çıkar
 async function toggleFavorite(seriesId, btnElement) {
   try {
     const res = await fetch(`/api/user/favorites/${seriesId}`, { method: 'POST' });
@@ -42,199 +173,54 @@ async function toggleFavorite(seriesId, btnElement) {
     }
     const data = await res.json();
     if (res.ok) {
-      showToast(data.message, 'success');
+      showToast(data.message || 'İşlem başarılı.', 'success');
       if (btnElement) {
-        const icon = btnElement.querySelector('i');
-        const text = btnElement.querySelector('span');
         if (data.status === 'added') {
-          btnElement.classList.add('text-pink-500', 'border-pink-500/50');
-          if (icon) { icon.classList.remove('fa-regular'); icon.classList.add('fa-solid', 'text-pink-500'); }
-          if (text) text.textContent = 'Favorilerden Çıkar';
+          btnElement.classList.add('text-red-500');
+          btnElement.innerHTML = '❤️ Favorilerde';
         } else {
-          btnElement.classList.remove('text-pink-500', 'border-pink-500/50');
-          if (icon) { icon.classList.remove('fa-solid', 'text-pink-500'); icon.classList.add('fa-regular'); }
-          if (text) text.textContent = 'Favorilere Ekle';
+          btnElement.classList.remove('text-red-500');
+          btnElement.innerHTML = '🤍 Favorilere Ekle';
         }
       }
     } else {
-      showToast(data.detail || 'İşlem başarısız.', 'error');
+      showToast(data.detail || 'İşlem gerçekleştirilemedi.', 'error');
     }
   } catch (err) {
     showToast('Bağlantı hatası.', 'error');
   }
 }
 
-// Canlı Arama (Debounced Live Search)
-let searchTimeout = null;
-function handleHeaderSearch(input) {
-  clearTimeout(searchTimeout);
-  const q = input.value.trim();
-  const dropdown = document.getElementById('search-dropdown');
-  if (!dropdown) return;
-
-  if (q.length < 2) {
-    dropdown.classList.add('hidden');
-    dropdown.innerHTML = '';
-    return;
-  }
-
-  searchTimeout = setTimeout(async () => {
-    try {
-      const res = await fetch(`/api/series/search?q=${encodeURIComponent(q)}&limit=6`);
-      const data = await res.json();
-      dropdown.innerHTML = '';
-
-      if (data.series && data.series.length > 0) {
-        data.series.forEach(item => {
-          const row = document.createElement('a');
-          row.href = `/dizi/${item.slug}`;
-          row.className = 'flex items-center gap-3.5 p-3 hover:bg-white/10 transition-colors border-b border-white/5 last:border-0';
-          row.innerHTML = `
-            <img src="${item.poster_url}" class="w-10 h-14 object-cover rounded-xl shadow-md flex-shrink-0" alt="${item.title}">
-            <div class="flex-1 min-w-0">
-              <div class="text-xs font-bold text-white truncate">${item.title}</div>
-              <div class="text-[11px] text-zinc-400 flex items-center gap-2 mt-0.5 font-medium">
-                <span class="text-amber-400 font-bold">⭐ ${item.rating || '9.0'}</span>
-                <span>•</span>
-                <span>${item.release_year || '2026'}</span>
-                <span>•</span>
-                <span class="truncate">${item.country || 'Asya'}</span>
-              </div>
-            </div>
-          `;
-          dropdown.appendChild(row);
-        });
-
-        // Tümünü Gör Butonu
-        const viewAll = document.createElement('a');
-        viewAll.href = `/ara?q=${encodeURIComponent(q)}`;
-        viewAll.className = 'block p-2.5 text-center text-xs font-black text-fuchsia-400 hover:text-fuchsia-300 hover:bg-white/5 transition-colors border-t border-white/10';
-        viewAll.textContent = `Tüm Sonuçları Gör (${data.series.length}+)`;
-        dropdown.appendChild(viewAll);
-
-        dropdown.classList.remove('hidden');
-      } else {
-        dropdown.innerHTML = '<div class="p-4 text-center text-xs text-zinc-400">Sonuç bulunamadı.</div>';
-        dropdown.classList.remove('hidden');
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  }, 250);
-}
-
-// Dışarı tıklanınca arama kutusunu kapat
-document.addEventListener('click', (e) => {
-  const searchContainer = document.getElementById('search-container');
-  const dropdown = document.getElementById('search-dropdown');
-  if (dropdown && searchContainer && !searchContainer.contains(e.target)) {
-    dropdown.classList.add('hidden');
-  }
-});
-
-// Mobil Hamburger Çekmece Menü (Kusursuz Soldan Açılma ve Z-Index Kontrolü)
-function toggleMobileMenu(forceState) {
-  const drawer = document.getElementById('mobile-drawer');
-  const backdrop = document.getElementById('drawer-backdrop');
-  const panel = document.getElementById('drawer-panel');
-  const hamburgerBtn = document.getElementById('hamburger-btn');
-  if (!drawer || !panel || !backdrop) return;
-
-  const isCurrentlyOpen = panel.style.transform === 'translateX(0%)' || (!panel.classList.contains('-translate-x-full') && panel.classList.contains('translate-x-0'));
-  const shouldOpen = forceState !== undefined ? forceState : !isCurrentlyOpen;
-
-  if (shouldOpen) {
-    drawer.classList.remove('pointer-events-none');
-    drawer.classList.add('pointer-events-auto');
-    
-    backdrop.classList.remove('opacity-0', 'pointer-events-none');
-    backdrop.classList.add('opacity-100', 'pointer-events-auto');
-    
-    panel.classList.remove('-translate-x-full');
-    panel.classList.add('translate-x-0');
-    panel.style.transform = 'translateX(0%)';
-    
-    document.body.style.overflow = 'hidden';
-    if (hamburgerBtn) {
-      hamburgerBtn.innerHTML = '<i class="fa-solid fa-xmark text-lg text-fuchsia-400"></i>';
-    }
-  } else {
-    backdrop.classList.remove('opacity-100', 'pointer-events-auto');
-    backdrop.classList.add('opacity-0', 'pointer-events-none');
-    
-    panel.classList.remove('translate-x-0');
-    panel.classList.add('-translate-x-full');
-    panel.style.transform = 'translateX(-100%)';
-    
-    drawer.classList.remove('pointer-events-auto');
-    drawer.classList.add('pointer-events-none');
-    
-    document.body.style.overflow = '';
-    if (hamburgerBtn) {
-      hamburgerBtn.innerHTML = '<i class="fa-solid fa-bars text-lg text-white"></i>';
-    }
-  }
-}
-
-// ESC tuşu ile çekmeceyi kapat
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    toggleMobileMenu(false);
-    toggleUserMenu(false);
-  }
-});
-
-// Kullanıcı Profil Menüsü Dropdown
-function toggleUserMenu(forceState) {
-  const menu = document.getElementById('user-dropdown');
-  if (!menu) return;
-  if (forceState !== undefined) {
-    if (forceState) menu.classList.remove('hidden');
-    else menu.classList.add('hidden');
-  } else {
-    menu.classList.toggle('hidden');
-  }
-}
-
-// Dışarı tıklanınca profil menüsünü kapat
-document.addEventListener('click', (e) => {
-  const userMenu = document.getElementById('user-dropdown');
-  if (userMenu && !userMenu.contains(e.target) && !e.target.closest('button[onclick="toggleUserMenu()"]')) {
-    userMenu.classList.add('hidden');
-  }
-});
-
-// Oturum Kapatma (Logout)
+// 8. Çıkış Yap (Logout)
 async function handleLogout() {
   try {
     await fetch('/api/auth/logout', { method: 'POST' });
-    showToast('Çıkış yapıldı, yönlendiriliyorsunuz...', 'success');
-    setTimeout(() => window.location.href = '/', 700);
+    try { localStorage.removeItem('flk_token'); } catch(e) {}
+    showToast('Çıkış yapıldı...', 'success');
+    setTimeout(() => window.location.href = '/', 500);
   } catch (err) {
     window.location.href = '/';
   }
 }
 
-// Abonelik Başlatma
-async function selectPlan(planSlug) {
-  try {
-    const res = await fetch('/api/subscriptions/checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ plan_slug: planSlug })
+// 9. PWA Kurulum Butonu
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const pwaBtn = document.getElementById('pwaInstallBtn');
+  if (pwaBtn) pwaBtn.style.display = 'flex';
+});
+
+function pwaInstall() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => {
+      deferredPrompt = null;
+      const pwaBtn = document.getElementById('pwaInstallBtn');
+      if (pwaBtn) pwaBtn.style.display = 'none';
     });
-    if (res.status === 401) {
-      window.location.href = `/giris?next=/abonelik`;
-      return;
-    }
-    const data = await res.json();
-    if (res.ok && data.success) {
-      showToast(data.message, 'success');
-      setTimeout(() => window.location.href = '/profil', 1000);
-    } else {
-      showToast(data.detail || 'Abonelik işlemi gerçekleştirilemedi.', 'error');
-    }
-  } catch (err) {
-    showToast('Bağlantı hatası oluştu.', 'error');
+  } else {
+    showToast('Uygulamayı yüklemek için tarayıcı menüsünden "Ana Ekrana Ekle"yi seçin.', 'info');
   }
 }
