@@ -178,12 +178,24 @@ class CloudDownloadManager:
         return task_id
 
     def queue_merged_download(self, series_slug, series_title, episodes, user_cookie=None, client_id=None):
+        def extract_num(ep):
+            try:
+                num = ep.get("episode_number")
+                if num is not None and str(num).isdigit():
+                    return int(num)
+                m = re.search(r'(\d+)', str(ep.get("title") or ""))
+                if m:
+                    return int(m.group(1))
+            except Exception:
+                pass
+            return 0
+        sorted_episodes = sorted(episodes or [], key=extract_num)
         task_id = f"cloud_merge_{int(time.time()*1000)}"
         task = CloudDownloadTask(
             task_id=task_id,
             series_slug=series_slug,
             series_title=series_title,
-            episodes=episodes,
+            episodes=sorted_episodes,
             is_merged=True,
             client_id=client_id,
             user_cookie=user_cookie
@@ -319,9 +331,12 @@ class CloudDownloadManager:
                     "-i", url,
                     "-c", "copy",
                     "-bsf:a", "aac_adtstoasc",
+                    "-fflags", "+genpts",
+                    "-avoid_negative_ts", "make_zero",
+                    "-movflags", "+faststart",
                     target_path
                 ]
-                subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=180)
+                subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=240)
                 task.progress = base_progress + weight
                 return
 
@@ -331,7 +346,7 @@ class CloudDownloadManager:
             total_size = int(r.headers.get("content-length", 0))
             downloaded = 0
             with open(target_path, "wb") as f:
-                for chunk in r.iter_content(chunk_size=256 * 1024):
+                for chunk in r.iter_content(chunk_size=512 * 1024):
                     if task.status == "cancelled":
                         return
                     if chunk:
@@ -347,8 +362,8 @@ class CloudDownloadManager:
         try:
             with open(list_file, "w", encoding="utf-8") as f:
                 for p in input_files:
-                    safe_p = os.path.abspath(p).replace("\\\\", "/")
-                    f.write(f"file '{safe_p}'\\n")
+                    safe_p = os.path.abspath(p).replace("\\", "/").replace("'", "'\\''")
+                    f.write(f"file '{safe_p}'\n")
 
             if ffmpeg_bin:
                 cmd = [
@@ -357,9 +372,30 @@ class CloudDownloadManager:
                     "-safe", "0",
                     "-i", list_file,
                     "-c", "copy",
+                    "-fflags", "+genpts",
+                    "-avoid_negative_ts", "make_zero",
+                    "-movflags", "+faststart",
                     output_path
                 ]
-                subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=240)
+                res = subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=240)
+                if res.returncode != 0 or not os.path.exists(output_path) or os.path.getsize(output_path) == 0:
+                    cmd_fb = [
+                        ffmpeg_bin, "-y",
+                        "-f", "concat",
+                        "-safe", "0",
+                        "-i", list_file,
+                        "-c:v", "copy",
+                        "-c:a", "aac",
+                        "-b:a", "192k",
+                        "-ar", "48000",
+                        "-ac", "2",
+                        "-af", "aresample=async=1000:min_hard_comp=0.05:first_pts=0",
+                        "-fflags", "+genpts",
+                        "-avoid_negative_ts", "make_zero",
+                        "-movflags", "+faststart",
+                        output_path
+                    ]
+                    subprocess.run(cmd_fb, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=300)
             else:
                 with open(output_path, "wb") as out_f:
                     for p in input_files:
@@ -806,6 +842,12 @@ def stream_file_with_range(req: Request, target_path: str, default_filename: str
     elif default_filename.endswith('.vtt'):
         media_type = 'text/vtt; charset=utf-8'
 
+    is_download = req.query_params.get('download') == '1' or req.query_params.get('dl') == '1'
+    safe_fn = default_filename.replace('"', '').replace('\n', '').replace('\r', '')
+    encoded_fn = urllib.parse.quote(safe_fn)
+    disp_type = 'attachment' if is_download else 'inline'
+    content_disposition = f"{disp_type}; filename=\"{safe_fn}\"; filename*=UTF-8''{encoded_fn}"
+
     range_header = req.headers.get('range')
     if not range_header:
         headers = {
@@ -813,9 +855,9 @@ def stream_file_with_range(req: Request, target_path: str, default_filename: str
             'Content-Length': str(file_size),
             'Cache-Control': 'public, max-age=3600',
             'Access-Control-Allow-Origin': '*',
-            'Content-Disposition': f'inline; filename="{default_filename}"'
+            'Content-Disposition': content_disposition
         }
-        return FileResponse(target_path, media_type=media_type, headers=headers)
+        return FileResponse(target_path, media_type=media_type, headers=headers, filename=safe_fn if is_download else None, content_disposition_type=disp_type)
 
     try:
         byte_range = range_header.replace('bytes=', '').strip()
@@ -836,7 +878,7 @@ def stream_file_with_range(req: Request, target_path: str, default_filename: str
         with open(target_path, 'rb') as f:
             f.seek(start)
             remaining = content_length
-            chunk_size = 512 * 1024
+            chunk_size = 2 * 1024 * 1024  # 2MB chunks for ultra-fast throughput on mobile & PC
             while remaining > 0:
                 chunk = f.read(min(chunk_size, remaining))
                 if not chunk:
@@ -851,7 +893,7 @@ def stream_file_with_range(req: Request, target_path: str, default_filename: str
         'Cache-Control': 'no-cache',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Expose-Headers': 'Content-Range, Accept-Ranges, Content-Length',
-        'Content-Disposition': f'inline; filename="{default_filename}"'
+        'Content-Disposition': content_disposition
     }
     return StreamingResponse(iter_file(), status_code=206, media_type=media_type, headers=headers)
 
@@ -871,13 +913,15 @@ def api_get_downloaded_file(filename: str, request: Request):
     active, worker_url = is_worker_active()
     if active and worker_url:
         target_url = f'{worker_url}/indir/api/downloads/file/{urllib.parse.quote(clean_fn)}'
+        if request.query_params:
+            target_url += f'?{request.query_params}'
         try:
             req_headers = {}
             if 'range' in request.headers:
                 req_headers['range'] = request.headers['range']
-            r = requests.get(target_url, headers=req_headers, stream=True, timeout=15)
+            r = requests.get(target_url, headers=req_headers, stream=True, timeout=20)
             resp_headers = {k: v for k, v in r.headers.items() if k.lower() in ['content-range', 'accept-ranges', 'content-length', 'content-type', 'content-disposition']}
-            return StreamingResponse(r.iter_content(chunk_size=1024*512), status_code=r.status_code, headers=resp_headers)
+            return StreamingResponse(r.iter_content(chunk_size=1024*1024*2), status_code=r.status_code, headers=resp_headers)
         except Exception:
             pass
 

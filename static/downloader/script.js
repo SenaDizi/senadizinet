@@ -603,8 +603,8 @@ function updateDownloadsDashboard(tasks) {
             <div class="dl-actions-row">
                 ${isFinished && task.filename ? `
                     <button class="btn-dl-action btn-play" onclick="playVideo('${task.filename.replace(/'/g, "\\'")}')"><i class="fa-solid fa-play"></i> Oynat</button>
-                    <a class="btn-dl-action" href="/indir/api/downloads/file/${encodeURIComponent(task.filename)}" download><i class="fa-solid fa-download"></i> İndir</a>
-                    <a class="btn-dl-action" href="/indir/api/downloads/file/${encodeURIComponent(task.filename.replace('.mp4', '.srt'))}" download title="Altyazı Dosyası (.srt)"><i class="fa-solid fa-closed-captioning"></i> .SRT</a>
+                    <a class="btn-dl-action" href="/indir/api/downloads/file/${encodeURIComponent(task.filename)}?download=1" download><i class="fa-solid fa-download"></i> İndir</a>
+                    <a class="btn-dl-action" href="/indir/api/downloads/file/${encodeURIComponent(task.filename.replace('.mp4', '.srt'))}?download=1" download title="Altyazı Dosyası (.srt)"><i class="fa-solid fa-closed-captioning"></i> .SRT</a>
                 ` : ''}
                 ${!isFinished && !isError ? `
                     <button class="btn-dl-action btn-cancel" onclick="cancelDownload('${id}')"><i class="fa-solid fa-xmark"></i> İptal</button>
@@ -681,8 +681,8 @@ function renderCompletedList(files) {
             </div>
             <div class="completed-actions">
                 <button class="btn-circle" onclick="playVideo('${safeName}')" title="Altyazılı Oynat"><i class="fa-solid fa-play"></i></button>
-                <a class="btn-circle btn-download" href="/indir/api/downloads/file/${encodeURIComponent(f.filename)}" download title="Videoyu İndir"><i class="fa-solid fa-download"></i></a>
-                ${f.has_subtitle ? `<a class="btn-circle btn-sub" href="/indir/api/downloads/file/${encodeURIComponent(srtName)}" download title="Altyazıyı İndir (.srt)"><i class="fa-solid fa-closed-captioning"></i></a>` : ''}
+                <a class="btn-circle btn-download" href="/indir/api/downloads/file/${encodeURIComponent(f.filename)}?download=1" download title="Videoyu İndir"><i class="fa-solid fa-download"></i></a>
+                ${f.has_subtitle ? `<a class="btn-circle btn-sub" href="/indir/api/downloads/file/${encodeURIComponent(srtName)}?download=1" download title="Altyazıyı İndir (.srt)"><i class="fa-solid fa-closed-captioning"></i></a>` : ''}
                 <button class="btn-circle btn-delete" onclick="deleteSingleCompletedFile('${safeName}')" title="Sil"><i class="fa-solid fa-trash-can"></i></button>
             </div>
         `;
