@@ -1469,7 +1469,14 @@ class SenaDiziAPI:
                     enrich_cands.insert(0, 'ejderha-prens-in-sovalyesi-bir-kiz-dublajli')
                     enrich_cands.insert(1, s_slug.replace('-bir-kizdublajli', '-bir-kiz-dublajli'))
 
+                seen_cands = set()
+                uniq_cands = []
                 for ec in enrich_cands:
+                    if ec and ec not in seen_cands:
+                        seen_cands.add(ec)
+                        uniq_cands.append(ec)
+
+                for ec in uniq_cands[:2]:
                     try:
                         res_en = self.dramacix.scan_series(ec)
                         if res_en and res_en.get('episodes') and len(res_en['episodes']) > len(episodes):
@@ -1512,9 +1519,11 @@ class SenaDiziAPI:
             try:
                 res = self.dramaflix.scan_series(raw, user_cookie=user_cookie or self.user_cookie)
                 if res and res.get('episodes'):
-                    # Check if DramaCix has more episodes
+                    if len(res['episodes']) >= 20:
+                        return res
+                    # Only check DramaCix if DramaFlix returned very few episodes (< 20)
                     clean_b = re.sub(r'[-_]?(?:dublajli|dublaj|altyazili|tr)$', '', clean_s, flags=re.I)
-                    for cand_c in [clean_s, f"{clean_b}-dublajli", clean_b]:
+                    for cand_c in [clean_s, f"{clean_b}-dublajli"]:
                         try:
                             res_dc = self.dramacix.scan_series(cand_c)
                             if res_dc and res_dc.get('episodes') and len(res_dc['episodes']) > len(res['episodes']):
