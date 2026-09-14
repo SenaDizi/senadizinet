@@ -666,8 +666,8 @@ def api_download(req: DownloadRequest, request: Request):
     if active and worker_url:
         try:
             payload = req.model_dump() if hasattr(req, 'model_dump') else req.dict()
-            headers = {'X-Client-ID': str(cid or '')}
-            resp = requests.post(f'{worker_url}/api/download', json=payload, headers=headers, timeout=15.0)
+            headers = {'X-Client-ID': str(cid or ''), 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+            resp = requests.post(f'{worker_url}/api/download', json=payload, headers=headers, timeout=20.0, verify=False)
             if resp.status_code == 200:
                 return resp.json()
         except Exception as e:
@@ -725,16 +725,16 @@ def api_status(request: Request, client_id: Optional[str] = None):
     active, worker_url = is_worker_active()
     if active and worker_url:
         try:
-            headers = {'X-Client-ID': str(cid or '')}
-            resp = requests.get(f'{worker_url}/api/status?client_id={urllib.parse.quote(str(cid or ""))}', headers=headers, timeout=5.0)
+            headers = {'X-Client-ID': str(cid or ''), 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+            resp = requests.get(f'{worker_url}/api/status?client_id={urllib.parse.quote(str(cid or ""))}', headers=headers, timeout=8.0, verify=False)
             if resp.status_code == 200:
                 worker_tasks = resp.json()
                 # Merge with any cloud tasks
                 cloud_tasks = cloud_downloader.get_status_all(client_id=cid)
                 worker_tasks.update(cloud_tasks)
                 return worker_tasks
-        except Exception:
-            pass
+        except Exception as se:
+            print(f'[Worker Status Proxy Error] {se}')
 
     return cloud_downloader.get_status_all(client_id=cid)
 
@@ -786,8 +786,8 @@ def api_list_downloads(request: Request, client_id: Optional[str] = None):
     active, worker_url = is_worker_active()
     if active and worker_url and not downloader_manager:
         try:
-            headers = {'X-Client-ID': str(cid or '')}
-            resp = requests.get(f'{worker_url}/api/downloads/list?client_id={urllib.parse.quote(str(cid or ""))}', headers=headers, timeout=6.0)
+            headers = {'X-Client-ID': str(cid or ''), 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+            resp = requests.get(f'{worker_url}/api/downloads/list?client_id={urllib.parse.quote(str(cid or ""))}', headers=headers, timeout=10.0, verify=False)
             if resp.status_code == 200:
                 worker_data = resp.json()
                 for f in worker_data.get('files', []):
@@ -795,8 +795,8 @@ def api_list_downloads(request: Request, client_id: Optional[str] = None):
                     if fn and fn not in seen:
                         seen.add(fn)
                         files.append(f)
-        except Exception:
-            pass
+        except Exception as le:
+            print(f'[Worker List Proxy Error] {le}')
 
     # 2. Add local/cloud downloads
     mapping = get_client_downloads_mapping()
@@ -897,11 +897,11 @@ def stream_file_with_range(req: Request, target_path: str, default_filename: str
     }
     return StreamingResponse(iter_file(), status_code=206, media_type=media_type, headers=headers)
 
-@router.get('/indir/api/downloads/file/{filename}')
-@router.get('/downloader/api/downloads/file/{filename}')
-@router.get('/api/downloads/file/{filename}')
-@router.get('/indir/downloads/{filename}')
-@router.get('/downloader/downloads/{filename}')
+@router.get('/indir/api/downloads/file/{filename:path}')
+@router.get('/downloader/api/downloads/file/{filename:path}')
+@router.get('/api/downloads/file/{filename:path}')
+@router.get('/indir/downloads/{filename:path}')
+@router.get('/downloader/downloads/{filename:path}')
 def api_get_downloaded_file(filename: str, request: Request):
     clean_fn = urllib.parse.unquote(filename).strip()
     p1 = os.path.join(DOWNLOADS_DIR, clean_fn)
@@ -916,14 +916,14 @@ def api_get_downloaded_file(filename: str, request: Request):
         if request.query_params:
             target_url += f'?{request.query_params}'
         try:
-            req_headers = {}
+            req_headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
             if 'range' in request.headers:
                 req_headers['range'] = request.headers['range']
-            r = requests.get(target_url, headers=req_headers, stream=True, timeout=20)
+            r = requests.get(target_url, headers=req_headers, stream=True, timeout=30, verify=False)
             resp_headers = {k: v for k, v in r.headers.items() if k.lower() in ['content-range', 'accept-ranges', 'content-length', 'content-type', 'content-disposition']}
             return StreamingResponse(r.iter_content(chunk_size=1024*1024*2), status_code=r.status_code, headers=resp_headers)
-        except Exception:
-            pass
+        except Exception as pe:
+            print(f'[Worker File Proxy Error] {pe}')
 
     raise HTTPException(status_code=404, detail='Dosya bulunamadi')
 
