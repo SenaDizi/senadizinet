@@ -21,11 +21,24 @@ from bs4 import BeautifulSoup
 
 def make_api_session(pool_size=48):
     s = requests.Session()
-    retries = Retry(total=3, backoff_factor=0.2, status_forcelist=[429, 500, 502, 503, 504], allowed_methods=["HEAD", "GET", "OPTIONS"])
+    # Fast-fail retries: never block repeatedly on unresponsive/timing-out origins
+    retries = Retry(total=1, connect=1, read=0, status=0, backoff_factor=0.1)
     adapter = HTTPAdapter(pool_connections=pool_size, pool_maxsize=pool_size, max_retries=retries)
     s.mount("https://", adapter)
     s.mount("http://", adapter)
     return s
+
+# --- Circuit Breaker: Automatically avoid unresponsive providers for 60s instead of freezing ---
+_PROVIDER_HEALTH = {}
+def is_provider_available(provider_name: str) -> bool:
+    down_until = _PROVIDER_HEALTH.get(provider_name.lower(), 0)
+    return time.time() >= down_until
+
+def mark_provider_failure(provider_name: str, cooldown_seconds: int = 60):
+    _PROVIDER_HEALTH[provider_name.lower()] = time.time() + cooldown_seconds
+
+def mark_provider_success(provider_name: str):
+    _PROVIDER_HEALTH[provider_name.lower()] = 0
 
 REALISTIC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
 
@@ -46,9 +59,14 @@ SCRATCH_DIR = os.path.dirname(BASE_DIR)
 
 def get_db_path():
     candidates = [
-        os.path.join(SCRATCH_DIR, 'senadizinet', 'senadizinet.db'),
-        os.path.join(SCRATCH_DIR, 'senadizinet.db'),
         os.path.join(BASE_DIR, 'senadizinet.db'),
+        os.path.join(SCRATCH_DIR, 'senadizinet.db'),
+        os.path.join(SCRATCH_DIR, 'senadizi', 'senadizinet.db'),
+        os.path.join(os.path.dirname(SCRATCH_DIR), 'senadizinet.db'),
+        os.path.join(os.path.dirname(SCRATCH_DIR), 'senadizi', 'senadizinet.db'),
+        os.path.join(os.getcwd(), 'senadizinet.db'),
+        '/opt/render/project/src/app/senadizinet.db',
+        '/opt/render/project/src/senadizinet.db',
     ]
     for p in candidates:
         if os.path.exists(p):
@@ -802,8 +820,10 @@ class DramacixAPI:
         return url_or_slug.split('/')[-1].split('?')[0].split('#')[0].strip().rstrip('/')
 
     def scan_series(self, url_or_slug: str, user_cookie=None) -> dict:
+        if not is_provider_available('dramacix'):
+            return None
         slug = self.extract_slug(url_or_slug)
-        if not slug: raise ValueError('Geçerli bir DramaCix linki bulunamadı.')
+        if not slug: return None
 
         html_text = ""
         candidates = [slug]
@@ -814,16 +834,18 @@ class DramacixAPI:
 
         for cand in candidates[:2]:
             try:
-                r = self.session.get(f'https://dramacix.com/dizi/{cand}', timeout=12.0)
+                r = self.session.get(f'https://dramacix.com/dizi/{cand}', timeout=(2.5, 3.5))
                 if r.status_code == 200 and ('DH_CONFIG' in r.text or 'diziBaslik' in r.text or 'ITEMS' in r.text or 'epList' in r.text):
                     html_text = r.text
                     slug = cand
+                    mark_provider_success('dramacix')
                     break
             except Exception:
-                pass
+                mark_provider_failure('dramacix', 60)
+                break
 
         if not html_text:
-            raise ValueError(f"DramaCix üzerinde dizi bulunamadı: {slug}")
+            return None
 
         soup = BeautifulSoup(html_text, 'html.parser')
         title = ''
@@ -959,6 +981,9 @@ class DramacixAPI:
             m_ep = re.search(r'bolum[-_ ]*(\d+)', watch_url, re.I)
             if m_ep: ep_num = int(m_ep.group(1))
 
+        if not is_provider_available('dramacix'):
+            return None, []
+
         if not slug:
             return None, []
 
@@ -972,41 +997,40 @@ class DramacixAPI:
                 return None, []
             for g_param in ['&g=1', '']:
                 api_url = f'https://dramacix.com/api/video?slug={slug}&ep={ep_num}&t={token}{g_param}'
-                for attempt in range(3):
-                    try:
-                        r_api = self.session.get(api_url, headers=headers, timeout=(4.0, 10.0))
-                        if r_api.status_code == 200:
-                            data = r_api.json()
-                            v_url = data.get('url', '')
-                            if v_url:
-                                v_url = safe_b64decode(v_url)
-                                if is_valid_stream_url(v_url):
-                                    raw_subs = data.get('subs', []) or subtitles
-                                    subs_out = [{'language': (s.get('lang') or 'tr').lower(), 'url': safe_b64decode(s.get('url', '')), 'label': s.get('lang') or 'TR'} for s in raw_subs if s.get('url')]
-                                    # Ensure Turkish subtitle is included if available on CDN
-                                    has_tr = any('tr' in s.get('language', '') for s in subs_out)
-                                    if not has_tr and subs_out:
-                                        for s in subs_out:
-                                            s_url = s.get('url', '')
-                                            if '/assets/subtitle/' in s_url:
-                                                base_sub = re.sub(r'/[a-zA-Z0-9\-_]+/subtitle\.[a-z]+$', '', s_url)
-                                                for tr_variant in ['/tr-TR/subtitle.srt', '/tr/subtitle.srt']:
-                                                    tr_cand = base_sub + tr_variant
-                                                    try:
-                                                        r_cand = self.session.head(tr_cand, timeout=2.0)
-                                                        if r_cand.status_code == 200:
-                                                            subs_out.insert(0, {'language': 'tr', 'url': tr_cand, 'label': 'tr-TR'})
-                                                            has_tr = True
-                                                            break
-                                                    except Exception:
-                                                        pass
-                                                if has_tr:
-                                                    break
-                                    return v_url, subs_out
-                        elif r_api.status_code in [429, 500, 502, 503, 504]:
-                            time.sleep(0.5 + attempt * 0.5)
-                    except Exception:
-                        time.sleep(0.3)
+                try:
+                    r_api = self.session.get(api_url, headers=headers, timeout=(2.5, 3.5))
+                    if r_api.status_code == 200:
+                        data = r_api.json()
+                        v_url = data.get('url', '')
+                        if v_url:
+                            v_url = safe_b64decode(v_url)
+                            if is_valid_stream_url(v_url):
+                                raw_subs = data.get('subs', []) or subtitles
+                                subs_out = [{'language': (s.get('lang') or 'tr').lower(), 'url': safe_b64decode(s.get('url', '')), 'label': s.get('lang') or 'TR'} for s in raw_subs if s.get('url')]
+                                # Ensure Turkish subtitle is included if available on CDN
+                                has_tr = any('tr' in s.get('language', '') for s in subs_out)
+                                if not has_tr and subs_out:
+                                    for s in subs_out:
+                                        s_url = s.get('url', '')
+                                        if '/assets/subtitle/' in s_url:
+                                            base_sub = re.sub(r'/[a-zA-Z0-9\-_]+/subtitle\.[a-z]+$', '', s_url)
+                                            for tr_variant in ['/tr-TR/subtitle.srt', '/tr/subtitle.srt']:
+                                                tr_cand = base_sub + tr_variant
+                                                try:
+                                                    r_cand = self.session.head(tr_cand, timeout=2.0)
+                                                    if r_cand.status_code == 200:
+                                                        subs_out.insert(0, {'language': 'tr', 'url': tr_cand, 'label': 'tr-TR'})
+                                                        has_tr = True
+                                                        break
+                                                except Exception:
+                                                    pass
+                                            if has_tr:
+                                                break
+                                mark_provider_success('dramacix')
+                                return v_url, subs_out
+                except Exception:
+                    mark_provider_failure('dramacix', 60)
+                    pass
             return None, []
 
         # 1. Try with existing token if provided
@@ -1017,7 +1041,7 @@ class DramacixAPI:
 
         # 2. Freshly fetch dynamic token from page
         try:
-            r = self.session.get(page_url, headers=headers, timeout=7.0)
+            r = self.session.get(page_url, headers=headers, timeout=(2.5, 3.5))
             if r.status_code == 200:
                 m_items = re.search(r'const ITEMS\s*=\s*(\[.*?\]);', r.text)
                 if m_items:
@@ -1030,7 +1054,10 @@ class DramacixAPI:
                         v_url, subs = query_video_api(fresh_t)
                         if v_url:
                             return v_url, subs
+            else:
+                mark_provider_failure('dramacix', 60)
         except Exception:
+            mark_provider_failure('dramacix', 60)
             pass
 
         return None, []
@@ -1277,19 +1304,27 @@ class SenaDiziAPI:
             c.execute('SELECT id, title, slug, poster_url, description FROM series WHERE slug = ?', (slug,))
             row = c.fetchone()
             if not row:
-                for sv in clean_slug_variations(slug)[:3]:
+                for sv in clean_slug_variations(slug):
                     c.execute('SELECT id, title, slug, poster_url, description FROM series WHERE slug = ?', (sv,))
                     row = c.fetchone()
                     if row:
                         break
+            if not row:
+                clean_kw = re.sub(r'-(?:dublajli|dublaj|altyazili|tr)$', '', slug).replace('-', '%')
+                c.execute('SELECT id, title, slug, poster_url, description FROM series WHERE slug LIKE ? OR title LIKE ? LIMIT 1', (f'%{clean_kw}%', f'%{clean_kw}%'))
+                row = c.fetchone()
 
             if row:
                 s_id, s_title, s_slug, s_poster, s_desc = row
-                # Verify dubbing consistency strictly
+                # Verify dubbing consistency if needed
                 row_is_dub = ('dublaj' in str(s_title).lower() or 'dublaj' in str(s_slug).lower() or 'dublaj' in str(s_desc).lower())
-                if is_dub != row_is_dub:
-                    conn.close()
-                    return None
+                if is_dub and not row_is_dub:
+                    # Look for dubbed version specifically
+                    c.execute("SELECT id, title, slug, poster_url, description FROM series WHERE (slug LIKE '%dublaj%' OR title LIKE '%dublaj%') AND (slug LIKE ? OR title LIKE ?) LIMIT 1", (f'%{clean_kw}%', f'%{clean_kw}%'))
+                    d_row = c.fetchone()
+                    if d_row:
+                        s_id, s_title, s_slug, s_poster, s_desc = d_row
+                        row_is_dub = True
 
                 c.execute('SELECT id, episode_number, title, video_url FROM episodes WHERE season_id IN (SELECT id FROM seasons WHERE series_id = ?) ORDER BY episode_number', (s_id,))
                 ep_rows = c.fetchall()
@@ -1327,6 +1362,11 @@ class SenaDiziAPI:
         raw = url_or_slug.strip()
         clean_s = self.dramacix.extract_slug(raw)
         is_dub = ('dublaj' in clean_s.lower() or 'dublaj' in raw.lower())
+
+        # 0. INSTANT ZERO-LATENCY LOCAL DB SCAN (Takes 0ms, 100% resilient, offline capable)
+        db_res = self._scan_db(clean_s)
+        if db_res and db_res.get('episodes'):
+            return db_res
 
         # 1. DOMAIN SPECIFIC: If user pasted a direct provider URL, scan that exact provider first!
         if 'senadizi' in raw or 'senadizinet' in raw:
@@ -1408,8 +1448,8 @@ class SenaDiziAPI:
         """
         base_slug = re.sub(r'-(?:dublajli|dublaj|turkce-dublaj)$', '', str(series_slug or ''), flags=re.I)
 
-        # 1. Dublajlı dizilerde orijinal altyazılı ana diziyi DramaCix üzerinde sorgula
-        if base_slug and base_slug != series_slug:
+        # 1. Dublajlı dizilerde orijinal altyazılı ana diziyi DramaCix üzerinde sorgula (aktifse)
+        if base_slug and base_slug != series_slug and is_provider_available('dramacix'):
             try:
                 cache_k = f'dc:{base_slug}'
                 if cache_k not in self._sub_series_cache:

@@ -204,7 +204,7 @@ async function fetchServerIps() {
         }
         if (res && res.ok) {
             const data = await res.json();
-            const permUrl = data.permanent_url || 'https://www.senadizi.com/downloader';
+            const permUrl = data.permanent_url || 'https://senadizinet.onrender.com/downloader';
             const workerOnline = data.worker_online || (data.public_tunnel && data.public_tunnel.length > 0);
 
             const lblPerm = document.getElementById('lbl-permanent-url') || document.getElementById('lbl-local-ip');

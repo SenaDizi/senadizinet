@@ -24,11 +24,11 @@ wheels/
 .installed.cfg
 *.egg
 
-# Veritabanı ve Güvenlik (.env ve sqlite veritabanını dışarıda bırak)
+# Veritabanı ve Güvenlik (.env ve genel sqlite veritabanını dışarıda bırak)
 .env
-*.db
 *.sqlite3
-senadizinet.db
+!senadizinet.db
+!app/senadizinet.db
 
 # Loglar ve Geçici Dosyalar
 *.log
