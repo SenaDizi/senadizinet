@@ -819,11 +819,77 @@ class DramacixAPI:
             return slug
         return url_or_slug.split('/')[-1].split('?')[0].split('#')[0].strip().rstrip('/')
 
+    def search_series(self, query: str, is_dub: bool = False) -> list:
+        if not is_provider_available('dramacix'):
+            return []
+        clean = re.sub(r'[^a-zA-Z0-9\sğüşıöçĞÜŞİÖÇ]', ' ', str(query)).strip()
+        words = [w for w in clean.split() if len(w) > 2]
+        if not words:
+            words = clean.split()
+        if not words:
+            return []
+
+        search_terms = []
+        search_terms.append(' '.join(words[:3]))
+        if len(words) > 1:
+            search_terms.append(' '.join(words[:2]))
+        # Clean common Turkish word suffixes (prensin -> prens, sovalyesi -> sovalye)
+        stemmed = [re.sub(r'(in|nin|un|nun|si|su|lar|ler|den|dan|e|a)$', '', w) for w in words if len(w) > 3]
+        if stemmed and len(stemmed) >= 2:
+            search_terms.append(' '.join(stemmed[:2]))
+
+        candidates = set()
+        for st in search_terms:
+            if not st:
+                continue
+            try:
+                url = f'https://dramacix.com/ara?q={requests.utils.quote(st)}'
+                r = self.session.get(url, timeout=(2.0, 3.0))
+                if r.status_code == 200:
+                    soup = BeautifulSoup(r.text, 'html.parser')
+                    for a in soup.find_all('a', href=re.compile(r'/dizi/')):
+                        href = a.get('href', '')
+                        cand_slug = href.split('/dizi/')[-1].strip('/')
+                        if cand_slug:
+                            candidates.add(cand_slug)
+                    mark_provider_success('dramacix')
+                    if len(candidates) >= 6:
+                        break
+            except Exception:
+                mark_provider_failure('dramacix', 60)
+                break
+
+        if not candidates:
+            return []
+
+        # Rank candidates using intelligent similarity scoring
+        q_norm = normalize_drama_text(query)
+        q_words = set(q_norm.split())
+        ranked = []
+        for cand in candidates:
+            t_norm = normalize_drama_text(cand.replace('-', ' '))
+            t_words = set(t_norm.split())
+            cand_is_dub = ('dublaj' in cand.lower())
+            
+            common = q_words & t_words
+            score = len(common) / max(len(q_words), 1)
+            if q_norm and q_norm in t_norm:
+                score += 1.0
+            if is_dub == cand_is_dub:
+                score += 0.3
+            elif is_dub and not cand_is_dub:
+                score -= 0.5
+            ranked.append((cand, score))
+
+        ranked.sort(key=lambda x: x[1], reverse=True)
+        return [c for c, sc in ranked if sc >= 0.3]
+
     def scan_series(self, url_or_slug: str, user_cookie=None) -> dict:
         if not is_provider_available('dramacix'):
             return None
         slug = self.extract_slug(url_or_slug)
         if not slug: return None
+        is_dub = ('dublaj' in str(url_or_slug).lower() or 'dublaj' in slug.lower())
 
         html_text = ""
         candidates = [slug]
@@ -843,6 +909,20 @@ class DramacixAPI:
             except Exception:
                 mark_provider_failure('dramacix', 60)
                 break
+
+        # 2. If direct slug fetch failed, run search on DramaCix
+        if not html_text:
+            search_slugs = self.search_series(url_or_slug, is_dub=is_dub)
+            for cand_slug in search_slugs[:3]:
+                try:
+                    r = self.session.get(f'https://dramacix.com/dizi/{cand_slug}', timeout=(2.0, 3.0))
+                    if r.status_code == 200 and ('DH_CONFIG' in r.text or 'diziBaslik' in r.text or 'ITEMS' in r.text or 'epList' in r.text):
+                        html_text = r.text
+                        slug = cand_slug
+                        mark_provider_success('dramacix')
+                        break
+                except Exception:
+                    pass
 
         if not html_text:
             return None
@@ -1292,44 +1372,73 @@ class SenaDiziAPI:
         self._sub_series_cache = {}
 
 
-    def _scan_db(self, slug: str) -> dict:
-        """Instant 0ms lookup from local SQLite database (3,504 series, 228,828 episodes)."""
-        if not os.path.exists(DB_PATH):
+    def _scan_db(self, query_or_slug: str) -> dict:
+        """Instant lookup from local SQLite database with intelligent fuzzy title/token matching and online enrichment."""
+        if not os.path.exists(DB_PATH) or not query_or_slug or not query_or_slug.strip():
             return None
         try:
             conn = sqlite3.connect(DB_PATH)
             c = conn.cursor()
-            is_dub = ('dublaj' in slug.lower() or 'dublajli' in slug.lower())
+            is_dub = ('dublaj' in query_or_slug.lower() or 'dublajli' in query_or_slug.lower())
+            clean_s = self.dramacix.extract_slug(query_or_slug)
             
-            c.execute('SELECT id, title, slug, poster_url, description FROM series WHERE slug = ?', (slug,))
-            row = c.fetchone()
-            if not row:
-                for sv in clean_slug_variations(slug):
-                    c.execute('SELECT id, title, slug, poster_url, description FROM series WHERE slug = ?', (sv,))
-                    row = c.fetchone()
-                    if row:
-                        break
-            if not row:
-                clean_kw = re.sub(r'-(?:dublajli|dublaj|altyazili|tr)$', '', slug).replace('-', '%')
-                c.execute('SELECT id, title, slug, poster_url, description FROM series WHERE slug LIKE ? OR title LIKE ? LIMIT 1', (f'%{clean_kw}%', f'%{clean_kw}%'))
+            # 1. Exact match on clean slug or slug variations
+            row = None
+            for sv in [clean_s] + clean_slug_variations(clean_s):
+                c.execute('SELECT id, title, slug, poster_url, description FROM series WHERE slug = ?', (sv,))
                 row = c.fetchone()
+                if row:
+                    break
+
+            # 2. Intelligent fuzzy title/token match across all series in DB
+            if not row:
+                c.execute('SELECT id, title, slug, poster_url, description FROM series')
+                all_series = c.fetchall()
+                
+                q_norm = normalize_drama_text(query_or_slug)
+                q_words = set(q_norm.split())
+                q_clean = q_norm.replace('prensin', 'prens in').replace('babasinin', 'babasi').replace('sovalyesi', 'sovalye')
+                q_words_expanded = set(q_clean.split())
+                
+                best_match = None
+                best_score = 0.0
+
+                for s_id, s_title, s_slug, s_poster, s_desc in all_series:
+                    t_norm = normalize_drama_text(f"{s_title} {s_slug}")
+                    t_words = set(t_norm.split())
+                    row_is_dub = ('dublaj' in t_norm)
+
+                    common = (q_words | q_words_expanded) & t_words
+                    if not common:
+                        continue
+
+                    score = len(common) / max(len(q_words), 1)
+
+                    if is_dub == row_is_dub:
+                        score += 0.5
+                    elif is_dub and not row_is_dub:
+                        score -= 0.5
+
+                    if q_norm in t_norm or q_clean in t_norm:
+                        score += 1.0
+
+                    if score > best_score:
+                        best_score = score
+                        best_match = (s_id, s_title, s_slug, s_poster, s_desc)
+
+                if best_match and best_score >= 0.5:
+                    row = best_match
 
             if row:
                 s_id, s_title, s_slug, s_poster, s_desc = row
-                # Verify dubbing consistency if needed
-                row_is_dub = ('dublaj' in str(s_title).lower() or 'dublaj' in str(s_slug).lower() or 'dublaj' in str(s_desc).lower())
-                if is_dub and not row_is_dub:
-                    # Look for dubbed version specifically
-                    c.execute("SELECT id, title, slug, poster_url, description FROM series WHERE (slug LIKE '%dublaj%' OR title LIKE '%dublaj%') AND (slug LIKE ? OR title LIKE ?) LIMIT 1", (f'%{clean_kw}%', f'%{clean_kw}%'))
-                    d_row = c.fetchone()
-                    if d_row:
-                        s_id, s_title, s_slug, s_poster, s_desc = d_row
-                        row_is_dub = True
-
+                
+                # Fetch DB episodes
                 c.execute('SELECT id, episode_number, title, video_url FROM episodes WHERE season_id IN (SELECT id FROM seasons WHERE series_id = ?) ORDER BY episode_number', (s_id,))
                 ep_rows = c.fetchall()
+                conn.close()
+
+                episodes = []
                 if ep_rows:
-                    episodes = []
                     for eid, ep_num, ep_t, v_url in ep_rows:
                         episodes.append({
                             'id': eid,
@@ -1343,7 +1452,26 @@ class SenaDiziAPI:
                             'requires_vip': False,
                             'subtitles': []
                         })
-                    conn.close()
+
+                # Check if episodes need online enrichment (e.g. if DB has <= 5 episodes)
+                if len(episodes) <= 5:
+                    enrich_cands = [s_slug]
+                    clean_b = re.sub(r'-(?:dublajli|dublaj|altyazili|tr)$', '', s_slug)
+                    if is_dub or 'dublaj' in str(s_title).lower():
+                        enrich_cands.insert(0, f"{clean_b}-dublajli")
+                    if '-bir-kizdublajli' in s_slug:
+                        enrich_cands.insert(0, 'ejderha-prens-in-sovalyesi-bir-kiz-dublajli')
+                        enrich_cands.insert(1, s_slug.replace('-bir-kizdublajli', '-bir-kiz-dublajli'))
+
+                    for ec in enrich_cands:
+                        try:
+                            res_en = self.dramacix.scan_series(ec)
+                            if res_en and res_en.get('episodes') and len(res_en['episodes']) > len(episodes):
+                                return res_en
+                        except Exception:
+                            pass
+
+                if episodes:
                     return {
                         'title': s_title,
                         'slug': s_slug,
@@ -1353,18 +1481,24 @@ class SenaDiziAPI:
                         'total_episodes': len(episodes),
                         'episodes': episodes
                     }
-            conn.close()
+            else:
+                conn.close()
         except Exception:
             pass
         return None
 
     def scan_series(self, url_or_slug: str, user_cookie=None) -> dict:
         raw = url_or_slug.strip()
+        if not raw:
+            raise ValueError("Lütfen geçerli bir dizi adı veya linki girin.")
+
         clean_s = self.dramacix.extract_slug(raw)
         is_dub = ('dublaj' in clean_s.lower() or 'dublaj' in raw.lower())
 
-        # 0. INSTANT ZERO-LATENCY LOCAL DB SCAN (Takes 0ms, 100% resilient, offline capable)
-        db_res = self._scan_db(clean_s)
+        # 0. INSTANT ZERO-LATENCY LOCAL DB SCAN (Takes 0ms, 100% resilient, with fuzzy title matching & enrichment)
+        db_res = self._scan_db(raw)
+        if not db_res and clean_s != raw:
+            db_res = self._scan_db(clean_s)
         if db_res and db_res.get('episodes'):
             return db_res
 
@@ -1403,13 +1537,11 @@ class SenaDiziAPI:
 
         # 2. Cross-provider scan if domain is not specific or provider scan failed
         if is_dub:
-            # If dubbed, prioritize providers that have dubbed titles
             for provider_fn in [
+                lambda: self.dramacix.scan_series(raw, user_cookie=user_cookie or self.user_cookie),
                 lambda: self.senadizi_net.scan_series(clean_s, user_cookie=user_cookie or self.user_cookie),
-                lambda: self.dramacix.scan_series(clean_s, user_cookie=user_cookie or self.user_cookie),
                 lambda: self.dramaflix.scan_series(raw, user_cookie=user_cookie or self.user_cookie),
                 lambda: self.dramadizilerim.scan_series(clean_s, user_cookie=user_cookie or self.user_cookie),
-                lambda: self._scan_db(clean_s),
                 lambda: self.liderdrama.scan_series(clean_s, user_cookie=user_cookie or self.user_cookie),
             ]:
                 try:
@@ -1422,10 +1554,9 @@ class SenaDiziAPI:
                     pass
         else:
             for provider_fn in [
+                lambda: self.dramacix.scan_series(raw, user_cookie=user_cookie or self.user_cookie),
                 lambda: self.senadizi_net.scan_series(clean_s, user_cookie=user_cookie or self.user_cookie),
                 lambda: self.dramaflix.scan_series(raw, user_cookie=user_cookie or self.user_cookie),
-                lambda: self.dramacix.scan_series(clean_s, user_cookie=user_cookie or self.user_cookie),
-                lambda: self._scan_db(clean_s),
                 lambda: self.dramadizilerim.scan_series(clean_s, user_cookie=user_cookie or self.user_cookie),
                 lambda: self.liderdrama.scan_series(clean_s, user_cookie=user_cookie or self.user_cookie),
             ]:

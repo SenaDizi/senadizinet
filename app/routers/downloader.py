@@ -697,6 +697,9 @@ def get_ip(request: Request):
 @router.post('/downloader/api/scan')
 @router.post('/api/scan')
 def api_scan(req: ScanRequest):
+    if not req.url or not req.url.strip():
+        return JSONResponse({'success': False, 'msg': 'Lütfen geçerli bir dizi linki veya dizi adı girin.'}, status_code=400)
+
     # 1. Prioritize active PC Worker (fastest, full local DB & tools)
     active, worker_url = is_worker_active()
     if active and worker_url:
