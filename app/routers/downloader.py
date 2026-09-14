@@ -134,8 +134,8 @@ def get_ffmpeg_binary():
             return c
     return None
 
-# Kullanıcı Kuralı: Okunabilir, ekranın orta kısmının birazcık altında, iç renk beyaz dış renk ince siyah Türkçe altyazı stili
-COMPACT_SUBTITLE_STYLE = "FontName=Arial,FontSize=14,Bold=1,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=1.3,Shadow=0.4,MarginV=95,MarginL=20,MarginR=20,Alignment=2"
+# Kullanıcı Kuralı: Ekranı kaplamayan makul boyutta, ekranın orta kısmının birazcık altında, estetik Türkçe altyazı stili
+COMPACT_SUBTITLE_STYLE = "FontName=Arial,FontSize=10.5,Bold=1,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=0.9,Shadow=0.3,MarginV=70,MarginL=20,MarginR=20,Alignment=2"
 
 # ==============================================================================
 # Cloud Download Manager (Executes downloads directly on Render 24/7)
