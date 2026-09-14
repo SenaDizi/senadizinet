@@ -697,6 +697,19 @@ def get_ip(request: Request):
 @router.post('/downloader/api/scan')
 @router.post('/api/scan')
 def api_scan(req: ScanRequest):
+    # 1. Prioritize active PC Worker (fastest, full local DB & tools)
+    active, worker_url = is_worker_active()
+    if active and worker_url:
+        try:
+            resp = requests.post(f'{worker_url}/api/scan', json=req.dict(), timeout=12.0)
+            if resp.status_code == 200:
+                data = resp.json()
+                if data and data.get('success'):
+                    return data
+        except Exception as e:
+            print(f'[Downloader Scan worker proxy notice] {e}')
+
+    # 2. Cloud Fallback (0ms local DB scan + resilient scraper)
     if SenaDiziAPI:
         try:
             api = SenaDiziAPI(user_cookie=req.cookie)
@@ -721,18 +734,9 @@ def api_scan(req: ScanRequest):
                     'total_episodes': series_meta['total_episodes']
                 })
         except Exception as e:
-            print(f'[Downloader Scan local notice] {e}')
+            print(f'[Downloader Scan cloud notice] {e}')
 
-    active, worker_url = is_worker_active()
-    if active and worker_url:
-        try:
-            resp = requests.post(f'{worker_url}/api/scan', json=req.dict(), timeout=25.0)
-            if resp.status_code == 200:
-                return resp.json()
-        except Exception as e:
-            print(f'[Downloader Scan proxy error] {e}')
-
-    return JSONResponse({'success': False, 'msg': 'Dizi bulunamadi veya bolumler listelenemedi.'}, status_code=400)
+    return JSONResponse({'success': False, 'msg': 'Dizi bulunamadı veya bölümler listelenemedi.'}, status_code=400)
 
 @router.post('/indir/api/download')
 @router.post('/downloader/api/download')
