@@ -700,19 +700,7 @@ def api_scan(req: ScanRequest):
     if not req.url or not req.url.strip():
         return JSONResponse({'success': False, 'msg': 'Lütfen geçerli bir dizi linki veya dizi adı girin.'}, status_code=400)
 
-    # 1. Prioritize active PC Worker (fastest, full local DB & tools)
-    active, worker_url = is_worker_active()
-    if active and worker_url:
-        try:
-            resp = requests.post(f'{worker_url}/api/scan', json=req.dict(), timeout=12.0)
-            if resp.status_code == 200:
-                data = resp.json()
-                if data and data.get('success'):
-                    return data
-        except Exception as e:
-            print(f'[Downloader Scan worker proxy notice] {e}')
-
-    # 2. Cloud Fallback (0ms local DB scan + resilient scraper)
+    # 1. Native Fast Scan (takes ~0.5s - 1.2s directly on server without tunnel latency)
     if SenaDiziAPI:
         try:
             api = SenaDiziAPI(user_cookie=req.cookie)
@@ -737,7 +725,19 @@ def api_scan(req: ScanRequest):
                     'total_episodes': series_meta['total_episodes']
                 })
         except Exception as e:
-            print(f'[Downloader Scan cloud notice] {e}')
+            print(f'[Downloader Scan native notice] {e}')
+
+    # 2. Worker Proxy Fallback (if native scan failed or special series only on PC)
+    active, worker_url = is_worker_active()
+    if active and worker_url:
+        try:
+            resp = requests.post(f'{worker_url}/api/scan', json=req.dict(), timeout=6.0)
+            if resp.status_code == 200:
+                data = resp.json()
+                if data and data.get('success'):
+                    return data
+        except Exception as e:
+            print(f'[Downloader Scan worker proxy notice] {e}')
 
     return JSONResponse({'success': False, 'msg': 'Dizi bulunamadı veya bölümler listelenemedi.'}, status_code=400)
 
