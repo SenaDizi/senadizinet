@@ -1453,23 +1453,35 @@ class SenaDiziAPI:
                             'subtitles': []
                         })
 
-                # Check if episodes need online enrichment (e.g. if DB has <= 5 episodes)
-                if len(episodes) <= 5:
-                    enrich_cands = [s_slug]
-                    clean_b = re.sub(r'-(?:dublajli|dublaj|altyazili|tr)$', '', s_slug)
+                # Check if online providers have a more complete episode list
+                clean_b = re.sub(r'[-_]?(?:dublajli|dublaj|altyazili|tr)$', '', s_slug, flags=re.I)
+                enrich_cands = [s_slug]
+                if 'dublajli' in s_slug:
+                    enrich_cands.append(s_slug.replace('dublajli', '-dublajli'))
+                    enrich_cands.append(s_slug.replace('-dublajli', 'dublajli'))
+                if clean_b:
                     if is_dub or 'dublaj' in str(s_title).lower():
                         enrich_cands.insert(0, f"{clean_b}-dublajli")
-                    if '-bir-kizdublajli' in s_slug:
-                        enrich_cands.insert(0, 'ejderha-prens-in-sovalyesi-bir-kiz-dublajli')
-                        enrich_cands.insert(1, s_slug.replace('-bir-kizdublajli', '-bir-kiz-dublajli'))
+                        enrich_cands.insert(1, f"{clean_b}dublajli")
+                    else:
+                        enrich_cands.insert(0, clean_b)
+                if '-bir-kizdublajli' in s_slug:
+                    enrich_cands.insert(0, 'ejderha-prens-in-sovalyesi-bir-kiz-dublajli')
+                    enrich_cands.insert(1, s_slug.replace('-bir-kizdublajli', '-bir-kiz-dublajli'))
 
-                    for ec in enrich_cands:
-                        try:
-                            res_en = self.dramacix.scan_series(ec)
-                            if res_en and res_en.get('episodes') and len(res_en['episodes']) > len(episodes):
-                                return res_en
-                        except Exception:
-                            pass
+                for ec in enrich_cands:
+                    try:
+                        res_en = self.dramacix.scan_series(ec)
+                        if res_en and res_en.get('episodes') and len(res_en['episodes']) > len(episodes):
+                            return res_en
+                    except Exception:
+                        pass
+                    try:
+                        res_en_df = self.dramaflix.scan_series(ec)
+                        if res_en_df and res_en_df.get('episodes') and len(res_en_df['episodes']) > len(episodes):
+                            return res_en_df
+                    except Exception:
+                        pass
 
                 if episodes:
                     return {
@@ -1495,14 +1507,48 @@ class SenaDiziAPI:
         clean_s = self.dramacix.extract_slug(raw)
         is_dub = ('dublaj' in clean_s.lower() or 'dublaj' in raw.lower())
 
-        # 0. INSTANT ZERO-LATENCY LOCAL DB SCAN (Takes 0ms, 100% resilient, with fuzzy title matching & enrichment)
-        db_res = self._scan_db(raw)
-        if not db_res and clean_s != raw:
-            db_res = self._scan_db(clean_s)
-        if db_res and db_res.get('episodes'):
-            return db_res
+        # 1. DOMAIN SPECIFIC: If user pasted an explicit provider URL, scan that exact provider first!
+        if 'dramaflix' in raw or 'dramakolik' in raw or 'filmkolik' in raw:
+            try:
+                res = self.dramaflix.scan_series(raw, user_cookie=user_cookie or self.user_cookie)
+                if res and res.get('episodes'):
+                    # Check if DramaCix has more episodes
+                    clean_b = re.sub(r'[-_]?(?:dublajli|dublaj|altyazili|tr)$', '', clean_s, flags=re.I)
+                    for cand_c in [clean_s, f"{clean_b}-dublajli", clean_b]:
+                        try:
+                            res_dc = self.dramacix.scan_series(cand_c)
+                            if res_dc and res_dc.get('episodes') and len(res_dc['episodes']) > len(res['episodes']):
+                                return res_dc
+                        except Exception:
+                            pass
+                    return res
+            except Exception:
+                pass
 
-        # 1. DOMAIN SPECIFIC: If user pasted a direct provider URL, scan that exact provider first!
+        if 'dramacix.com' in raw:
+            try:
+                res = self.dramacix.scan_series(clean_s, user_cookie=user_cookie or self.user_cookie)
+                if res and res.get('episodes'):
+                    return res
+            except Exception:
+                pass
+
+        if 'dramadizilerim.com' in raw:
+            try:
+                res = self.dramadizilerim.scan_series(clean_s, user_cookie=user_cookie or self.user_cookie)
+                if res and res.get('episodes'):
+                    return res
+            except Exception:
+                pass
+
+        if 'liderdrama.com' in raw:
+            try:
+                res = self.liderdrama.scan_series(clean_s, user_cookie=user_cookie or self.user_cookie)
+                if res and res.get('episodes'):
+                    return res
+            except Exception:
+                pass
+
         if 'senadizi' in raw or 'senadizinet' in raw:
             try:
                 res = self.senadizi_net.scan_series(raw, user_cookie=user_cookie or self.user_cookie)
@@ -1511,36 +1557,19 @@ class SenaDiziAPI:
             except Exception:
                 pass
 
-        if 'dramacix.com' in raw:
-            try:
-                return self.dramacix.scan_series(clean_s, user_cookie=user_cookie or self.user_cookie)
-            except Exception:
-                pass
+        # 2. LOCAL DB SCAN (Takes 0ms, with fuzzy title matching & automatic online enrichment)
+        db_res = self._scan_db(raw)
+        if not db_res and clean_s != raw:
+            db_res = self._scan_db(clean_s)
+        if db_res and db_res.get('episodes'):
+            return db_res
 
-        if 'dramadizilerim.com' in raw:
-            try:
-                return self.dramadizilerim.scan_series(clean_s, user_cookie=user_cookie or self.user_cookie)
-            except Exception:
-                pass
-
-        if 'liderdrama.com' in raw:
-            try:
-                return self.liderdrama.scan_series(clean_s, user_cookie=user_cookie or self.user_cookie)
-            except Exception:
-                pass
-
-        if 'dramaflix' in raw or 'dramakolik' in raw or 'filmkolik' in raw:
-            try:
-                return self.dramaflix.scan_series(raw, user_cookie=user_cookie or self.user_cookie)
-            except Exception:
-                pass
-
-        # 2. Cross-provider scan if domain is not specific or provider scan failed
+        # 3. Cross-provider fallback scan
         if is_dub:
             for provider_fn in [
                 lambda: self.dramacix.scan_series(raw, user_cookie=user_cookie or self.user_cookie),
-                lambda: self.senadizi_net.scan_series(clean_s, user_cookie=user_cookie or self.user_cookie),
                 lambda: self.dramaflix.scan_series(raw, user_cookie=user_cookie or self.user_cookie),
+                lambda: self.senadizi_net.scan_series(clean_s, user_cookie=user_cookie or self.user_cookie),
                 lambda: self.dramadizilerim.scan_series(clean_s, user_cookie=user_cookie or self.user_cookie),
                 lambda: self.liderdrama.scan_series(clean_s, user_cookie=user_cookie or self.user_cookie),
             ]:
@@ -1555,8 +1584,8 @@ class SenaDiziAPI:
         else:
             for provider_fn in [
                 lambda: self.dramacix.scan_series(raw, user_cookie=user_cookie or self.user_cookie),
-                lambda: self.senadizi_net.scan_series(clean_s, user_cookie=user_cookie or self.user_cookie),
                 lambda: self.dramaflix.scan_series(raw, user_cookie=user_cookie or self.user_cookie),
+                lambda: self.senadizi_net.scan_series(clean_s, user_cookie=user_cookie or self.user_cookie),
                 lambda: self.dramadizilerim.scan_series(clean_s, user_cookie=user_cookie or self.user_cookie),
                 lambda: self.liderdrama.scan_series(clean_s, user_cookie=user_cookie or self.user_cookie),
             ]:
