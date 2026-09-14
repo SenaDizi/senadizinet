@@ -19,6 +19,7 @@ import shutil
 import queue
 import threading
 import subprocess
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import urllib.parse
 from typing import List, Optional
 import requests
@@ -358,27 +359,72 @@ class CloudDownloadManager:
 
     def _merge_files(self, input_files: list, output_path: str):
         ffmpeg_bin = get_ffmpeg_binary()
-        list_file = output_path + ".txt"
-        try:
-            with open(list_file, "w", encoding="utf-8") as f:
+        if not ffmpeg_bin:
+            with open(output_path, "wb") as out_f:
                 for p in input_files:
-                    safe_p = os.path.abspath(p).replace("\\", "/").replace("'", "'\\''")
-                    f.write(f"file '{safe_p}'\n")
+                    with open(p, "rb") as in_f:
+                        shutil.copyfileobj(in_f, out_f)
+            return
 
-            if ffmpeg_bin:
-                cmd = [
-                    ffmpeg_bin, "-y",
-                    "-f", "concat",
-                    "-safe", "0",
-                    "-i", list_file,
-                    "-c", "copy",
-                    "-fflags", "+genpts",
-                    "-avoid_negative_ts", "make_zero",
-                    "-movflags", "+faststart",
-                    output_path
-                ]
-                res = subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=240)
-                if res.returncode != 0 or not os.path.exists(output_path) or os.path.getsize(output_path) == 0:
+        temp_dir = os.path.dirname(output_path)
+        ts_files = [None] * len(input_files)
+
+        def convert_chunk_to_ts(idx, src_p):
+            ts_p = os.path.join(temp_dir, f"_merge_chunk_{idx:04d}_{os.path.basename(output_path)}.ts")
+            cmd_ts = [
+                ffmpeg_bin, "-y",
+                "-i", src_p,
+                "-c", "copy",
+                "-bsf:v", "h264_mp4toannexb",
+                "-f", "mpegts",
+                ts_p
+            ]
+            r = subprocess.run(cmd_ts, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=120)
+            if r.returncode != 0 or not os.path.exists(ts_p) or os.path.getsize(ts_p) == 0:
+                cmd_ts_fb = [ffmpeg_bin, "-y", "-i", src_p, "-c", "copy", "-f", "mpegts", ts_p]
+                subprocess.run(cmd_ts_fb, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=120)
+            return idx, ts_p
+
+        try:
+            with ThreadPoolExecutor(max_workers=min(8, max(1, len(input_files)))) as pool:
+                futures = [pool.submit(convert_chunk_to_ts, i, p) for i, p in enumerate(input_files)]
+                for fut in as_completed(futures):
+                    i, ts_p = fut.result()
+                    ts_files[i] = ts_p
+
+            assembled_ts = os.path.join(temp_dir, f"_assembled_{os.path.basename(output_path)}.ts")
+            with open(assembled_ts, "wb") as out_f:
+                for ts_p in ts_files:
+                    if ts_p and os.path.exists(ts_p):
+                        with open(ts_p, "rb") as in_f:
+                            shutil.copyfileobj(in_f, out_f, 1024 * 1024)
+
+            # Seamless Remux to MP4 with monotonic timestamps and continuous audio resample
+            cmd_remux = [
+                ffmpeg_bin, "-y",
+                "-i", assembled_ts,
+                "-c:v", "copy",
+                "-c:a", "aac",
+                "-b:a", "192k",
+                "-ar", "48000",
+                "-ac", "2",
+                "-af", "aresample=async=1000:min_hard_comp=0.05:first_pts=0",
+                "-fflags", "+genpts",
+                "-avoid_negative_ts", "make_zero",
+                "-max_muxing_queue_size", "4096",
+                "-movflags", "+faststart",
+                output_path
+            ]
+            r_remux = subprocess.run(cmd_remux, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=600)
+
+            # Fallback to concat demuxer if TS remux failed
+            if r_remux.returncode != 0 or not os.path.exists(output_path) or os.path.getsize(output_path) == 0:
+                list_file = output_path + ".txt"
+                try:
+                    with open(list_file, "w", encoding="utf-8") as f:
+                        for p in input_files:
+                            safe_p = os.path.abspath(p).replace("\\", "/").replace("'", "'\\''")
+                            f.write(f"file '{safe_p}'\n")
                     cmd_fb = [
                         ffmpeg_bin, "-y",
                         "-f", "concat",
@@ -395,15 +441,18 @@ class CloudDownloadManager:
                         "-movflags", "+faststart",
                         output_path
                     ]
-                    subprocess.run(cmd_fb, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=300)
-            else:
-                with open(output_path, "wb") as out_f:
-                    for p in input_files:
-                        with open(p, "rb") as in_f:
-                            shutil.copyfileobj(in_f, out_f)
+                    subprocess.run(cmd_fb, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=600)
+                finally:
+                    if os.path.exists(list_file):
+                        try: os.remove(list_file)
+                        except Exception: pass
         finally:
-            if os.path.exists(list_file):
-                try: os.remove(list_file)
+            for ts_p in ts_files:
+                if ts_p and os.path.exists(ts_p):
+                    try: os.remove(ts_p)
+                    except Exception: pass
+            if 'assembled_ts' in locals() and os.path.exists(assembled_ts):
+                try: os.remove(assembled_ts)
                 except Exception: pass
 
 cloud_downloader = CloudDownloadManager()
