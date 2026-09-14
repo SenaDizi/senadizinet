@@ -232,11 +232,11 @@ class CloudDownloadManager:
     def cancel_task(self, task_id):
         with self.lock:
             if task_id in self.tasks:
-                self.tasks[task_id].status = "cancelled"
+                self.tasks[task_id].status = "İptal Edildi"
 
     def clear_status(self, client_id=None):
         with self.lock:
-            to_del = [tid for tid, t in self.tasks.items() if (not client_id or str(t.client_id) == str(client_id)) and t.status in ["completed", "cancelled", "error"]]
+            to_del = [tid for tid, t in self.tasks.items() if (not client_id or str(t.client_id) == str(client_id)) and t.status in ["completed", "Tamamlandı", "cancelled", "İptal Edildi", "error", "Hata"]]
             for tid in to_del:
                 del self.tasks[tid]
 
@@ -373,12 +373,19 @@ class CloudDownloadManager:
             if not task.is_merged:
                 register_client_download(task.client_id, out_fn)
 
-        if task.status == "cancelled":
+        if task.status in ["cancelled", "İptal Edildi"]:
             return
 
-        if task.is_merged and len(downloaded_files) > 0:
+        if len(downloaded_files) == 0:
+            task.progress = 0
+            task.speed = ""
+            task.status = "Hata"
+            task.error = "Bölüm videoları indirilemedi. Lütfen tekrar deneyin."
+            return
+
+        if task.is_merged:
             task.speed = "Tek Parça Birleştiriliyor..."
-            task.progress = 90
+            task.progress = 92
             clean_series_name = "".join(c for c in task.series_slug if c.isalnum() or c in "-_").strip() or "dizi"
             merged_fn = f"{clean_series_name}_Tek_Parca.mp4"
             merged_path = os.path.join(DOWNLOADS_DIR, merged_fn)
@@ -386,20 +393,36 @@ class CloudDownloadManager:
             self._merge_files(downloaded_files, merged_path)
             register_client_download(task.client_id, merged_fn)
             task.filename = merged_fn
-        elif len(downloaded_files) > 0:
+        else:
             task.filename = os.path.basename(downloaded_files[0])
+            register_client_download(task.client_id, task.filename)
 
         task.progress = 100
         task.speed = "Tamamlandı"
-        task.status = "completed"
+        task.status = "Tamamlandı"
 
     def _download_stream_to_file(self, url: str, target_path: str, task: CloudDownloadTask, base_progress=0, weight=80):
+        if not url:
+            return
+        headers_dict = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        headers_str = ""
+        if SenaDiziAPI:
+            try:
+                api_inst = SenaDiziAPI(user_cookie=task.user_cookie)
+                headers_dict = api_inst.get_request_headers_for_url(url)
+                headers_str = api_inst.get_ffmpeg_headers_for_url(url)
+            except Exception:
+                pass
+
         if ".m3u8" in url or "playlist.m3u8" in url:
             ffmpeg_bin = get_ffmpeg_binary()
             if ffmpeg_bin:
-                cmd = [
-                    ffmpeg_bin, "-y",
-                    "-user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                cmd = [ffmpeg_bin, "-y"]
+                if headers_str:
+                    cmd.extend(["-headers", headers_str])
+                else:
+                    cmd.extend(["-user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"])
+                cmd.extend([
                     "-i", url,
                     "-c", "copy",
                     "-bsf:a", "aac_adtstoasc",
@@ -407,26 +430,29 @@ class CloudDownloadManager:
                     "-avoid_negative_ts", "make_zero",
                     "-movflags", "+faststart",
                     target_path
-                ]
+                ])
                 subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=240)
-                task.progress = base_progress + weight
-                return
+                if os.path.exists(target_path) and os.path.getsize(target_path) > 1024:
+                    task.progress = base_progress + weight
+                    return
 
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
-        with requests.get(url, headers=headers, stream=True, timeout=25) as r:
-            r.raise_for_status()
-            total_size = int(r.headers.get("content-length", 0))
-            downloaded = 0
-            with open(target_path, "wb") as f:
-                for chunk in r.iter_content(chunk_size=512 * 1024):
-                    if task.status == "cancelled":
-                        return
-                    if chunk:
-                        f.write(chunk)
-                        downloaded += len(chunk)
-                        if total_size > 0:
-                            frac = min(1.0, downloaded / total_size)
-                            task.progress = int(base_progress + (frac * weight))
+        try:
+            with requests.get(url, headers=headers_dict, stream=True, timeout=30) as r:
+                if r.status_code in [200, 206]:
+                    total_size = int(r.headers.get("content-length", 0))
+                    downloaded = 0
+                    with open(target_path, "wb") as f:
+                        for chunk in r.iter_content(chunk_size=512 * 1024):
+                            if task.status in ["cancelled", "İptal Edildi"]:
+                                return
+                            if chunk:
+                                f.write(chunk)
+                                downloaded += len(chunk)
+                                if total_size > 0:
+                                    frac = min(1.0, downloaded / total_size)
+                                    task.progress = int(base_progress + (frac * weight))
+        except Exception as e:
+            print(f"[CloudStreamDownload Error] {e}")
 
     def _merge_files(self, input_files: list, output_path: str):
         ffmpeg_bin = get_ffmpeg_binary()
@@ -794,7 +820,8 @@ def api_download(req: DownloadRequest, request: Request):
         try:
             payload = req.model_dump() if hasattr(req, 'model_dump') else req.dict()
             headers = {'X-Client-ID': str(cid or ''), 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
-            resp = requests.post(f'{worker_url}/api/download', json=payload, headers=headers, timeout=20.0, verify=False)
+            dest_url = f'{worker_url}/api/download/merged' if (req.merged or req.merge) else f'{worker_url}/api/download'
+            resp = requests.post(dest_url, json=payload, headers=headers, timeout=20.0, verify=False)
             if resp.status_code == 200:
                 return resp.json()
         except Exception as e:
@@ -929,7 +956,14 @@ def api_list_downloads(request: Request, client_id: Optional[str] = None):
     mapping = get_client_downloads_mapping()
     allowed_files = None
     if cid and cid not in ['all', 'admin']:
-        allowed_files = set(mapping.get(str(cid).strip(), []))
+        client_reg = list(mapping.get(str(cid).strip(), []))
+        # Auto-register any filename from completed tasks for this client
+        for tid, t in cloud_downloader.tasks.items():
+            if str(t.client_id) == str(cid) and t.filename and t.filename not in client_reg:
+                client_reg.append(t.filename)
+                register_client_download(cid, t.filename)
+        if client_reg:
+            allowed_files = set(client_reg)
 
     all_paths = glob.glob(os.path.join(DOWNLOADS_DIR, '*.mp4')) + glob.glob(os.path.join(VIRAL_DIR, '*.mp4'))
     all_paths.sort(key=os.path.getmtime, reverse=True)
@@ -938,9 +972,10 @@ def api_list_downloads(request: Request, client_id: Optional[str] = None):
         fn = os.path.basename(p)
         if fn in seen:
             continue
-        seen.add(fn)
+        # Only filter if allowed_files is explicitly specified and non-empty
         if allowed_files is not None and fn not in allowed_files:
             continue
+        seen.add(fn)
 
         sz = os.path.getsize(p)
         base_name = fn.rsplit('.', 1)[0]

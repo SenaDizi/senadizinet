@@ -569,9 +569,35 @@ function updateDownloadsDashboard(tasks) {
     taskIds.forEach(id => {
         const task = tasks[id];
         const pct = Math.max(0, Math.min(100, task.progress || 0));
-        const statusText = task.status || 'İşleniyor';
-        const speedText = task.speed ? `⚡ ${task.speed}` : '';
-        const statusSlug = statusText.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        const rawStatus = (task.status || '').trim();
+        const sLower = rawStatus.toLowerCase();
+
+        const isFinished = (sLower === 'tamamlandı' || sLower === 'completed' || sLower === 'done' || pct >= 100);
+        const isCancelled = (sLower === 'iptal edildi' || sLower === 'cancelled' || sLower === 'iptal');
+        const isError = (sLower === 'hata' || sLower === 'error' || sLower === 'failed');
+
+        let displayStatus = rawStatus || 'İşleniyor';
+        let badgeClass = 'isleniyor';
+
+        if (isFinished) {
+            displayStatus = 'Tamamlandı';
+            badgeClass = 'tamamlandi';
+        } else if (isCancelled) {
+            displayStatus = 'İptal Edildi';
+            badgeClass = 'iptal';
+        } else if (isError) {
+            displayStatus = 'Hata';
+            badgeClass = 'hata';
+        } else if (pct > 0) {
+            badgeClass = 'indiriliyor';
+        }
+
+        let speedText = '';
+        if (task.speed && !isFinished && !isCancelled && !isError) {
+            speedText = `⚡ ${task.speed}`;
+        } else if (isFinished) {
+            speedText = '⚡ İndirmeye Hazır';
+        }
 
         let item = existingItems[id];
         if (!item) {
@@ -581,33 +607,48 @@ function updateDownloadsDashboard(tasks) {
             container.appendChild(item);
         }
 
-        const isFinished = statusText === 'Tamamlandı';
-        const isError = statusText === 'Hata';
+        const safeFilename = task.filename || (task.series_slug ? `${task.series_slug}_Tek_Parca.mp4` : '');
+        const encodedFn = encodeURIComponent(safeFilename);
+        const srtFn = encodeURIComponent(safeFilename.replace('.mp4', '.srt'));
 
         item.innerHTML = `
             <div class="dl-info-row">
-                <span class="dl-title">${task.title}</span>
-                <span class="status-badge ${statusSlug}">${statusText}</span>
+                <span class="dl-title">${task.title || 'Dizi Bölümü'}</span>
+                <span class="status-badge ${badgeClass}">${displayStatus}</span>
             </div>
-            ${!isError ? `
+            ${!isError && !isCancelled ? `
                 <div class="progress-bar-outer">
-                    <div class="progress-bar-inner" style="width: ${pct}%;"></div>
+                    <div class="progress-bar-inner ${isFinished ? 'finished' : ''}" style="width: ${pct}%;"></div>
                 </div>
                 <div class="dl-meta-row">
                     <span class="dl-speed">${speedText}</span>
                     <span class="dl-pct">%${pct}</span>
                 </div>
+            ` : isCancelled ? `
+                <div class="dl-error-text" style="color: #94a3b8; background: rgba(148, 163, 184, 0.1);">İşlem kullanıcı tarafından iptal edildi.</div>
             ` : `
                 <div class="dl-error-text">${task.error || 'İndirme hatası oluştu.'}</div>
             `}
             <div class="dl-actions-row">
-                ${isFinished && task.filename ? `
-                    <button class="btn-dl-action btn-play" onclick="playVideo('${task.filename.replace(/'/g, "\\'")}')"><i class="fa-solid fa-play"></i> Oynat</button>
-                    <a class="btn-dl-action" href="/indir/api/downloads/file/${encodeURIComponent(task.filename)}?download=1" download><i class="fa-solid fa-download"></i> İndir</a>
-                    <a class="btn-dl-action" href="/indir/api/downloads/file/${encodeURIComponent(task.filename.replace('.mp4', '.srt'))}?download=1" download title="Altyazı Dosyası (.srt)"><i class="fa-solid fa-closed-captioning"></i> .SRT</a>
+                ${isFinished && safeFilename ? `
+                    <a class="btn-dl-action btn-dl-download" href="/indir/api/downloads/file/${encodedFn}?download=1" download title="Cihaza İndir">
+                        <i class="fa-solid fa-download"></i> İndir
+                    </a>
+                    <button class="btn-dl-action btn-play" onclick="playVideo('${safeFilename.replace(/'/g, "\\'")}')" title="Videoyu Altyazılı Oynat">
+                        <i class="fa-solid fa-play"></i> Oynat
+                    </button>
+                    <a class="btn-dl-action" href="/indir/api/downloads/file/${srtFn}?download=1" download title="Türkçe Altyazı (.srt)">
+                        <i class="fa-solid fa-closed-captioning"></i> .SRT
+                    </a>
+                    <button class="btn-dl-action btn-remove-task" onclick="clearSingleTask('${id}')" title="Listeden Temizle">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                 ` : ''}
-                ${!isFinished && !isError ? `
+                ${!isFinished && !isError && !isCancelled ? `
                     <button class="btn-dl-action btn-cancel" onclick="cancelDownload('${id}')"><i class="fa-solid fa-xmark"></i> İptal</button>
+                ` : ''}
+                ${(isCancelled || isError) ? `
+                    <button class="btn-dl-action btn-remove-task" onclick="clearSingleTask('${id}')" title="Listeden Temizle"><i class="fa-solid fa-trash-can"></i> Temizle</button>
                 ` : ''}
             </div>
         `;
@@ -624,9 +665,22 @@ async function cancelDownload(taskId) {
             method: 'POST',
             headers: getClientHeaders()
         });
+        setTimeout(fetchTaskStatus, 300);
     } catch (e) {
         console.error("Cancel error:", e);
     }
+}
+
+async function clearSingleTask(taskId) {
+    try {
+        await fetch(`/indir/api/download/cancel/${taskId}`, {
+            method: 'POST',
+            headers: getClientHeaders()
+        });
+    } catch (e) {}
+    const item = document.querySelector(`.download-item[data-id="${taskId}"]`);
+    if (item) item.remove();
+    setTimeout(fetchTaskStatus, 300);
 }
 
 // Completed Polling & Management
