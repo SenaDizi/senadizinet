@@ -17,6 +17,7 @@ import time
 import socket
 import shutil
 import queue
+import tempfile
 import threading
 import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -132,6 +133,9 @@ def get_ffmpeg_binary():
         if os.path.exists(c):
             return c
     return None
+
+# Kullanıcı Kuralı: Okunabilir, ekranın orta kısmının birazcık altında, iç renk beyaz dış renk ince siyah Türkçe altyazı stili
+COMPACT_SUBTITLE_STYLE = "FontName=Arial,FontSize=14,Bold=1,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=1.3,Shadow=0.4,MarginV=95,MarginL=20,MarginR=20,Alignment=2"
 
 # ==============================================================================
 # Cloud Download Manager (Executes downloads directly on Render 24/7)
@@ -282,22 +286,89 @@ class CloudDownloadManager:
             self._download_stream_to_file(v_url, out_path, task, base_progress=base_p, weight=weight)
             downloaded_files.append(out_path)
 
-            if subs:
-                sub_fn = f"{clean_series_name}_Bolum_{ep_num:02d}.vtt"
-                sub_path = os.path.join(DOWNLOADS_DIR, sub_fn)
+            # Subtitle resolution & Hardsub burn (Kullanıcı Kuralı: Altyazı ekranın orta kısmının birazcık altında)
+            tr_sub_url = None
+            if isinstance(subs, str) and subs.startswith("http"):
+                tr_sub_url = subs
+            elif isinstance(subs, list) and len(subs) > 0:
+                for s in subs:
+                    if isinstance(s, dict):
+                        l = (s.get('language') or s.get('label') or '').lower()
+                        lb = (s.get('label') or '').lower()
+                        if 'tr' in l or 'türk' in l or 'tr' in lb or 'tur' in lb:
+                            tr_sub_url = s.get('url')
+                            break
+                if not tr_sub_url:
+                    for s in subs:
+                        if isinstance(s, dict) and s.get('url'):
+                            tr_sub_url = s.get('url')
+                            break
+
+            sub_text = ''
+            if tr_sub_url:
                 try:
-                    if isinstance(subs, str) and subs.startswith("http"):
-                        sr = requests.get(subs, timeout=10)
-                        if sr.status_code == 200:
-                            with open(sub_path, "wb") as sf:
-                                sf.write(sr.content)
-                    elif isinstance(subs, list) and len(subs) > 0 and isinstance(subs[0], dict) and subs[0].get("url"):
-                        sr = requests.get(subs[0]["url"], timeout=10)
-                        if sr.status_code == 200:
-                            with open(sub_path, "wb") as sf:
-                                sf.write(sr.content)
+                    sub_text = api.download_subtitle(tr_sub_url)
                 except Exception:
                     pass
+
+            if not sub_text and hasattr(api, 'resolve_turkish_subtitles'):
+                try:
+                    cand_subs = api.resolve_turkish_subtitles(task.series_slug, ep_num, task.series_title)
+                    for cs in cand_subs:
+                        csu = cs.get('url') if isinstance(cs, dict) else cs
+                        if csu:
+                            try:
+                                s_content = api.download_subtitle(csu)
+                                if s_content and len(s_content.strip()) > 10:
+                                    sub_text = s_content
+                                    break
+                            except Exception:
+                                pass
+                except Exception:
+                    pass
+
+            if sub_text and len(sub_text.strip()) > 10:
+                sub_srt_fn = f"{clean_series_name}_Bolum_{ep_num:02d}.srt"
+                sub_tr_srt_fn = f"{clean_series_name}_Bolum_{ep_num:02d}.tr.srt"
+                sub_vtt_fn = f"{clean_series_name}_Bolum_{ep_num:02d}.vtt"
+                try:
+                    with open(os.path.join(DOWNLOADS_DIR, sub_srt_fn), "w", encoding="utf-8") as sf:
+                        sf.write(sub_text)
+                    with open(os.path.join(DOWNLOADS_DIR, sub_tr_srt_fn), "w", encoding="utf-8") as sf:
+                        sf.write(sub_text)
+                    vtt_text = convert_srt_to_vtt(sub_text) if convert_srt_to_vtt else sub_text
+                    with open(os.path.join(DOWNLOADS_DIR, sub_vtt_fn), "w", encoding="utf-8") as vf:
+                        vf.write(vtt_text)
+                except Exception:
+                    pass
+
+                # Hardsub burn into out_path using COMPACT_SUBTITLE_STYLE
+                ffmpeg_bin = get_ffmpeg_binary()
+                if ffmpeg_bin and os.path.exists(out_path) and os.path.getsize(out_path) > 1024:
+                    sub_tmp = os.path.join(tempfile.gettempdir(), f"cburn_{task.task_id}_{ep_num}.srt")
+                    try:
+                        with open(sub_tmp, "w", encoding="utf-8") as sf:
+                            sf.write(sub_text)
+                        escaped_srt = sub_tmp.replace('\\\\', '/').replace('\\', '/').replace(':', '\\:')
+                        subbed_out = out_path + ".subbed.mp4"
+                        cmd_burn = [
+                            ffmpeg_bin, "-y",
+                            "-i", out_path,
+                            "-vf", f"subtitles='{escaped_srt}':force_style='{COMPACT_SUBTITLE_STYLE}'",
+                            "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23",
+                            "-pix_fmt", "yuv420p",
+                            "-c:a", "copy",
+                            "-movflags", "+faststart",
+                            subbed_out
+                        ]
+                        p_burn = subprocess.run(cmd_burn, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=240)
+                        if p_burn.returncode == 0 and os.path.exists(subbed_out) and os.path.getsize(subbed_out) > 1024:
+                            try: os.replace(subbed_out, out_path)
+                            except Exception: pass
+                        try: os.remove(sub_tmp)
+                        except Exception: pass
+                    except Exception as b_err:
+                        print(f"Cloud sub burn warning: {b_err}")
 
             if not task.is_merged:
                 register_client_download(task.client_id, out_fn)

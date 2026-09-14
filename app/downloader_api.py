@@ -1262,6 +1262,7 @@ class SenaDiziAPI:
         self.dramacix = DramacixAPI(user_cookie=user_cookie or token_vault.get_token('dramacix'))
         self.dramadizilerim = DramaDizilerimAPI(user_cookie=user_cookie or token_vault.get_token('dramadizilerim'))
         self.liderdrama = LiderDramaAPI(user_cookie=user_cookie or token_vault.get_token('liderdrama'))
+        self._sub_series_cache = {}
 
 
     def _scan_db(self, slug: str) -> dict:
@@ -1397,12 +1398,116 @@ class SenaDiziAPI:
 
         raise ValueError(f"'{url_or_slug}' adına veya linkine sahip bir dizi bulunamadı.")
 
+    def resolve_turkish_subtitles(self, series_slug: str, ep_num: int, series_title: str = "") -> list:
+        """
+        🎯 Kullanıcı Kesin Kuralı:
+        '1. bölümden son bölüme kadar indirilen tüm dizilere altyazılı desteği ekle'
+        Eğer bir sağlayıcı (örn: DramaCix) belirli bölümlerden sonra (örn: 5. veya 10. bölümden sonra)
+        altyazı listesini boş dönerse, çapraz sağlayıcılardan (DramaFlix, orijinal ana dizi, DramaDizilerim, DB)
+        ilgili bölümün Türkçe altyazısını bulur.
+        """
+        base_slug = re.sub(r'-(?:dublajli|dublaj|turkce-dublaj)$', '', str(series_slug or ''), flags=re.I)
+
+        # 1. Dublajlı dizilerde orijinal altyazılı ana diziyi DramaCix üzerinde sorgula
+        if base_slug and base_slug != series_slug:
+            try:
+                cache_k = f'dc:{base_slug}'
+                if cache_k not in self._sub_series_cache:
+                    self._sub_series_cache[cache_k] = self.dramacix.scan_series(base_slug)
+                dc_res = self._sub_series_cache[cache_k]
+                if dc_res and dc_res.get('episodes'):
+                    found_ep = next((e for e in dc_res['episodes'] if int(e.get('episode_number') or 0) == ep_num), None)
+                    if found_ep:
+                        _, dc_subs = self.dramacix.resolve_episode_stream(found_ep)
+                        tr_subs = [s for s in (dc_subs or []) if 'tr' in (s.get('language') or s.get('label') or '').lower() or 'türk' in (s.get('label') or '').lower()]
+                        if tr_subs:
+                            return tr_subs
+            except Exception:
+                pass
+
+        # 2. DramaFlix üzerinde dizi slug'ı ve base_slug'ı tara
+        for test_slug in [series_slug, base_slug]:
+            if not test_slug:
+                continue
+            try:
+                cache_k = f'df:{test_slug}'
+                if cache_k not in self._sub_series_cache:
+                    self._sub_series_cache[cache_k] = self.dramaflix.scan_series(test_slug)
+                df_res = self._sub_series_cache[cache_k]
+                if df_res and df_res.get('episodes'):
+                    found_ep = next((e for e in df_res['episodes'] if int(e.get('episode_number') or 0) == ep_num), None)
+                    if found_ep and found_ep.get('subtitles'):
+                        tr_subs = [s for s in found_ep['subtitles'] if 'tr' in (s.get('language') or s.get('label') or '').lower() or 'türk' in (s.get('label') or '').lower()]
+                        if tr_subs:
+                            return tr_subs
+            except Exception:
+                pass
+
+        # 3. DramaDizilerim üzerinden kontrol et
+        for test_slug in [series_slug, base_slug]:
+            if not test_slug:
+                continue
+            try:
+                dd_url = f"https://dramadizilerim.com/izle/{test_slug}?s=1&e={ep_num}"
+                _, dd_subs = self.dramadizilerim.resolve_episode_stream(dd_url)
+                tr_subs = [s for s in (dd_subs or []) if 'tr' in (s.get('language') or s.get('label') or '').lower() or 'türk' in (s.get('label') or '').lower()]
+                if tr_subs:
+                    return tr_subs
+            except Exception:
+                pass
+
+        # 4. Yerel SQLite DB üzerinden kontrol et
+        for test_slug in [series_slug, base_slug]:
+            if not test_slug:
+                continue
+            try:
+                db_res = self._scan_db(test_slug)
+                if db_res and db_res.get('episodes'):
+                    found_ep = next((e for e in db_res['episodes'] if int(e.get('episode_number') or 0) == ep_num), None)
+                    if found_ep and found_ep.get('subtitles'):
+                        tr_subs = [s for s in found_ep['subtitles'] if 'tr' in (s.get('language') or s.get('label') or '').lower() or 'türk' in (s.get('label') or '').lower()]
+                        if tr_subs:
+                            return tr_subs
+            except Exception:
+                pass
+
+        return []
+
+    def ensure_turkish_subtitles(self, current_subs: list, series_slug: str, ep_num: int, series_title: str = "") -> list:
+        """Mevcut altyazı listesinde Türkçe yoksa çapraz kaynaklardan otomatik bulup ekler."""
+        subs_list = list(current_subs or [])
+        has_tr = False
+        for s in subs_list:
+            if isinstance(s, dict):
+                l = (s.get('language') or s.get('label') or '').lower()
+                lb = (s.get('label') or '').lower()
+                if 'tr' in l or 'türk' in l or 'tr' in lb or 'tur' in lb:
+                    has_tr = True
+                    break
+            elif isinstance(s, str) and ('tr' in s.lower() or 'tur' in s.lower()):
+                has_tr = True
+                break
+        
+        if not has_tr:
+            extra = self.resolve_turkish_subtitles(series_slug, ep_num, series_title)
+            if extra:
+                return extra + [s for s in subs_list if s not in extra]
+        return subs_list
+
     def resolve_episode_stream(self, episode_data: dict, series_slug: str = None, force_refresh: bool = False) -> tuple:
         ep_num = int(episode_data.get('episode_number') or 1)
         ep_slug = series_slug or episode_data.get('slug') or 'dizi'
         ep_title = episode_data.get('title') or f'{ep_num}. Bölüm'
         series_title = episode_data.get('series_title') or ep_slug.replace('-', ' ').title()
         cache_key = f"{ep_slug}:{ep_num}"
+
+        def finalize_stream(v_u, s_list):
+            if not v_u:
+                return None, []
+            u_url = unwrap_stream_url(v_u)
+            ensured_subs = self.ensure_turkish_subtitles(s_list, ep_slug, ep_num, series_title)
+            CROSS_SERIES_CACHE[cache_key] = (u_url, ensured_subs)
+            return u_url, ensured_subs
 
         raw_url = episode_data.get('url') or episode_data.get('watch_url') or ''
 
@@ -1411,9 +1516,7 @@ class SenaDiziAPI:
             try:
                 v_url, subs = self.senadizi_net.resolve_episode_stream(episode_data)
                 if v_url:
-                    unwrapped = unwrap_stream_url(v_url)
-                    CROSS_SERIES_CACHE[cache_key] = (unwrapped, subs)
-                    return unwrapped, subs
+                    return finalize_stream(v_url, subs)
             except Exception:
                 pass
         
@@ -1425,20 +1528,16 @@ class SenaDiziAPI:
                     dc_data['slug'] = ep_slug
                 v_url, subs = self.dramacix.resolve_episode_stream(dc_data)
                 if v_url:
-                    unwrapped = unwrap_stream_url(v_url)
-                    CROSS_SERIES_CACHE[cache_key] = (unwrapped, subs)
-                    return unwrapped, subs
+                    return finalize_stream(v_url, subs)
             except Exception:
                 pass
-
 
         # 2. PRIMARY: Direct DramaDizilerim watch URL
         if raw_url and 'dramadizilerim.com' in str(raw_url):
             try:
                 v_url, subs = self.dramadizilerim.resolve_episode_stream(raw_url)
                 if v_url:
-                    CROSS_SERIES_CACHE[cache_key] = (unwrap_stream_url(v_url), subs)
-                    return unwrap_stream_url(v_url), subs
+                    return finalize_stream(v_url, subs)
             except Exception:
                 pass
 
@@ -1461,7 +1560,7 @@ class SenaDiziAPI:
                             subs = [{'language': 'TR', 'url': sub_vtt, 'label': 'TR'}]
                         except Exception:
                             pass
-                    return unwrapped, subs
+                    return finalize_stream(unwrapped, subs)
 
         # 2. Fast Cache Lookup
         if cache_key in CROSS_SERIES_CACHE and not force_refresh:
@@ -1478,8 +1577,7 @@ class SenaDiziAPI:
                 db_url = found_ep['url']
                 is_df_db = ('dramaflix' in str(db_url) or 'dramakolik' in str(db_url))
                 if not (is_df_db and ep_num > 15 and not _GLOBAL_CDN_CACHE.get('premium', False)):
-                    unwrapped = unwrap_stream_url(db_url)
-                    return unwrapped, found_ep.get('subtitles', [])
+                    return finalize_stream(db_url, found_ep.get('subtitles', []))
 
         cached_mapping = CROSS_SERIES_CACHE.get(f"map:{ep_slug}")
         if cached_mapping:
@@ -1489,13 +1587,11 @@ class SenaDiziAPI:
                 if c_prov == 'dramacix':
                     v_url, subs = self.dramacix.resolve_episode_stream({'slug': c_slug, 'episode_number': ep_num})
                     if v_url:
-                        CROSS_SERIES_CACHE[cache_key] = (unwrap_stream_url(v_url), subs)
-                        return unwrap_stream_url(v_url), subs
+                        return finalize_stream(v_url, subs)
                 elif c_prov == 'dramadizilerim':
                     v_url, subs = self.dramadizilerim.resolve_episode_stream(f"https://dramadizilerim.com/izle/{c_slug}?s=1&e={ep_num}")
                     if v_url:
-                        CROSS_SERIES_CACHE[cache_key] = (unwrap_stream_url(v_url), subs)
-                        return unwrap_stream_url(v_url), subs
+                        return finalize_stream(v_url, subs)
             except Exception:
                 pass
 
@@ -1519,8 +1615,7 @@ class SenaDiziAPI:
                 v_url, subs = self.dramadizilerim.resolve_episode_stream(dd_url)
                 if v_url and str(v_url).startswith('http'):
                     CROSS_SERIES_CACHE[f"map:{ep_slug}"] = {'provider': 'dramadizilerim', 'slug': sv}
-                    CROSS_SERIES_CACHE[cache_key] = (unwrap_stream_url(v_url), subs)
-                    return unwrap_stream_url(v_url), subs
+                    return finalize_stream(v_url, subs)
             except Exception:
                 pass
 
@@ -1534,8 +1629,7 @@ class SenaDiziAPI:
                         v_url, subs = self.dramacix.resolve_episode_stream(found_ep)
                         if v_url:
                             CROSS_SERIES_CACHE[f"map:{ep_slug}"] = {'provider': 'dramacix', 'slug': sv}
-                            CROSS_SERIES_CACHE[cache_key] = (unwrap_stream_url(v_url), subs)
-                            return unwrap_stream_url(v_url), subs
+                            return finalize_stream(v_url, subs)
             except Exception:
                 pass
 
@@ -1546,9 +1640,7 @@ class SenaDiziAPI:
                 if ld_res and ld_res.get('episodes') and is_similar_series(series_title, ep_slug, ld_res.get('title', ''), sv):
                     found_ep = next((e for e in ld_res['episodes'] if e.get('episode_number') == ep_num), None)
                     if found_ep and found_ep.get('url'):
-                        v_url = unwrap_stream_url(found_ep['url'])
-                        CROSS_SERIES_CACHE[cache_key] = (v_url, [])
-                        return v_url, []
+                        return finalize_stream(found_ep['url'], found_ep.get('subtitles', []))
             except Exception:
                 pass
 
@@ -1556,8 +1648,7 @@ class SenaDiziAPI:
         if raw_url:
             unwrapped = unwrap_stream_url(str(raw_url))
             if is_valid_stream_url(unwrapped):
-                CROSS_SERIES_CACHE[cache_key] = (unwrapped, episode_data.get('subtitles', []))
-                return unwrapped, episode_data.get('subtitles', [])
+                return finalize_stream(unwrapped, episode_data.get('subtitles', []))
 
         # 5. Final VIP Fallback: Query DramaFlix with VIP token if not resolved yet
         try:
@@ -1565,10 +1656,7 @@ class SenaDiziAPI:
             if df_res and df_res.get('episodes'):
                 found_ep = next((e for e in df_res['episodes'] if e.get('episode_number') == ep_num), None)
                 if found_ep and found_ep.get('url') and str(found_ep.get('url')).startswith('http'):
-                    u_url = unwrap_stream_url(found_ep['url'])
-                    subs = found_ep.get('subtitles', [])
-                    CROSS_SERIES_CACHE[cache_key] = (u_url, subs)
-                    return u_url, subs
+                    return finalize_stream(found_ep['url'], found_ep.get('subtitles', []))
         except Exception:
             pass
 
