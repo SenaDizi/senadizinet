@@ -4,4 +4,5 @@ from app.routers.categories import router as categories_router
 from app.routers.user_features import router as user_router
 from app.routers.subscriptions import router as sub_router
 from app.routers.admin import router as admin_router
+from app.routers.downloader import router as downloader_router
 from app.routers.views import router as views_router

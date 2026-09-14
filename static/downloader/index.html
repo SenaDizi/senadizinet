@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SenaDizi İndirici (senadizi.com)</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/indir/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-top-row">
+                <div class="brand-wrapper">
+                    <div class="logo">
+                        SENADIZI <span class="logo-red">İNDİRİCİ</span>
+                        <span class="logo-tag">senadizi.com</span>
+                    </div>
+                    <div class="subtitle">
+                        <i class="fa-solid fa-cloud-arrow-down"></i> SenaDizi Otomatik Dizi & Bölüm İndirme Sistemi
+                    </div>
+                </div>
+
+                <div class="header-connect-bar">
+                    <div class="connect-info">
+                        <span class="connect-label"><i class="fa-solid fa-globe"></i> Kalıcı 7/24 Kesintisiz Link:</span>
+                        <span class="connect-url" id="lbl-permanent-url">
+                            <a href="https://www.senadizi.com/downloader" target="_blank" style="color: #60a5fa; font-weight: 700; text-decoration: underline;">https://www.senadizi.com/downloader</a>
+                            <button class="btn-copy-mini" onclick="copyText('https://www.senadizi.com/downloader', this)" title="Kalıcı Linki Kopyala"><i class="fa-solid fa-copy"></i> Kopyala</button>
+                        </span>
+                        <span class="connect-label" style="margin-top: 4px;"><i class="fa-solid fa-bolt"></i> İndirici & Bulut Durumu:</span>
+                        <span class="connect-url" id="lbl-tunnel-ip">Yükleniyor...</span>
+                    </div>
+                    <div class="header-qr-mini" id="header-qr-container">
+                        <img id="header-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=https://www.senadizi.com/downloader" alt="QR">
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- App Tabs -->
+        <nav class="app-tabs">
+            <button class="tab-btn active" id="tab-downloader"><i class="fa-solid fa-cloud-arrow-down"></i> SenaDizi İndirici</button>
+            <button class="tab-btn" id="tab-viral"><i class="fa-solid fa-wand-magic-sparkles"></i> TikTok & Shorts Viral Editörü</button>
+            <button class="tab-btn" id="tab-promo"><i class="fa-solid fa-images"></i> Dizi Tanıtım Oluşturucu</button>
+        </nav>
+
+        <!-- PANEL 1: Downloader -->
+        <div id="panel-downloader" class="tab-panel active">
+            <!-- Search Bar Section -->
+            <section class="search-section glass-panel">
+                <div class="search-box">
+                    <input type="text" id="series-url" placeholder="SenaDizi (senadizi.com) / DramaCix / DramaFlix / Dramakolik linki yapıştırın..." value="https://senadizi.com/dizi/ejderha-prens-in-sovalyesi-bir-kiz-dublajli">
+                    <button id="btn-scan" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Diziyi Tara</button>
+                </div>
+
+                <div class="supported-platforms-bar" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; align-items: center;">
+                    <span style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">Desteklenen Platformlar:</span>
+                    <span class="platform-pill" style="background: rgba(236, 72, 153, 0.22); border: 1px solid #ec4899; color: #f472b6; font-size: 11px; padding: 4px 8px; border-radius: 6px; font-weight: 600;"><i class="fa-solid fa-crown"></i> SenaDizi (.com)</span>
+                    <span class="platform-pill pill-dramaflix" style="background: rgba(229, 9, 20, 0.18); border: 1px solid #e50914; color: #ff4d58; font-size: 11px; padding: 4px 8px; border-radius: 6px; font-weight: 600;"><i class="fa-solid fa-play"></i> DramaFlix (.net & .cc)</span>
+                    <span class="platform-pill" style="background: rgba(59, 130, 246, 0.18); border: 1px solid #3b82f6; color: #60a5fa; font-size: 11px; padding: 4px 8px; border-radius: 6px; font-weight: 600;"><i class="fa-solid fa-film"></i> DramaCix</span>
+                    <span class="platform-pill" style="background: rgba(168, 85, 247, 0.18); border: 1px solid #a855f7; color: #c084fc; font-size: 11px; padding: 4px 8px; border-radius: 6px; font-weight: 600;"><i class="fa-solid fa-tv"></i> Dramakolik / Filmkolik</span>
+                    <span class="platform-pill" style="background: rgba(34, 197, 94, 0.18); border: 1px solid #22c55e; color: #4ade80; font-size: 11px; padding: 4px 8px; border-radius: 6px; font-weight: 600;"><i class="fa-solid fa-circle-play"></i> DramaDizilerim</span>
+                    <span class="platform-pill" style="background: rgba(234, 179, 8, 0.18); border: 1px solid #eab308; color: #facc15; font-size: 11px; padding: 4px 8px; border-radius: 6px; font-weight: 600;"><i class="fa-solid fa-star"></i> LiderDrama</span>
+                </div>
+                
+                <div class="advanced-settings-wrapper" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                    <button class="btn-toggle-advanced" onclick="toggleAdvancedSettings()">
+                        <i class="fa-solid fa-gear"></i> Gelişmiş Ayarlar (VIP / Cloudflare Çerez Girişi)
+                    </button>
+                    <div id="token-sync-badge" style="font-size: 11px; color: #4ade80; display: flex; align-items: center; gap: 5px;">
+                        <i class="fa-solid fa-circle-check"></i> VIP Tokenler Arka Planda Otomatik Senkronize (Aktif)
+                    </div>
+                    <div class="advanced-settings-panel" id="advanced-settings" style="display: none; width: 100%;">
+                        <div class="input-group">
+                            <label for="user-cookie">DramaFlix / DramaDizilerim Çerez (Cookie / Bearer Token):</label>
+                            <textarea id="user-cookie" placeholder="Örn: Bearer eyJhbGci... veya PHPSESSID=xxxxxx; veya tarayıcınızdan kopyaladığınız tüm Cookie metni..."></textarea>
+                            <span class="input-help">TokenVault sisteminiz otomatik olarak arka planda tokenleri günceller ve kilitli bölümleri çözer. Ekstra manuel çerez girmek isterseniz buraya yapıştırabilirsiniz.</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="error-msg" class="error-msg"></div>
+            </section>
+
+            <!-- Main Content (Visible after search/scan) -->
+            <main class="main-content" id="main-content" style="display: none; margin-top: 20px;">
+                <div class="layout-grid">
+                    <!-- Left: Series Info & Episode Selection -->
+                    <div class="left-panel">
+                        <div class="series-card glass-panel">
+                            <div class="series-banner" id="series-cover"></div>
+                            <div class="series-info">
+                                <span class="badge" id="series-platform">Platform</span>
+                                <h2 id="series-title">Dizi Başlığı</h2>
+                                <p id="series-desc">Dizi açıklaması buraya yüklenecek...</p>
+                                <div class="meta-row">
+                                    <span><i class="fa-solid fa-film"></i> Toplam: <strong id="series-total-eps">0</strong> Bölüm</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Episodes Container -->
+                        <div class="episodes-container glass-panel">
+                            <div class="episodes-header">
+                                <h3>Bölümler (<span id="selected-count-badge">0</span> seçili)</h3>
+                                <div class="selection-controls">
+                                    <button class="btn btn-text" id="btn-select-all">Tümünü Seç</button>
+                                    <button class="btn btn-text" id="btn-select-10">İlk 10</button>
+                                    <button class="btn btn-text" id="btn-select-20">İlk 20</button>
+                                    <button class="btn btn-text" id="btn-deselect-all">Temizle</button>
+                                </div>
+                            </div>
+
+                            <!-- Quick Range Selection Row -->
+                            <div class="range-selector-row">
+                                <i class="fa-solid fa-arrows-left-right text-muted"></i>
+                                <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Hızlı Aralık Seç:</span>
+                                <input type="text" id="range-input" placeholder="Örn: 1-15 veya 20-50">
+                                <button class="btn-sm" id="btn-apply-range">Seçimi Uygula</button>
+                            </div>
+
+                            <div class="episodes-grid" id="episodes-grid-container">
+                                <!-- Episode Checkbox items injected dynamically -->
+                            </div>
+
+                            <div class="action-footer">
+                                <button class="btn btn-download-selected" id="btn-download-selected">
+                                    <i class="fa-solid fa-cloud-arrow-down"></i> Seçilen Bölümleri İndir
+                                </button>
+                                <button class="btn btn-download-merged" id="btn-download-merged">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Tek Part Olarak Birleştir
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Active Downloads & Completed Video Library -->
+                    <div class="right-panel">
+                        <div class="downloads-dashboard glass-panel">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                                <h3><i class="fa-solid fa-circle-notch fa-spin text-red"></i> Aktif İndirmeler</h3>
+                                <button class="btn btn-text" id="btn-clear-active" style="font-size: 11px;"><i class="fa-solid fa-broom"></i> Temizle</button>
+                            </div>
+                            <div class="downloads-list" id="downloads-list-container">
+                                <div class="empty-state">
+                                    <i class="fa-solid fa-cloud-arrow-down"></i>
+                                    <p>Henüz aktif indirme yok. Bölümleri seçip indirmeyi başlatın.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="completed-dashboard glass-panel" style="margin-top: 20px;">
+                            <div class="completed-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                                <h3><i class="fa-solid fa-folder-open text-green"></i> İndirilen Videolar</h3>
+                                <div class="completed-controls">
+                                    <button class="btn btn-text" id="btn-select-all-completed" style="font-size: 11px;">Tümünü Seç</button>
+                                    <button class="btn btn-text btn-danger-text" id="btn-delete-selected-completed" style="font-size: 11px;"><i class="fa-solid fa-trash-can"></i> Seçilenleri Sil</button>
+                                </div>
+                            </div>
+                            <div class="completed-list" id="completed-list-container">
+                                <div class="empty-state">
+                                    <i class="fa-solid fa-film"></i>
+                                    <p>Henüz tamamlanmış indirme yok.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div> <!-- End of panel-downloader -->
+
+        <!-- PANEL 2: Viral Video Editor -->
+        <div id="panel-viral" class="tab-panel" style="display: none;">
+            <div class="viral-editor-container glass-panel">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                    <i class="fa-solid fa-wand-magic-sparkles text-red" style="font-size: 24px;"></i>
+                    <h2 style="font-family: var(--font-heading); font-size: 22px;">TikTok & Shorts Viral Video Editörü</h2>
+                </div>
+                <p class="section-desc" style="color: var(--text-secondary); font-size: 14px; margin-bottom: 24px; line-height: 1.6;">
+                    İndirdiğiniz dizi videolarını dikey (9:16) formata getirip, altına özgünlük arttırıcı oyun videosu yerleştirir, altyazıları otomatik gömer, aynalar ve hızlandırır. Böylece telif engellerine takılmayan viral videolar üretebilirsiniz.
+                </p>
+                
+                <div class="layout-grid">
+                    <!-- Left: Editor Controls -->
+                    <div class="editor-options glass-panel" style="background: rgba(15, 18, 26, 0.85);">
+                        <div class="input-group">
+                            <label for="viral-source-video"><i class="fa-solid fa-film text-gold"></i> Klip Yapılacak Dizi Videosu:</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <select id="viral-source-video" style="flex: 1;">
+                                    <option value="">-- Tamamlanan Videolar Yükleniyor... --</option>
+                                </select>
+                                <label class="btn btn-download-merged" style="margin: 0; padding: 10px 16px; font-size: 12px; cursor: pointer; white-space: nowrap;">
+                                    <i class="fa-solid fa-file-arrow-up"></i> Dosya Seç
+                                    <input type="file" id="viral-file-input" accept="video/*" style="display: none;">
+                                </label>
+                            </div>
+                            <span class="input-help" id="upload-status-help">Bilgisayarınızdan istediğiniz herhangi bir video dosyasını (.mp4, .mkv) seçip klip yapabilirsiniz.</span>
+                        </div>
+                        
+                        <div class="input-group" style="margin-top: 18px;">
+                            <label for="viral-clip-mode"><i class="fa-solid fa-scissors text-blue"></i> Klip Kesim Modu:</label>
+                            <select id="viral-clip-mode">
+                                <option value="full">Videonun Tamamını İşle (Kırpma Yapma)</option>
+                                <option value="random_1m">Rastgele 1 Dakika Kes (Yapay Zeka Akıllı Seçim)</option>
+                                <option value="random_2m">Rastgele 2 Dakika Kes (Yapay Zeka Akıllı Seçim)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="input-group" style="margin-top: 18px;">
+                            <label for="viral-bg-type"><i class="fa-solid fa-gamepad text-green"></i> Alt Kısım Arka Plan Videosu:</label>
+                            <select id="viral-bg-type">
+                                <option value="subway">Subway Surfers Koşu Videosu</option>
+                                <option value="minecraft">Minecraft Parkour Videosu</option>
+                                <option value="sand">Kinetik Kum Ezme Videosu</option>
+                            </select>
+                        </div>
+                        
+                        <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px;">
+                                <input type="checkbox" id="viral-burn-subs" checked style="width: 17px; height: 17px; accent-color: var(--accent-red);">
+                                <span>Türkçe Altyazıları Videoya Göm (Hardsub)</span>
+                            </label>
+                            
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px;">
+                                <input type="checkbox" id="viral-mirror" checked style="width: 17px; height: 17px; accent-color: var(--accent-red);">
+                                <span>Görüntüyü Aynala (Telif Engelini Aşmak İçin)</span>
+                            </label>
+                            
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px;">
+                                <input type="checkbox" id="viral-speedup" checked style="width: 17px; height: 17px; accent-color: var(--accent-red);">
+                                <span>Video Hızını 1.02x Yap (Telif Engelini Aşmak İçin)</span>
+                            </label>
+                        </div>
+                        
+                        <div class="slider-group" style="margin-top: 24px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <label for="viral-split-ratio" style="font-size: 13px; font-weight: 600;">Ekran Paylaşım Oranı (Dizi Yüksekliği):</label>
+                                <strong id="ratio-lbl" style="color: var(--accent-gold);">65%</strong>
+                            </div>
+                            <input type="range" id="viral-split-ratio" min="40" max="75" value="65" style="width: 100%; accent-color: var(--accent-red);" oninput="document.getElementById('ratio-lbl').innerText = this.value + '%'">
+                            <span class="input-help">Dizi klibinin dikey ekranda kaplayacağı oran. Alt kısım oyun videosuyla doldurulur.</span>
+                        </div>
+                        
+                        <button class="btn btn-download-merged" id="btn-generate-viral" style="margin-top: 24px; width: 100%;">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> 9:16 Dikey Viral Video Üret
+                        </button>
+                    </div>
+                    
+                    <!-- Right: Progress Monitor -->
+                    <div class="editor-monitor glass-panel" style="background: rgba(15, 18, 26, 0.85); display: flex; flex-direction: column; justify-content: center;">
+                        <h3 style="margin-bottom: 16px; font-family: var(--font-heading);"><i class="fa-solid fa-circle-notch fa-spin text-red" style="display:none;" id="viral-spinner"></i> Editör İşlem İzleyici</h3>
+                        
+                        <div class="viral-status-card" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px;">
+                            <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700; margin-bottom: 10px;">
+                                <span id="viral-status-text" style="color: var(--accent-gold);">Beklemede...</span>
+                                <span id="viral-progress-val" style="color: #fff;">0%</span>
+                            </div>
+                            <div class="progress-bar-outer" style="height: 10px;">
+                                <div class="progress-bar-inner" id="viral-progress-bar" style="width: 0%;"></div>
+                            </div>
+                            
+                            <button class="btn btn-text btn-danger-text" id="btn-cancel-viral" style="display: none; margin-top: 16px; width: 100%;">
+                                <i class="fa-solid fa-ban"></i> İşlemi İptal Et
+                            </button>
+                            
+                            <p id="viral-info-text" style="font-size: 12px; color: var(--text-secondary); margin-top: 16px; line-height: 1.6;">
+                                Menüden düzenlemek istediğiniz videoyu ve ayarları seçip <strong>"Viral Video Üret"</strong> butonuna basın. <br><br>
+                                Oluşturulan 9:16 dikey video otomatik olarak <strong>"viral_edits"</strong> klasörüne kaydedilir ve sağdaki listede görünür.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- End of panel-viral -->
+
+        <!-- PANEL 3: Promo Video Creator -->
+        <div id="panel-promo" class="tab-panel" style="display: none;">
+            <div class="viral-editor-container glass-panel">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                    <i class="fa-solid fa-images text-red" style="font-size: 24px;"></i>
+                    <h2 style="font-family: var(--font-heading); font-size: 22px;">Dizi Tanıtım Videosu Oluşturucu (Afiş Slayt)</h2>
+                </div>
+                <p class="section-desc" style="color: var(--text-secondary); font-size: 14px; margin-bottom: 24px; line-height: 1.6;">
+                    Dizi afişlerini seçerek arka arkaya oynayan dinamik dikey slayt videoları hazırlayın. Alt kısımda oyun videosu akarken üst kısımda afişler şık geçişlerle tanıtılır.
+                </p>
+                
+                <div class="layout-grid">
+                    <!-- Left: Options Panel -->
+                    <div class="editor-options glass-panel" style="background: rgba(15, 18, 26, 0.85);">
+                        <div class="input-group">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <label style="margin-bottom: 0;"><i class="fa-solid fa-layer-group text-gold"></i> Tanıtılacak Dizi Afişleri:</label>
+                                <button class="btn btn-sm" id="btn-sync-covers" style="background: linear-gradient(135deg, #12c2e9 0%, #c471ed 100%);">
+                                    <i class="fa-solid fa-arrows-rotate"></i> Siteden Afişleri Çek
+                                </button>
+                            </div>
+                            <div style="max-height: 260px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px; background: rgba(0,0,0,0.3);">
+                                <div id="promo-covers-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px;">
+                                    <!-- Dynamic Covers -->
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <button class="btn btn-text" id="btn-select-all-covers" style="flex: 1;"><i class="fa-solid fa-square-check"></i> Hepsini Seç</button>
+                                <button class="btn btn-text" id="btn-deselect-all-covers" style="flex: 1;"><i class="fa-solid fa-square"></i> Seçimleri Kaldır</button>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group" style="margin-top: 18px;">
+                            <label for="promo-bg-type"><i class="fa-solid fa-gamepad text-green"></i> Alt Kısım Arka Plan Videosu:</label>
+                            <select id="promo-bg-type">
+                                <option value="subway">Subway Surfers Koşu Videosu</option>
+                                <option value="minecraft">Minecraft Parkour Videosu</option>
+                                <option value="sand">Kinetik Kum Ezme Videosu</option>
+                            </select>
+                        </div>
+                        
+                        <div class="slider-group" style="margin-top: 20px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <label for="promo-split-ratio" style="font-size: 13px; font-weight: 600;">Ekran Paylaşım Oranı (Afiş Yüksekliği):</label>
+                                <strong id="promo-ratio-lbl" style="color: var(--accent-gold);">65%</strong>
+                            </div>
+                            <input type="range" id="promo-split-ratio" min="40" max="75" value="65" style="width: 100%; accent-color: var(--accent-red);" oninput="document.getElementById('promo-ratio-lbl').innerText = this.value + '%'">
+                        </div>
+                        
+                        <button class="btn btn-download-selected" id="btn-generate-promo" style="margin-top: 24px; width: 100%;">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Tanıtım Slayt Videosu Üret
+                        </button>
+                    </div>
+                    
+                    <!-- Right: Progress Monitor -->
+                    <div class="editor-monitor glass-panel" style="background: rgba(15, 18, 26, 0.85); display: flex; flex-direction: column; justify-content: center;">
+                        <h3 style="margin-bottom: 16px; font-family: var(--font-heading);"><i class="fa-solid fa-circle-notch fa-spin text-red" style="display:none;" id="promo-spinner"></i> Tanıtım İşlem İzleyici</h3>
+                        
+                        <div class="viral-status-card" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px;">
+                            <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700; margin-bottom: 10px;">
+                                <span id="promo-status-text" style="color: var(--accent-gold);">Beklemede...</span>
+                                <span id="promo-progress-val" style="color: #fff;">0%</span>
+                            </div>
+                            <div class="progress-bar-outer" style="height: 10px;">
+                                <div class="progress-bar-inner" id="promo-progress-bar" style="width: 0%;"></div>
+                            </div>
+                            
+                            <p style="font-size: 12px; color: var(--text-secondary); margin-top: 16px; line-height: 1.6;">
+                                Listeden tanıtmak istediğiniz dizi afişlerini seçip <strong>"Tanıtım Slayt Videosu Üret"</strong> butonuna basın. <br><br>
+                                Hazırlanan video otomatik olarak <strong>"viral_edits"</strong> klasörüne kaydedilir.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- End of panel-promo -->
+    </div> <!-- End of app-container -->
+
+    <!-- Video Modal Player -->
+    <div id="video-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
+        <div style="background: #11141c; border: 1px solid var(--border-color); border-radius: 16px; width: 100%; max-width: 900px; padding: 20px; position: relative;">
+            <button onclick="closeVideoModal()" style="position: absolute; top: 12px; right: 16px; background: transparent; border: none; color: #fff; font-size: 24px; cursor: pointer;">&times;</button>
+            <h4 id="modal-video-title" style="margin-bottom: 14px; font-family: var(--font-heading); color: #fff;">Video Oynatıcı</h4>
+            <video id="modal-video-player" controls autoplay style="width: 100%; max-height: 70vh; border-radius: 8px; background: #000;"></video>
+        </div>
+    </div>
+
+    <!-- Frontend Script -->
+    <script src="/indir/static/script.js?v=2.0"></script>
+    <script>
+        function toggleAdvancedSettings() {
+            const panel = document.getElementById('advanced-settings');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+        function closeVideoModal() {
+            const modal = document.getElementById('video-modal');
+            const player = document.getElementById('modal-video-player');
+            player.pause();
+            player.src = '';
+            modal.style.display = 'none';
+        }
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('video-modal');
+            if (e.target === modal) closeVideoModal();
+        });
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeVideoModal();
+        });
+    </script>
+</body>
+</html>

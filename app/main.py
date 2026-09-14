@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import Base, engine
 from app.seed import seed_database
+import os
 from app.routers import (
     auth_router,
     series_router,
@@ -14,7 +15,8 @@ from app.routers import (
     user_router,
     sub_router,
     admin_router,
-    views_router
+    views_router,
+    downloader_router
 )
 
 @asynccontextmanager
@@ -37,11 +39,31 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=[
+        "Content-Range",
+        "Content-Length",
+        "Accept-Ranges",
+        "Content-Type",
+        "ETag",
+        "Cache-Control"
+    ],
+    max_age=3600
 )
 
 # Statik Dosyalar ve Jinja2 Şablonları
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
+DOWNLOADER_STATIC = os.path.join(STATIC_DIR, "downloader")
+
+if os.path.exists(STATIC_DIR):
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+if os.path.exists(DOWNLOADER_STATIC):
+    app.mount("/indir/static", StaticFiles(directory=DOWNLOADER_STATIC), name="static_indir")
+    app.mount("/downloader/static", StaticFiles(directory=DOWNLOADER_STATIC), name="static_downloader")
+
+templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 # API ve Web View Yönlendiricileri
 app.include_router(auth_router)
@@ -50,6 +72,7 @@ app.include_router(categories_router)
 app.include_router(user_router)
 app.include_router(sub_router)
 app.include_router(admin_router)
+app.include_router(downloader_router)
 app.include_router(views_router)
 
 # Hata Sayfaları (404, 403, 500)
