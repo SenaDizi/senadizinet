@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 """
 SenaDiziNet - Downloader & Video Studio Router
-Provides full 24/7 cloud downloader integration at www.senadizi.com/downloader
-Supports multi-browser client isolation, local worker tunnel proxy, and direct cloud scanning.
+Provides full 24/7 cloud downloader integration at /downloader and /indir.
+Features:
+- Seamless Cloud Download Manager (downloads episodes in background on Render without worker PC)
+- Worker Tunnel Proxy (routes heavy operations to worker PC when PC is online)
+- Strict Multi-Browser Client Isolation (via senadizi_client_id)
+- Zero-Failure fallback: NEVER throws 503 or "bilgisayar bağlı değil" errors!
 """
 
 import os
@@ -12,6 +16,9 @@ import json
 import time
 import socket
 import shutil
+import queue
+import threading
+import subprocess
 import urllib.parse
 from typing import List, Optional
 import requests
@@ -31,6 +38,10 @@ ASSETS_DIR = os.path.join(PROJECT_ROOT, "assets")
 STATIC_DOWNLOADER_DIR = os.path.join(PROJECT_ROOT, "static", "downloader")
 CLIENT_REGISTRY_FILE = os.path.join(PROJECT_ROOT, "client_downloads.json")
 WORKER_STATE_FILE = os.path.join(PROJECT_ROOT, "worker_state.json")
+
+os.makedirs(DOWNLOADS_DIR, exist_ok=True)
+os.makedirs(VIRAL_DIR, exist_ok=True)
+os.makedirs(COVERS_DIR, exist_ok=True)
 
 # Try local senadizi directory if present (on developer machine)
 SENADIZI_LOCAL_DIR = os.path.abspath(os.path.join(PROJECT_ROOT, "..", "senadizi"))
@@ -102,9 +113,264 @@ except Exception as e:
         except Exception:
             pass
 
-os.makedirs(DOWNLOADS_DIR, exist_ok=True)
-os.makedirs(VIRAL_DIR, exist_ok=True)
-os.makedirs(COVERS_DIR, exist_ok=True)
+def get_ffmpeg_binary():
+    p = shutil.which("ffmpeg")
+    if p: return p
+    try:
+        import imageio_ffmpeg
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except Exception:
+        pass
+    candidates = [
+        os.path.join(PROJECT_ROOT, "..", "bin", "ffmpeg.exe"),
+        os.path.join(PROJECT_ROOT, "..", "senadizi", "bin", "ffmpeg.exe"),
+        "/usr/bin/ffmpeg",
+        "/usr/local/bin/ffmpeg"
+    ]
+    for c in candidates:
+        if os.path.exists(c):
+            return c
+    return None
+
+# ==============================================================================
+# Cloud Download Manager (Executes downloads directly on Render 24/7)
+# ==============================================================================
+class CloudDownloadTask:
+    def __init__(self, task_id, series_slug, series_title, episodes, is_merged, client_id, user_cookie=None):
+        self.task_id = task_id
+        self.series_slug = series_slug or "dizi"
+        self.series_title = series_title or series_slug
+        self.episodes = episodes or []
+        self.is_merged = is_merged
+        self.client_id = client_id
+        self.user_cookie = user_cookie
+        self.status = "queued"
+        self.progress = 0
+        self.speed = "Bulutta Hazırlanıyor..."
+        self.eta = ""
+        self.filename = ""
+        self.error = None
+        self.created_at = time.time()
+
+class CloudDownloadManager:
+    def __init__(self):
+        self.tasks = {}
+        self.lock = threading.Lock()
+        self.task_queue = queue.Queue()
+        self.worker = threading.Thread(target=self._worker_loop, daemon=True)
+        self.worker.start()
+
+    def queue_download(self, series_slug, episode, user_cookie=None, client_id=None):
+        ep_num = episode.get("episode_number") or 1
+        task_id = f"cloud_{int(time.time()*1000)}_{ep_num}"
+        task = CloudDownloadTask(
+            task_id=task_id,
+            series_slug=series_slug,
+            series_title=episode.get("series_title") or series_slug,
+            episodes=[episode],
+            is_merged=False,
+            client_id=client_id,
+            user_cookie=user_cookie
+        )
+        with self.lock:
+            self.tasks[task_id] = task
+        self.task_queue.put(task)
+        return task_id
+
+    def queue_merged_download(self, series_slug, series_title, episodes, user_cookie=None, client_id=None):
+        task_id = f"cloud_merge_{int(time.time()*1000)}"
+        task = CloudDownloadTask(
+            task_id=task_id,
+            series_slug=series_slug,
+            series_title=series_title,
+            episodes=episodes,
+            is_merged=True,
+            client_id=client_id,
+            user_cookie=user_cookie
+        )
+        with self.lock:
+            self.tasks[task_id] = task
+        self.task_queue.put(task)
+        return task_id
+
+    def get_status_all(self, client_id=None):
+        with self.lock:
+            result = {}
+            for tid, t in self.tasks.items():
+                if client_id and t.client_id and str(t.client_id) != str(client_id):
+                    continue
+                result[tid] = {
+                    "task_id": tid,
+                    "status": t.status,
+                    "progress": t.progress,
+                    "speed": t.speed,
+                    "eta": t.eta,
+                    "filename": t.filename,
+                    "title": t.series_title,
+                    "error": t.error,
+                    "series_slug": t.series_slug
+                }
+            return result
+
+    def cancel_task(self, task_id):
+        with self.lock:
+            if task_id in self.tasks:
+                self.tasks[task_id].status = "cancelled"
+
+    def clear_status(self, client_id=None):
+        with self.lock:
+            to_del = [tid for tid, t in self.tasks.items() if (not client_id or str(t.client_id) == str(client_id)) and t.status in ["completed", "cancelled", "error"]]
+            for tid in to_del:
+                del self.tasks[tid]
+
+    def _worker_loop(self):
+        while True:
+            try:
+                task = self.task_queue.get()
+                if not task:
+                    break
+                self._process_task(task)
+            except Exception as e:
+                print(f"[CloudDownloader] Task error: {e}")
+            finally:
+                self.task_queue.task_done()
+
+    def _process_task(self, task: CloudDownloadTask):
+        task.status = "downloading"
+        task.progress = 5
+        task.speed = "Akış Çözümleniyor..."
+
+        if not SenaDiziAPI:
+            task.status = "error"
+            task.error = "API motoru hazır değil"
+            return
+
+        api = SenaDiziAPI(user_cookie=task.user_cookie)
+        downloaded_files = []
+        total_eps = len(task.episodes) or 1
+
+        for idx, ep in enumerate(task.episodes):
+            if task.status == "cancelled":
+                return
+
+            ep_num = ep.get("episode_number") or (idx + 1)
+            task.speed = f"Bölüm {ep_num}/{total_eps} İndiriliyor..."
+
+            v_url, subs = api.resolve_episode_stream(ep, series_slug=task.series_slug)
+            if not v_url:
+                continue
+
+            clean_series_name = "".join(c for c in task.series_slug if c.isalnum() or c in "-_").strip() or "dizi"
+            out_fn = f"{clean_series_name}_Bolum_{ep_num:02d}.mp4"
+            out_path = os.path.join(DOWNLOADS_DIR, out_fn)
+
+            weight = int(85 / total_eps)
+            base_p = int((idx / total_eps) * 85)
+            self._download_stream_to_file(v_url, out_path, task, base_progress=base_p, weight=weight)
+            downloaded_files.append(out_path)
+
+            if subs:
+                sub_fn = f"{clean_series_name}_Bolum_{ep_num:02d}.vtt"
+                sub_path = os.path.join(DOWNLOADS_DIR, sub_fn)
+                try:
+                    if isinstance(subs, str) and subs.startswith("http"):
+                        sr = requests.get(subs, timeout=10)
+                        if sr.status_code == 200:
+                            with open(sub_path, "wb") as sf:
+                                sf.write(sr.content)
+                    elif isinstance(subs, list) and len(subs) > 0 and isinstance(subs[0], dict) and subs[0].get("url"):
+                        sr = requests.get(subs[0]["url"], timeout=10)
+                        if sr.status_code == 200:
+                            with open(sub_path, "wb") as sf:
+                                sf.write(sr.content)
+                except Exception:
+                    pass
+
+            if not task.is_merged:
+                register_client_download(task.client_id, out_fn)
+
+        if task.status == "cancelled":
+            return
+
+        if task.is_merged and len(downloaded_files) > 0:
+            task.speed = "Tek Parça Birleştiriliyor..."
+            task.progress = 90
+            clean_series_name = "".join(c for c in task.series_slug if c.isalnum() or c in "-_").strip() or "dizi"
+            merged_fn = f"{clean_series_name}_Tek_Parca.mp4"
+            merged_path = os.path.join(DOWNLOADS_DIR, merged_fn)
+
+            self._merge_files(downloaded_files, merged_path)
+            register_client_download(task.client_id, merged_fn)
+            task.filename = merged_fn
+        elif len(downloaded_files) > 0:
+            task.filename = os.path.basename(downloaded_files[0])
+
+        task.progress = 100
+        task.speed = "Tamamlandı"
+        task.status = "completed"
+
+    def _download_stream_to_file(self, url: str, target_path: str, task: CloudDownloadTask, base_progress=0, weight=80):
+        if ".m3u8" in url or "playlist.m3u8" in url:
+            ffmpeg_bin = get_ffmpeg_binary()
+            if ffmpeg_bin:
+                cmd = [
+                    ffmpeg_bin, "-y",
+                    "-user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                    "-i", url,
+                    "-c", "copy",
+                    "-bsf:a", "aac_adtstoasc",
+                    target_path
+                ]
+                subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=180)
+                task.progress = base_progress + weight
+                return
+
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        with requests.get(url, headers=headers, stream=True, timeout=25) as r:
+            r.raise_for_status()
+            total_size = int(r.headers.get("content-length", 0))
+            downloaded = 0
+            with open(target_path, "wb") as f:
+                for chunk in r.iter_content(chunk_size=256 * 1024):
+                    if task.status == "cancelled":
+                        return
+                    if chunk:
+                        f.write(chunk)
+                        downloaded += len(chunk)
+                        if total_size > 0:
+                            frac = min(1.0, downloaded / total_size)
+                            task.progress = int(base_progress + (frac * weight))
+
+    def _merge_files(self, input_files: list, output_path: str):
+        ffmpeg_bin = get_ffmpeg_binary()
+        list_file = output_path + ".txt"
+        try:
+            with open(list_file, "w", encoding="utf-8") as f:
+                for p in input_files:
+                    safe_p = os.path.abspath(p).replace("\\\\", "/")
+                    f.write(f"file '{safe_p}'\\n")
+
+            if ffmpeg_bin:
+                cmd = [
+                    ffmpeg_bin, "-y",
+                    "-f", "concat",
+                    "-safe", "0",
+                    "-i", list_file,
+                    "-c", "copy",
+                    output_path
+                ]
+                subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=240)
+            else:
+                with open(output_path, "wb") as out_f:
+                    for p in input_files:
+                        with open(p, "rb") as in_f:
+                            shutil.copyfileobj(in_f, out_f)
+        finally:
+            if os.path.exists(list_file):
+                try: os.remove(list_file)
+                except Exception: pass
+
+cloud_downloader = CloudDownloadManager()
 
 # Worker state tracking (to proxy jobs to local PC when PC is online)
 def get_worker_state() -> dict:
@@ -249,7 +515,7 @@ def get_ip(request: Request):
 
     port = request.url.port or 8000
     local_url = f'http://{ip}:{port}/downloader'
-    permanent_url = 'https://www.senadizi.com/downloader'
+    permanent_url = 'https://senadizinet.onrender.com/downloader'
     tunnel_url = f'{pub_url}/downloader' if pub_url else permanent_url
 
     return {
@@ -322,6 +588,7 @@ def api_download(req: DownloadRequest, request: Request):
     cid = req.client_id or request.headers.get('X-Client-ID') or request.cookies.get('senadizi_client_id')
     req.client_id = cid
 
+    # 1. Local PC manager (if running on PC directly)
     if downloader_manager:
         try:
             is_merged = req.merged or req.merge or False
@@ -358,6 +625,7 @@ def api_download(req: DownloadRequest, request: Request):
         except Exception as e:
             return JSONResponse({'success': False, 'msg': str(e), 'error': str(e)}, status_code=400)
 
+    # 2. Worker PC Proxy (if PC worker is active)
     active, worker_url = is_worker_active()
     if active and worker_url:
         try:
@@ -367,12 +635,41 @@ def api_download(req: DownloadRequest, request: Request):
             if resp.status_code == 200:
                 return resp.json()
         except Exception as e:
-            return JSONResponse({'success': False, 'msg': f'Isci bilgisayara baglanilamadi: {e}'}, status_code=502)
+            print(f'[Cloud Proxy Error, falling back to CloudDownloader] {e}')
 
-    return JSONResponse({
-        'success': False,
-        'msg': 'Bilgisayar motoru cevr внешней / bagli degil. Tek parca birlestirme icin lutfen bilgisayarinizda indiriciyi acik tutunuz. Bolumleri tek tek izlemek icin listedeki baglantilari kullanabilirsiniz.'
-    }, status_code=503)
+    # 3. 24/7 Cloud Downloader fallback (NO ERROR! Downloads directly in cloud)
+    is_merged = req.merged or req.merge or False
+    slug = req.series_slug or (req.episodes[0].get('slug') if req.episodes else 'dizi')
+    title = req.series_title or slug
+
+    if is_merged:
+        task_id = cloud_downloader.queue_merged_download(
+            series_slug=slug,
+            series_title=title,
+            episodes=req.episodes or [],
+            user_cookie=req.cookie,
+            client_id=cid
+        )
+        return {'success': True, 'ok': True, 'task_id': task_id}
+    elif req.episodes:
+        task_ids = []
+        for ep in req.episodes:
+            tid = cloud_downloader.queue_download(
+                series_slug=slug,
+                episode=ep,
+                user_cookie=req.cookie,
+                client_id=cid
+            )
+            task_ids.append(tid)
+        return {'success': True, 'ok': True, 'task_ids': task_ids, 'task_id': task_ids[0] if task_ids else None}
+    else:
+        task_id = cloud_downloader.queue_download(
+            series_slug=slug,
+            episode=req.episode or {},
+            user_cookie=req.cookie,
+            client_id=cid
+        )
+        return {'success': True, 'ok': True, 'task_id': task_id}
 
 @router.post('/indir/api/download/merged')
 @router.post('/downloader/api/download/merged')
@@ -395,10 +692,15 @@ def api_status(request: Request, client_id: Optional[str] = None):
             headers = {'X-Client-ID': str(cid or '')}
             resp = requests.get(f'{worker_url}/api/status?client_id={urllib.parse.quote(str(cid or ""))}', headers=headers, timeout=5.0)
             if resp.status_code == 200:
-                return resp.json()
+                worker_tasks = resp.json()
+                # Merge with any cloud tasks
+                cloud_tasks = cloud_downloader.get_status_all(client_id=cid)
+                worker_tasks.update(cloud_tasks)
+                return worker_tasks
         except Exception:
             pass
-    return {}
+
+    return cloud_downloader.get_status_all(client_id=cid)
 
 @router.post('/indir/api/download/cancel/{task_id}')
 @router.post('/downloader/api/download/cancel/{task_id}')
@@ -406,10 +708,17 @@ def api_status(request: Request, client_id: Optional[str] = None):
 @router.post('/downloader/api/download/cancel')
 @router.post('/api/download/cancel')
 def api_cancel(task_id: Optional[str] = None, req: Optional[CancelRequest] = None):
-    if downloader_manager:
-        tid = task_id or (req.task_id if req else None)
-        if tid:
+    tid = task_id or (req.task_id if req else None)
+    if tid:
+        if downloader_manager:
             downloader_manager.cancel_task(tid)
+        cloud_downloader.cancel_task(tid)
+        active, worker_url = is_worker_active()
+        if active and worker_url and not downloader_manager:
+            try:
+                requests.post(f'{worker_url}/api/download/cancel/{tid}', timeout=3)
+            except Exception:
+                pass
     return {'ok': True, 'success': True}
 
 @router.post('/indir/api/status/clear')
@@ -419,6 +728,13 @@ def api_clear_status(request: Request, client_id: Optional[str] = None):
     cid = client_id or request.headers.get('X-Client-ID') or request.cookies.get('senadizi_client_id')
     if downloader_manager:
         downloader_manager.clear_status(client_id=cid)
+    cloud_downloader.clear_status(client_id=cid)
+    active, worker_url = is_worker_active()
+    if active and worker_url and not downloader_manager:
+        try:
+            requests.post(f'{worker_url}/api/status/clear', headers={'X-Client-ID': str(cid or '')}, timeout=3)
+        except Exception:
+            pass
     return {'ok': True, 'success': True}
 
 @router.get('/indir/api/downloads/list')
@@ -427,23 +743,31 @@ def api_clear_status(request: Request, client_id: Optional[str] = None):
 def api_list_downloads(request: Request, client_id: Optional[str] = None):
     cid = client_id or request.headers.get('X-Client-ID') or request.cookies.get('senadizi_client_id')
 
+    files = []
+    seen = set()
+
+    # 1. Fetch from worker if active
     active, worker_url = is_worker_active()
     if active and worker_url and not downloader_manager:
         try:
             headers = {'X-Client-ID': str(cid or '')}
             resp = requests.get(f'{worker_url}/api/downloads/list?client_id={urllib.parse.quote(str(cid or ""))}', headers=headers, timeout=6.0)
             if resp.status_code == 200:
-                return JSONResponse(resp.json())
+                worker_data = resp.json()
+                for f in worker_data.get('files', []):
+                    fn = f.get('filename')
+                    if fn and fn not in seen:
+                        seen.add(fn)
+                        files.append(f)
         except Exception:
             pass
 
+    # 2. Add local/cloud downloads
     mapping = get_client_downloads_mapping()
     allowed_files = None
     if cid and cid not in ['all', 'admin']:
         allowed_files = set(mapping.get(str(cid).strip(), []))
 
-    files = []
-    seen = set()
     all_paths = glob.glob(os.path.join(DOWNLOADS_DIR, '*.mp4')) + glob.glob(os.path.join(VIRAL_DIR, '*.mp4'))
     all_paths.sort(key=os.path.getmtime, reverse=True)
 
@@ -468,6 +792,7 @@ def api_list_downloads(request: Request, client_id: Optional[str] = None):
             'has_subtitle': has_sub,
             'subtitle_url': f'/downloader/api/downloads/subtitle/{fn}' if has_sub else None
         })
+
     return JSONResponse({'success': True, 'files': files, 'count': len(files)})
 
 def stream_file_with_range(req: Request, target_path: str, default_filename: str):
@@ -550,7 +875,7 @@ def api_get_downloaded_file(filename: str, request: Request):
             req_headers = {}
             if 'range' in request.headers:
                 req_headers['range'] = request.headers['range']
-            r = requests.get(target_url, headers=req_headers, stream=True, timeout=12)
+            r = requests.get(target_url, headers=req_headers, stream=True, timeout=15)
             resp_headers = {k: v for k, v in r.headers.items() if k.lower() in ['content-range', 'accept-ranges', 'content-length', 'content-type', 'content-disposition']}
             return StreamingResponse(r.iter_content(chunk_size=1024*512), status_code=r.status_code, headers=resp_headers)
         except Exception:
